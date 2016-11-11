@@ -20,7 +20,7 @@ function UpdateMemory()
     var freeMemMB = freeMemKB/1024;
     var freeMemGB = freeMemMB/1024;
     
-    document.getElementById('sysMemory').innerHTML = freeMemGB.toFixed(2) + "GB RAM Usage.";
+    document.getElementById('sysMemory').innerHTML = freeMemGB.toFixed(2) + "GB RAM Free.";
 }
 
 //THIS NEEDS UPDATED AS IT DOES NOT SEEM TO BE WORKING CORRECTLY
