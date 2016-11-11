@@ -1,0 +1,47 @@
+* {
+    font-family: monospace;
+	/*This may break the Electron app*/
+    -webkit-app-region: drag;
+}
+
+body	
+{
+    padding-right: 10px;
+    padding-left: 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #3B3738;
+	background-color: #C63D0F;
+}
+
+h1 {
+    background-color: #FDF3E7;
+    box-shadow: 2px 3px 3px rgba(0,0,0,.5);
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.button
+{
+    border-top: 2px solid #FDF3E7;
+    border-left: 2px solid #FDF3E7;
+    border-right: 2px solid #F4B971;
+    border-bottom: 2px solid #F4B971;
+    padding: 5px 20px;
+    font-size: 15px;
+    background-color: #7E8F7C;
+	-webkit-app-region: no-drag;
+}
+
+.InfoBox 
+{
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.container
+{
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}

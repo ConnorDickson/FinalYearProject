@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Client</title>
+        <link rel="stylesheet" type="text/css" href="CSS/indexCSS.css">
+    </head>
+    <body>
+        <script src="JS/renderer.js"></script>
+        
+        <h1>Use this tool to make requests and monitor the system</h1>
+
+        <p class="InfoBox" id="sysMemory"></p>
+        <p class="InfoBox" id="sysProcessor"></p>
+        <p class="InfoBox" id="messageParagraph"></p>
+        <p class="InfoBox" id="webRequestParagrah"></p>
+
+        <table class="Container" >
+            <input id"systemDialogButton" class="button" type="button" value="System Dialog (and Comms between threads)" onclick="OpenDialog()" />
+
+            <input id"PingClusterButton" class="button" type="button" value="Ping Cluster" onclick="PingCluster()" />
+        </table>
+    </body>
+</html>
