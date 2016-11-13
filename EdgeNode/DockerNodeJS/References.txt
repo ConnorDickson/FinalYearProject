@@ -1,0 +1,28 @@
+I read here;
+https://www.raspberrypi.org/blog/docker-comes-to-raspberry-pi/
+and used the blog mentioned;
+http://blog.alexellis.io/getting-started-with-docker-on-raspberry-pi/
+http://blog.alexellis.io/live-deep-dive-pi-swarm/
+to learn how to setup docker on the Raspberry Pi
+
+I also followed this;
+http://blog.alexellis.io/microservice-swarm-mode/
+in order to get a better understanding of how swarm is meant to work so I can make it work in the way I want
+
+I used this;
+https://clouddevelop.wordpress.com/2016/01/18/running-a-node-js-docker-container-on-a-raspberry-pi-1/
+to learn how to get a basic web server to run in a Docker container and expanded on this to make it run in my swarm
+
+I used this;
+https://docs.docker.com/engine/tutorials/dockerimages/
+to learn how to build a custom image and then I wrote a script to automate the building and deployment
+
+I used this;
+https://github.com/extrabacon/python-shell
+in order to get python talking to my Node.js server after writing a python script to communicate to my Data Centre
+
+I also setup unit testing as per instructions here;
+https://docs.python.org/2/library/unittest.html
+and here;
+https://qunitjs.com/
+but I have not yet utalised this in anyway yet

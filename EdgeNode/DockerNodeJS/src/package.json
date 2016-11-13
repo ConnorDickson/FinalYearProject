@@ -1,0 +1,16 @@
+{
+  "name": "Docker Node JS",
+  "version": "0.0.1",
+  "description": "Docker Node JS for a Container",
+  "main": "server.js",
+  "author": {
+    "name": "",
+    "email": ""
+  },
+  "scripts": {
+	"start": "node server.js"
+  },
+  "dependencies":  {
+    "util": "0.10.3"
+  }
+}

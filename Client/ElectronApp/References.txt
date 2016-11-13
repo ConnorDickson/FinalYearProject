@@ -2,7 +2,6 @@ I used this;
 https://medium.com/developers-writing/building-a-desktop-application-with-electron-204203eeb658#.v5fkev9ha
 as it helped with making it look more like an application rather than a web browser, this includes removing borders and making more complex layouts. I didn't end up using too much of this but thought it was better to include it.
 
-
 I used this;
 http://electron.atom.io/docs/tutorial/quick-start/
 because it is the official electron quick start and it helps you get up and running quickly. This gives you the layout of the application and makes it clear how things are meant to work.

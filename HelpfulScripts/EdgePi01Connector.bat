@@ -1,0 +1,1 @@
+putty -ssh pi@EdgePi01
