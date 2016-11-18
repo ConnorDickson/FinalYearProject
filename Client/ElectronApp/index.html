@@ -6,6 +6,7 @@
         <link rel="stylesheet" type="text/css" href="CSS/indexCSS.css">
     </head>
     <body>
+        <script src="JS/ComputerStats.js"></script>
         <script src="JS/renderer.js"></script>
         
         <h1>Use this tool to make requests and monitor the system</h1>
@@ -15,10 +16,17 @@
         <p class="InfoBox" id="messageParagraph"></p>
         <p class="InfoBox" id="webRequestParagrah"></p>
 
-        <table class="Container" >
-            <input id"systemDialogButton" class="button" type="button" value="System Dialog (and Comms between threads)" onclick="OpenDialog()" />
-
-            <input id"PingClusterButton" class="button" type="button" value="Ping Cluster" onclick="PingCluster()" />
+        <table class="container">
+            <tr>
+                <td>
+                    <input id"systemDialogBut   ton" class="button" type="button" value="System Dialog (and Comms between threads)" onclick="OpenDialog()" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input id"PingClusterButton" class="button" type="button" value="Ping Cluster" onclick="PingCluster()" />
+                </td>
+            </tr>
         </table>
     </body>
 </html>
