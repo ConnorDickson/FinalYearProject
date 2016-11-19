@@ -1,5 +1,7 @@
 var util = require('util');
 var PythonShell = require('python-shell');
+var os = require('os');
+var hostname = os.hostname();
 
 var pyshell = new PythonShell('pythonscript.py');
  
@@ -21,7 +23,7 @@ var port = process.env.port || 3000;
 http.createServer(function (req, res) {
     util.debug("Get request");
     res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end("Received message and updated it " + message + '\n');
+    res.end("Received message and updated it " + message + "\nContainer:"+  hostname);
     util.debug("Send response");
 }).listen(port);
  

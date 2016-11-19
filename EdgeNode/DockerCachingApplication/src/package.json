@@ -1,7 +1,7 @@
 {
-  "name": "dockernodejs",
+  "name": "cachingapp",
   "version": "0.0.1",
-  "description": "Docker Node JS for a Container",
+  "description": "Caching Application",
   "main": "server.js",
   "author": {
     "name": "",
