@@ -26,6 +26,11 @@ function PingCluster()
 	document.getElementById('webRequestParagrah').innerHTML = xmlHttp.responseText;
 }
 
+function NavigateToCachingApplication() 
+{
+    window.location.href = "Pages/CachingApplication.html";
+}
+
 ipc.on('information-dialog-selection', function(event,index) {
 	let message = 'You Selected '
 
