@@ -1,7 +1,8 @@
 FROM hypriot/rpi-node:boron
 
-RUN npm install python-shell
- 
+RUN npm install python-shell && \
+    npm install redis 
+
 ADD . .
 
 WORKDIR /src
