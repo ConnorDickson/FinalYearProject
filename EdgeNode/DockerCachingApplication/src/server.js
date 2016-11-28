@@ -2,16 +2,18 @@ var util = require('util');
 var os = require('os');
 var redis = require('redis');
 
-util.debug("Starting...");
+console.error("Starting...");
 
 var hostname = os.hostname();
 var http = require('http');
 var port = process.env.port || 3001;
 
+var redisResponse = "";
+
 http.createServer(function (req, res) {
     console.error("Get request");
     res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end("Caching App\nContainer:"+  hostname);
+    res.end("Caching App\nContainer:" + hostname + "\nRedis Response: " +  redisResponse);
     console.error("Send response");
 }).listen(port);
  
@@ -20,29 +22,34 @@ console.error("Started Node.js server");
 var redishost = 'edgenode01';
 var redisport = '6379';
 
-var redisclient = redis.createClient(redisport,redishost);
+console.error("Trying to connect to redis");
 
-/*function TryConnectToRedis() 
+var redisclient = redis.createClient(6379,'edgepi01',{no_ready_check: true});
+
+redisclient.auth('password',function(err) 
 {
-    try
+   if(err)
+   {
+      console.error(err);
+   } 
+});
+
+redisclient.on('connect',function () 
+{
+   console.log("Connected to Redis");
+});
+
+redisclient.set("foo","bar",redis.print);
+
+redisclient.get("foo",function(err,reply)
+{
+    if(err) 
     {
-        redisclient = redis.createClient(6379, edge01);
-        return true;
+        console.error(err);
     }
-    catch(ex)
+    else
     {
-        return false;
+        redisResponse = reply.toString();
+        console.log(reply.toString());
     }
-
-    return false;
-}
-
-while(!TryConnectToRedis()) {
-    setTimeout(function() {
-        console.error("Could not connect to redis, trying again after 10 seconds");
-    }, 10000);
-}*/
-
-redisclient.on('connect',function () {
-   console.error("Connected to redis");
 });
