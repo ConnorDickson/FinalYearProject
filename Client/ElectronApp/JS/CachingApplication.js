@@ -1,3 +1,5 @@
+var previousResults = [];
+
 onload = () => 
 {
     var sendTime = 1.0;
@@ -7,19 +9,25 @@ onload = () =>
     
     const loadstart = () => 
     {
-        document.getElementById("requestTime").innerHTML = "Started Request";
         sendTime = (new Date()).getTime();
+        document.getElementById("requestTime").innerHTML = "Started Request";
     }
     
     const loadstop = () => 
     {
         receiveTime = (new Date()).getTime();
-        
-        document.getElementById("requestTime").innerHTML = "Total Request Time: " + ((receiveTime - sendTime)/1000).toFixed(2) + " seconds";
+        var resultTime = ((receiveTime - sendTime)/1000).toFixed(2);
+        previousResults.push(resultTime);
+        document.getElementById("requestTime").innerHTML = "Total Request Time: " + previousResults.toString() + " seconds";
     }
     
     webview.addEventListener('did-start-loading', loadstart);
     webview.addEventListener('did-stop-loading', loadstop);
+}
+
+function ClearResults() 
+{
+    previousResults = [];
 }
 
 function NavigateHome() 
@@ -29,7 +37,19 @@ function NavigateHome()
 
 function NavigateBrowser() 
 {
-    var url = "http://edgepi01:3000/?url=" + document.getElementById("urlAddress").value;
+    ClearResults();
+    
+    var useCachingApplication = document.getElementById("useCachingApplicationCheckbox").checked;
+    
+    var url = "";
+    
+    if(useCachingApplication) 
+    {
+        url += "http://edgepi01:3000/?url="    
+    }
+    
+    url += document.getElementById("urlAddress").value;
+    
     var browser = document.getElementById("WebView");
     browser.setAttribute("src", url);
 }
