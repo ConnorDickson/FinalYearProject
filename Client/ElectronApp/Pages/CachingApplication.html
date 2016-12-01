@@ -7,10 +7,11 @@
     </head>
     <body>
         <script src="../JS/CachingApplication.js"></script>
-        <h1>Caching Application></h1>
+        <h1>Caching Application</h1>
         <button class="button" onclick="NavigateHome()">Home</button>
         <input id="urlAddress" style="display: inline-block;" class="TextInput" type="text">
         <button class="button" onclick="NavigateBrowser()">Go</button>
-        <webview id="WebView" autosize="on" class="WebView" src="https://www.github.com/"/>
+        <p class="InfoBox" id="requestTime"></p>
+        <webview id="WebView" autosize="on" class="WebView" src="https://www.google.com/"/>
     </body>
 </html>
