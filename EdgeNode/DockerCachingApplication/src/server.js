@@ -4,13 +4,24 @@ var redis = require('redis');
 var http = require('http');
 var url = require('url');
 var request = require('request');
+var httpProxy = require('http-proxy');
 
 var hostname = os.hostname();
-var port = process.env.port || 3001;
+var externalPort = process.env.port || 3001;
+var internalPort = 3500;
 var redishost = 'edgenode01';
 var redisport = '6379';
 
 console.log("Starting...");
+
+var proxyServer = httpProxy.createProxyServer({
+    target: 'http://localhost:' + internalPort,
+    toProxy: true
+}).listen(externalPort);
+
+proxyServer.on('error',function(err) {
+    console.error("ERROR WITH PROXY SERVER: " + err.stack);
+});
 
 var createdServer = http.createServer(function (req, res) 
 {
@@ -24,6 +35,25 @@ var createdServer = http.createServer(function (req, res)
     {
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
+    console.log("Request for: " + req.url);
+    
+    var requestedUrl = req.url;
+
+    if(typeof requestedUrl == 'undefined') 
+    {
+        console.error("Received undefined request");
+        res.end("Cannot process undefined request");
+        return;
+    } 
+    else 
+    {
+        if(requestedUrl.length > 1 && requestedUrl.substring(0,1) == '/') 
+        {
+            requestedUrl = requestedUrl.substring(1);
+        }
+    }
+
+    console.log("Updated request for: " + requestedUrl);
 
     if(req.url == "/clearcache")
     {
@@ -32,7 +62,7 @@ var createdServer = http.createServer(function (req, res)
     }
 
     //Get Query String request
-    var url_parts = url.parse(req.url,true);
+    /*var url_parts = url.parse(req.url,true);
     var query = url_parts.query;
     var requestedUrl = query.url;
 
@@ -50,16 +80,17 @@ var createdServer = http.createServer(function (req, res)
     } else {
         //This is a standard request to the caching service
         GetOrSetRequestValueFromRedis(requestedUrl,res);
-    }    
+    }*/    
+    GetOrSetRequestValueFromRedis(requestedUrl,res);
 });
 
 //I don't think I should do this in production because the code continues
 createdServer.on('error',function(err)
 {
-    console.error("An error occurred with the server: " + err.stack);
+    console.error("AN ERROR OCCURRED WITH THE SERVER: " + err.stack);
 });
 
-createdServer.listen(port);
+createdServer.listen(internalPort);
 
 function GetOrSetRequestValueFromRedis(requestedUrl, res) 
 {

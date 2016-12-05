@@ -1,33 +1,45 @@
 var previousResults = [];
+var failedLoad = false;
 
 onload = () => 
 {
     var sendTime = 1.0;
     var receiveTime = 1.0;
-    
+        
     const webview = document.getElementById("WebView");
     
     const loadstart = () => 
     {
         sendTime = (new Date()).getTime();
-        document.getElementById("requestTime").innerHTML = "Started Request";
+        document.getElementById("requestResult").innerHTML = "Started Request";
     }
     
     const loadstop = () => 
     {
-        receiveTime = (new Date()).getTime();
-        var resultTime = ((receiveTime - sendTime)/1000).toFixed(2);
-        previousResults.push(resultTime);
-        document.getElementById("requestTime").innerHTML = "Total Request Time: " + previousResults.toString() + " seconds";
+        if(!failedLoad) 
+        { 
+            receiveTime = (new Date()).getTime();
+            var resultTime = ((receiveTime - sendTime)/1000).toFixed(2);
+            previousResults.push(resultTime);
+            document.getElementById("requestResult").innerHTML = "Total Request Time: " + previousResults.toString() + " seconds";   
+        }
+    }
+    
+    const failload = () => 
+    {
+        failedLoad = true;
+        document.getElementById("requestResult").innerHTML = "Request failed";
     }
     
     webview.addEventListener('did-start-loading', loadstart);
     webview.addEventListener('did-stop-loading', loadstop);
+    webview.addEventListener('did-fail-load', failload);
 }
 
 function ClearResults() 
 {
     previousResults = [];
+    failedLoad = false;
 }
 
 function NavigateHome() 
@@ -38,7 +50,7 @@ function NavigateHome()
 function NavigateBrowser() 
 {
     ClearResults();
-    
+
     var useCachingApplication = document.getElementById("useCachingApplicationCheckbox").checked;
     
     var url = "";
