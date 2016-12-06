@@ -6,7 +6,7 @@ var url = require('url');
 var request = require('request');
 var httpProxy = require('http-proxy');
 
-var hostname = os.hostname();
+//var hostname = os.hostname();
 var externalPort = process.env.port || 3001;
 var internalPort = 3500;
 var redishost = 'edgenode01';
@@ -20,7 +20,7 @@ var proxyServer = httpProxy.createProxyServer({
 }).listen(externalPort);
 
 proxyServer.on('error',function(err) {
-    console.error("ERROR WITH PROXY SERVER: " + err.stack);
+    console.error("ERROR WITH PROXY SERVER:\n" + err.stack);
 });
 
 var createdServer = http.createServer(function (req, res) 
@@ -35,7 +35,8 @@ var createdServer = http.createServer(function (req, res)
     {
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
-    console.log("Request for: " + req.url);
+
+    //console.log("Request for: " + req.url);
     
     var requestedUrl = req.url;
 
@@ -58,29 +59,9 @@ var createdServer = http.createServer(function (req, res)
     if(req.url == "/clearcache")
     {
         //clear redis cache here
-        console.log("Clear Redis cache");   
+        console.log("TODO - Clear Redis Cache");
     }
 
-    //Get Query String request
-    /*var url_parts = url.parse(req.url,true);
-    var query = url_parts.query;
-    var requestedUrl = query.url;
-
-    if(typeof requestedUrl == 'undefined') 
-    {
-        //This is a follow on request to the caching service
-        console.log("Get request for: " + req.url + " but it had an undefined querystring");
-        
-        var referer = req.headers.referer;
-        var refererUrlParts = url.parse(referer,true);
-        var refererQuery = refererUrlParts.query;
-        var refererRequestedUrl = refererQuery.url; 
-        //GetOrSetRequestValueFromRedis("http://google.com" + req.url,res);
-        GetOrSetRequestValueFromRedis(refererRequestedUrl + req.url,res);
-    } else {
-        //This is a standard request to the caching service
-        GetOrSetRequestValueFromRedis(requestedUrl,res);
-    }*/    
     GetOrSetRequestValueFromRedis(requestedUrl,res);
 });
 
@@ -104,9 +85,9 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
         {
             if(reply != null) 
             {
-                console.log("Found " + requestedUrl + " value in redis");
+                //console.log("Found " + requestedUrl + " value in redis");
                 redisResponse = reply.toString();
-                res.writeHead(200, {'Content-Type':'text/html'});
+                //res.writeHead(200, {'Content-Type':'text/html'});
                 res.end(redisResponse);
                 return;
             } else {
@@ -118,52 +99,45 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
 
 function MakeAndStoreRequest(requestedUrl, res) 
 {
-    console.log("Going to make custom request to " + requestedUrl);
+    //console.log("Going to make custom request to " + requestedUrl);
+    //console.log("Going to make custom request");
+    
+    var requestOptions = {
+        url: requestedUrl,
+        method: 'GET',
+        encoding: null
+    };
 
-    /*if(requestedUrl.includes(".gif")) 
+    request(requestOptions, function(error,response,body) 
     {
-        console.log("Got gif request");
-
-        http.get(requestedUrl, function(imageRes)
+        if(error)
         {
-            if(typeof imageRes == 'undefined')
-            {
-                console.log("Image request was undefined");
-                res.end();
-            } else {
-                res.writeHead(200, {'Content-Type':'image/gif'});
-                res.end(imageRes,'binary');
-            }
-        });
-    } else {*/
-        request(requestedUrl, function(error,response,body) 
+            console.error("There was an error with the custom request: " + error.stack);
+        }
+        else if(typeof body == 'undefined') 
         {
-            //console.log("Custom Request results\n\tError: " + error + ".\n\tResponse: " + response + ".\n\tBody: " + body + ".");
-
-            if(error)
-            {
-                console.error("There was an error with the custom request: " + error.stack);
-            }
-	    else if(typeof body == 'undefined') 
-	    {
-                //DO IMAGE STUFF HERE BECAUSE THIS MUST BE BINARY?
-		//Does this mean I need to store content type in redis?
-	        console.log("Not storing " + requestedUrl + " in redis as body is undefined");
-	        res.end();
-	    } 
-            else 
-            {
-                //This was a successful request
-                res.writeHead(200, {'Content-Type':'text/html'});
-	        res.end(body);
-	        console.log("Completed request and going to store " + requestedUrl + " in Redis");
-	        redisclient.set(requestedUrl,body);
-	        redisclient.expire(requestedUrl,60);
-	    }
-        }).on('error',function(err) {
-            console.error("ERROR WITH CUSTOM REQUEST: " + err.stack);
-        });
-    /*}*/
+            //DO IMAGE STUFF HERE BECAUSE THIS MUST BE BINARY?
+	    //Does this mean I need to store content type in redis?
+            console.log("Not storing " + requestedUrl + " in redis as body is undefined");
+            res.end();
+        } 
+        else 
+        {
+            //This was a successful request
+           // res.writeHead(200, {'Content-Type':'text/html'});
+            //console.log(JSON.stringify(response.headers));
+            console.log("Writing Content-Type" + response.headers['content-type']);
+            res.writeHead(200, {'Content-Type':response.headers['content-type']});
+            console.log("Writing Body" + body);
+            res.end(body);
+            //console.log("Completed request and going to store " + requestedUrl + " in Redis");
+            //console.log("Completed request and going to store in Redis");
+            redisclient.set(requestedUrl,body);
+            redisclient.expire(requestedUrl,60);
+        }
+    }).on('error',function(err) {
+        console.error("ERROR WITH CUSTOM REQUEST: " + err.stack);
+    });
 }
  
 console.log("Started Node.js server");

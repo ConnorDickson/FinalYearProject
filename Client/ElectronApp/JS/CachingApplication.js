@@ -25,7 +25,7 @@ onload = () =>
         }
     }
     
-    const failload = () => 
+    const failload = (err) => 
     {
         failedLoad = true;
         document.getElementById("requestResult").innerHTML = "Request failed";
@@ -51,14 +51,14 @@ function NavigateBrowser()
 {
     ClearResults();
 
-    var useCachingApplication = document.getElementById("useCachingApplicationCheckbox").checked;
+//    var useCachingApplication = document.getElementById("useCachingApplicationCheckbox").checked;
     
     var url = "";
     
-    if(useCachingApplication) 
-    {
-        url += "http://edgepi01:3000/?url="    
-    }
+//    if(useCachingApplication) 
+//    {
+//        url += "http://edgepi01:3000/?url="    
+//    }
     
     url += document.getElementById("urlAddress").value;
     
