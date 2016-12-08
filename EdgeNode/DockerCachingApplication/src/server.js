@@ -116,24 +116,22 @@ function MakeAndStoreRequest(requestedUrl, res)
         }
         else if(typeof body == 'undefined') 
         {
-            //DO IMAGE STUFF HERE BECAUSE THIS MUST BE BINARY?
-	    //Does this mean I need to store content type in redis?
             console.log("Not storing " + requestedUrl + " in redis as body is undefined");
             res.end();
         } 
         else 
         {
+            //STORE THIS ALL IN REDIS. Images and all
+
             //This was a successful request
-           // res.writeHead(200, {'Content-Type':'text/html'});
-            //console.log(JSON.stringify(response.headers));
-            console.log("Writing Content-Type" + response.headers['content-type']);
-            res.writeHead(200, {'Content-Type':response.headers['content-type']});
-            console.log("Writing Body" + body);
+            res.writeHead(200, {
+                'Content-Type':response.headers['content-type']
+            });
             res.end(body);
             //console.log("Completed request and going to store " + requestedUrl + " in Redis");
             //console.log("Completed request and going to store in Redis");
             redisclient.set(requestedUrl,body);
-            redisclient.expire(requestedUrl,60);
+            redisclient.expire(requestedUrl,120);
         }
     }).on('error',function(err) {
         console.error("ERROR WITH CUSTOM REQUEST: " + err.stack);
