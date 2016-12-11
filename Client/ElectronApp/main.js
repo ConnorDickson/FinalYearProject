@@ -23,6 +23,8 @@ function createWindow ()
     
         win.loadURL(`file://${__dirname}/index.html`)
     });
+       //     win.loadURL(`file://${__dirname}/index.html`)
+
 
     //If I need to debug I will use this
     //win.webContents.openDevTools()

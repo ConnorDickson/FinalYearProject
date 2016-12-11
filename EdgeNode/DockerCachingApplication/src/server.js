@@ -6,7 +6,6 @@ var url = require('url');
 var request = require('request');
 var httpProxy = require('http-proxy');
 
-//var hostname = os.hostname();
 var externalPort = process.env.port || 3001;
 var internalPort = 3500;
 var redishost = 'edgenode01';
@@ -54,7 +53,7 @@ var createdServer = http.createServer(function (req, res)
         }
     }
 
-    console.log("Updated request for: " + requestedUrl);
+    //console.log("Updated request for: " + requestedUrl);
 
     if(req.url == "/clearcache")
     {
@@ -85,10 +84,13 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
         {
             if(reply != null) 
             {
-                //console.log("Found " + requestedUrl + " value in redis");
-                redisResponse = reply.toString();
+                console.log("Found " + requestedUrl + " value in redis");
+                //redisResponse = reply.toString();
                 //res.writeHead(200, {'Content-Type':'text/html'});
-                res.end(redisResponse);
+                //res.writeHead(200, {
+                  //  'Content-Type':reply.ContentType
+                //});
+                res.end(reply);
                 return;
             } else {
                 MakeAndStoreRequest(requestedUrl,res);
@@ -100,7 +102,7 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
 function MakeAndStoreRequest(requestedUrl, res) 
 {
     //console.log("Going to make custom request to " + requestedUrl);
-    //console.log("Going to make custom request");
+    console.log("Going to make custom request");
     
     var requestOptions = {
         url: requestedUrl,
@@ -124,9 +126,12 @@ function MakeAndStoreRequest(requestedUrl, res)
             //STORE THIS ALL IN REDIS. Images and all
 
             //This was a successful request
+            var contentType = response.headers['content-type'];
+
             res.writeHead(200, {
-                'Content-Type':response.headers['content-type']
+                'Content-Type': contentType
             });
+
             res.end(body);
             //console.log("Completed request and going to store " + requestedUrl + " in Redis");
             //console.log("Completed request and going to store in Redis");
@@ -142,7 +147,10 @@ console.log("Started Node.js server");
 
 console.log("Trying to connect to redis");
 
-var redisclient = redis.createClient(6379,'edgepi01',{no_ready_check: true});
+var redisclient = redis.createClient(6379,'edgepi01',{
+    no_ready_check: true,
+    return_buffers: true
+});
 
 redisclient.on('connect',function () 
 {
