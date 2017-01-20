@@ -18,17 +18,14 @@ function OpenDialog()
 	ipc.send('open-information-dialog')
 }
 
-function PingCluster() 
-{
-	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open("GET","http://edgepi01:5000",false);
-	xmlHttp.send(null);
-	document.getElementById('webRequestParagrah').innerHTML = xmlHttp.responseText;
-}
-
 function NavigateToCachingApplication() 
 {
     window.location.href = "Pages/CachingApplication.html";
+}
+
+function NavigateToVoiceRecognitionApplication() 
+{
+    window.location.href = "Pages/VoiceRecognitionApplication.html";
 }
 
 ipc.on('information-dialog-selection', function(event,index) {

@@ -84,3 +84,7 @@ h1
     width:80%;
     -webkit-app-region: no-drag;
 }
+
+.audioplayer {
+    -webkit-app-region: no-drag;
+}

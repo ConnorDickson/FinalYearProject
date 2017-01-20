@@ -13,3 +13,7 @@ to figure out how to get the information I needed into the UI as I know the elec
 I Used this;
 https://gist.github.com/bag-man/5570809
 to get the CPU load in the UI, I will/will have tweaked 
+
+I used this;
+https://webaudiodemos.appspot.com/AudioRecorder/index.html
+to learn about the recorder.js file (with licence)
