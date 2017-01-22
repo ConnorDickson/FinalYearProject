@@ -1,0 +1,28 @@
+https://wolfpaulus.com/embedded/raspberrypi2-sr/
+(Ensure Mic and Speakers are working)
+
+cd ~/
+wget http://sourceforge.net/projects/cmusphinx/files/sphinxbase/5prealpha/sphinxbase-5prealpha.tar.gz
+tar -zxvf ./sphinxbase-5prealpha.tar.gz
+cd ./sphinxbase-5prealpha
+./configure --enable-fixed
+make clean all
+make check
+sudo make install
+cd ~/
+wget http://sourceforge.net/projects/cmusphinx/files/pocketsphinx/5prealpha/pocketsphinx-5prealpha.tar.gz
+tar -zxvf pocketsphinx-5prealpha.tar.gz
+cd ./pocketsphinx-5prealpha
+./configure
+make clean all
+make check
+sudo make install
+
+language model;
+http://www.speech.cs.cmu.edu/tools/lmtool-new.html
+
+arecord -D plughw:1,0 test.wav -r 44100 -f S16_LE -c2
+
+pi@ClientPi01:~/Documents/VoiceRecognition/Basic $ pocketsphinx_continuous -hmm /usr/local/share/pocketsphinx/model/en-us/en-us -lm BasicLanguageModel.lm -dict BasicDictionary.dic -samprate 44100 -inmic yes -nfft 2048
+
+pocketsphinx_continuous -hmm /usr/local/share/pocketsphinx/model/en-us/en-us -lm BasicLanguageModel.lm -dict BasicDictionary.dic -samprate 48000 -inmic yes -nfft 2048 -infile ../../../Downloads/output.wav

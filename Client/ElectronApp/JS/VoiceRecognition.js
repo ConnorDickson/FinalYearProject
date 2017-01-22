@@ -1,20 +1,21 @@
+const ipc = require('electron').ipcRenderer;
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+var recorder;
+var currentlyRecording = false;
+
 var onFail = function(e) {
     console.log('Rejected!', e);
 };
 
 var onSuccess = function(s) {
-    var context = new AudioContext();
+	var context = new AudioContext();
     var mediaStreamSource = context.createMediaStreamSource(s);
     recorder = new Recorder(mediaStreamSource);
     recorder.record();
     document.getElementById("RecordingStatus").innerHTML = "Recording";
 }
-
-window.URL = window.URL || window.webkitURL;
-navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-
-var recorder;
-var currentlyRecording = false;
 
 function ToggleRecording() 
 {
@@ -46,4 +47,12 @@ function StopRecording()
         document.getElementById('audioplayer').src = window.webkitURL.createObjectURL(s);
         Recorder.forceDownload(s);
     });
+}
+
+ipc.on('receive-voice-translation', function(event,response) {
+	document.getElementById('messageParagraph').innerHTML = response;
+});
+
+function DeployScript() {
+    ipc.send('execute-voicerecognition-script');
 }
