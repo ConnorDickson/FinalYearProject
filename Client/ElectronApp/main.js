@@ -29,7 +29,7 @@ function createWindow ()
 
 
     //If I need to debug I will use this
-    win.webContents.openDevTools()
+    //win.webContents.openDevTools()
 
     win.on('closed', () => {
         win = null
@@ -76,18 +76,19 @@ ipc.on('open-information-dialog', function(event) {
 ipc.on('execute-voicerecognition-script', function(event) {
 	var childProcessResponse = "";
     
-    var ls = spawn('ls', ['-lh','/usr']);
+    var ls = spawn('sh', ['./SH/ProcessVoiceFile.sh']);
     
     ls.stdout.on('data', function(data) {
-        childProcessResponse += 'stdout: ' + data;
+        //childProcessResponse += 'stdout: ' + data;
+        childProcessResponse += data;
     });
     
     ls.stderr.on('data', function (data) {
-        childProcessResponse += 'stderr: ' + data;
+        //childProcessResponse += 'stderr: ' + data;
     });
 
     ls.on('exit', function (code) {
-        childProcessResponse += 'exit: ' + code;
+        //childProcessResponse += 'exit: ' + code;
         event.sender.send('receive-voice-translation',childProcessResponse);
     });
 });

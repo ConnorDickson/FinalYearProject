@@ -1,4 +1,5 @@
 const ipc = require('electron').ipcRenderer;
+const fs = require('fs');
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
@@ -13,6 +14,7 @@ var onSuccess = function(s) {
 	var context = new AudioContext();
     var mediaStreamSource = context.createMediaStreamSource(s);
     recorder = new Recorder(mediaStreamSource);
+    recorder.clear();
     recorder.record();
     document.getElementById("RecordingStatus").innerHTML = "Recording";
 }
@@ -53,6 +55,6 @@ ipc.on('receive-voice-translation', function(event,response) {
 	document.getElementById('messageParagraph').innerHTML = response;
 });
 
-function DeployScript() {
+function ExecuteScript() {
     ipc.send('execute-voicerecognition-script');
 }

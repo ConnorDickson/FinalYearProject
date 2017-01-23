@@ -133,6 +133,9 @@ DEALINGS IN THE SOFTWARE.
         case 'exportWAV':
           exportWAV(e.data.type);
           break;
+        case 'exportMonoWAV':
+          exportMonoWAV(e.data.type);
+          break;
         case 'getBuffer':
           getBuffer();
           break;
@@ -161,6 +164,14 @@ DEALINGS IN THE SOFTWARE.
       var audioBlob = new Blob([dataview], { type: type });
 
       this.postMessage(audioBlob);
+    }
+
+    function exportMonoWAV(type){
+        var bufferL = mergeBuffers(recBuffersL, recLength);
+        var dataview = encodeWAV(bufferL, true);
+        var audioBlob = new Blob([dataview], { type: type });
+
+        this.postMessage(audioBlob);
     }
 
     function getBuffer() {
