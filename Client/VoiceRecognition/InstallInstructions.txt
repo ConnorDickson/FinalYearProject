@@ -1,6 +1,13 @@
 https://wolfpaulus.com/embedded/raspberrypi2-sr/
 (Ensure Mic and Speakers are working)
 
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install bison
+sudo apt-get install libasound2-dev
+sudo apt-get install swig
+sudo apt-get install python-dev
+sudo apt-get install mplayer
 cd ~/
 wget http://sourceforge.net/projects/cmusphinx/files/sphinxbase/5prealpha/sphinxbase-5prealpha.tar.gz
 tar -zxvf ./sphinxbase-5prealpha.tar.gz

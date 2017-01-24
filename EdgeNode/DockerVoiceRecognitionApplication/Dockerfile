@@ -1,4 +1,4 @@
-FROM hypriot/rpi-node:boron
+FROM edgepi01:5000/voicerecognitionbase:latest
 
 ADD . .
 
