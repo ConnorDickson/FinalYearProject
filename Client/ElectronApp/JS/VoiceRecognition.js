@@ -1,5 +1,7 @@
 const ipc = require('electron').ipcRenderer;
 const fs = require('fs');
+const http = require('http');
+
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
@@ -55,6 +57,46 @@ ipc.on('receive-voice-translation', function(event,response) {
 	document.getElementById('messageParagraph').innerHTML = response;
 });
 
-function ExecuteScript() {
+function ExecuteVoiceRecognitionScript() {
+    document.getElementById('messageParagraph').innerHTML = "Processing Locally...";
+
     ipc.send('execute-voicerecognition-script');
+}
+
+function ExecuteRemoteVoiceRecognition() {
+    document.getElementById('messageParagraph').innerHTML = "Processing on Edge Node...";
+    
+    var data = fs.readFileSync("../../Downloads/output.wav"),
+        client,
+        request;
+    
+   client = http.createClient(3002, "edgepi01");
+    
+    request = client.request('POST', '/', {
+        'Host': 'edgepi01',
+        'Port': 3002,
+        'User-Agent': 'Node.JS',
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': data.length
+    });
+
+    request.write(data);
+    request.end();
+
+    request.on('error', function (err) {
+        console.log(err);
+    });
+
+    request.on('response', function (response) {
+        var responseData = "";
+        response.setEncoding('utf8');
+
+        response.on('data', function (chunk) {
+            responseData += chunk;
+        });
+
+        response.on('end', function () {
+            document.getElementById('messageParagraph').innerHTML = responseData;
+        });
+    });
 }
