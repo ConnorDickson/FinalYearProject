@@ -88,3 +88,13 @@ h1
 .audioplayer {
     -webkit-app-region: no-drag;
 }
+
+.flexContainer {
+    display: flex;
+
+    justify-content: space-between;
+    margin-left: 30%;
+    margin-right: 30%;
+
+    align-items: stretch;
+}

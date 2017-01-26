@@ -3,13 +3,14 @@ const fs = require('fs');
 const http = require('http');
 const cpu = require('../JS/cpu');
 
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
-navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-
 var context = new AudioContext();
-
 var recorder;
 var currentlyRecording = false;
+var localStopwatch;
+var remoteStopwatch;
+
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
 var onFail = function(e) {
     console.log('Rejected!', e);
@@ -56,21 +57,22 @@ function StopRecording()
 }
 
 ipc.on('receive-voice-translation', function(event,response) {
-	document.getElementById('messageParagraph').innerHTML = response;
-    var load = cpu.cpuEnd();
-    document.getElementById('sysProcessor').innerHTML = load.percent + "% CPU Usage.";
+    SetLocalResultsAsFinished(response);
 });
 
 function ExecuteVoiceRecognitionScript() {
-    document.getElementById('messageParagraph').innerHTML = "Processing Locally...";
-    cpu.cpuStart();
+    localStopwatch.reset();
+    localStopwatch.start();
+    SetLocalResultsAsProcessing();
+    cpu.cpuStart();    
     ipc.send('execute-voicerecognition-script');
 }
 
 function ExecuteRemoteVoiceRecognition() {
+    remoteStopwatch.reset();
+    remoteStopwatch.start();
     cpu.cpuStart();
-    
-    document.getElementById('messageParagraph').innerHTML = "Processing on Edge Node...";
+    SetRemoteResultsAsProcessing();
     
     var data = fs.readFileSync("../../Downloads/output.wav"),
         client,
@@ -102,19 +104,44 @@ function ExecuteRemoteVoiceRecognition() {
         });
 
         response.on('end', function () {
-            document.getElementById('messageParagraph').innerHTML = responseData;
-            
-            var load = cpu.cpuEnd();
-            document.getElementById('sysProcessor').innerHTML = load.percent + "% CPU Usage.";
+            SetRemoteResultsAsFinished(responseData);
         });
     });
 }
 
-function AutoRefreshUI() 
-{
-    var freeMemory = cpu.freeMemory();
-    document.getElementById('sysMemory').innerHTML = freeMemory + "GB RAM Free.";
-    setTimeout(AutoRefreshUI, 500);
+function SetLocalResultsAsProcessing() {
+    document.getElementById('localSysProcessor').innerHTML = "Processing...";
+    document.getElementById('localSysMemory').innerHTML = "Processing...";
+    document.getElementById('localResultsParagraph').innerHTML = "Processing...";
 }
 
-setTimeout(AutoRefreshUI, 500);
+function SetRemoteResultsAsProcessing() {
+    document.getElementById('remoteSysProcessor').innerHTML = "Processing...";
+    document.getElementById('remoteSysMemory').innerHTML = "Processing...";
+    document.getElementById('remoteResultsParagraph').innerHTML = "Processing...";
+}
+
+function SetLocalResultsAsFinished(response) {
+    localStopwatch.stop();
+    var freeMemory = cpu.freeMemory();
+    document.getElementById('localSysMemory').innerHTML = freeMemory + "GB RAM Free.";
+    var load = cpu.cpuEnd();
+    document.getElementById('localSysProcessor').innerHTML = load.percent + "% CPU Usage.";
+    document.getElementById('localResultsParagraph').innerHTML = "You said: \"" + response.trim() + "\"";
+}
+
+function SetRemoteResultsAsFinished(responseData) {
+    remoteStopwatch.stop();
+    var freeMemory = cpu.freeMemory();
+    document.getElementById('remoteSysMemory').innerHTML = freeMemory + "GB RAM Free.";
+    var load = cpu.cpuEnd();
+    document.getElementById('remoteSysProcessor').innerHTML = load.percent + "% CPU Usage.";
+    document.getElementById('remoteResultsParagraph').innerHTML = "You said: \"" + responseData.trim() + "\"";
+}
+
+window.onload = function() {
+    var localStopwatchElement = document.getElementById('localStopwatchResults');
+    var remoteStopwatchElement = document.getElementById('remoteStopwatchResults');
+    localStopwatch = new Stopwatch(localStopwatchElement);
+    remoteStopwatch = new Stopwatch(remoteStopwatchElement);
+};
