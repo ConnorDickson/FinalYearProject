@@ -11,15 +11,14 @@
         <script src="../JS/recorder.js"></script>
         <h1>Voice Recognition Application</h1>
         <button class="button" onclick="NavigateHome()">Home</button>
-        <br><br>
+        <p class="InfoBox" id="sysProcessor"></p>
+        <p class="InfoBox" id="sysMemory"></p>
         <audio controls autoplay id="audioplayer" class="audioplayer"></audio>
-        <br>
         <h2 id="RecordingStatus">Not Recording</h2>
         <button class="button" id="RecordingButton" onclick="ToggleRecording()">Start Recording</button>
         <br><br>
         <button class="button" id="ScriptButton" onclick="ExecuteVoiceRecognitionScript()">Execute Local Recognition</button>
         <button class="button" id="PostButton" onclick="ExecuteRemoteVoiceRecognition()">Execute Remote Recognition</button>
-
         <p id='messageParagraph'></p>         
     </body>
 </html>

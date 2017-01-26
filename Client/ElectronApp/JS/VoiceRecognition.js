@@ -1,7 +1,8 @@
 const ipc = require('electron').ipcRenderer;
 const fs = require('fs');
 const http = require('http');
-	
+const cpu = require('../JS/cpu');
+
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
@@ -56,15 +57,19 @@ function StopRecording()
 
 ipc.on('receive-voice-translation', function(event,response) {
 	document.getElementById('messageParagraph').innerHTML = response;
+    var load = cpu.cpuEnd();
+    document.getElementById('sysProcessor').innerHTML = load.percent + "% CPU Usage.";
 });
 
 function ExecuteVoiceRecognitionScript() {
     document.getElementById('messageParagraph').innerHTML = "Processing Locally...";
-
+    cpu.cpuStart();
     ipc.send('execute-voicerecognition-script');
 }
 
 function ExecuteRemoteVoiceRecognition() {
+    cpu.cpuStart();
+    
     document.getElementById('messageParagraph').innerHTML = "Processing on Edge Node...";
     
     var data = fs.readFileSync("../../Downloads/output.wav"),
@@ -98,6 +103,18 @@ function ExecuteRemoteVoiceRecognition() {
 
         response.on('end', function () {
             document.getElementById('messageParagraph').innerHTML = responseData;
+            
+            var load = cpu.cpuEnd();
+            document.getElementById('sysProcessor').innerHTML = load.percent + "% CPU Usage.";
         });
     });
 }
+
+function AutoRefreshUI() 
+{
+    var freeMemory = cpu.freeMemory();
+    document.getElementById('sysMemory').innerHTML = freeMemory + "GB RAM Free.";
+    setTimeout(AutoRefreshUI, 500);
+}
+
+setTimeout(AutoRefreshUI, 500);
