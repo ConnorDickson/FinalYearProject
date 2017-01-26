@@ -1,9 +1,11 @@
 const ipc = require('electron').ipcRenderer;
 const fs = require('fs');
 const http = require('http');
-
+	
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+var context = new AudioContext();
 
 var recorder;
 var currentlyRecording = false;
@@ -13,7 +15,6 @@ var onFail = function(e) {
 };
 
 var onSuccess = function(s) {
-	var context = new AudioContext();
     var mediaStreamSource = context.createMediaStreamSource(s);
     recorder = new Recorder(mediaStreamSource);
     recorder.clear();
