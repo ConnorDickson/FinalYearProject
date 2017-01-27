@@ -82,11 +82,25 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
+    <Content Include="Pocketsphinx\output.wav" />
+    <Content Include="Pocketsphinx\pocketsphinx.dll" />
+    <Content Include="Pocketsphinx\pocketsphinx_batch.exe" />
+    <Content Include="Pocketsphinx\pocketsphinx_continuous.exe" />
+    <Content Include="Pocketsphinx\pocketsphinx_mdef_convert.exe" />
+    <Content Include="Pocketsphinx\sphinxbase.dll" />
+    <Content Include="Pocketsphinx\sphinx_cepview.exe" />
+    <Content Include="Pocketsphinx\sphinx_fe.exe" />
+    <Content Include="Pocketsphinx\sphinx_jsgf2fsg.exe" />
+    <Content Include="Pocketsphinx\sphinx_lm_convert.exe" />
+    <Content Include="Pocketsphinx\sphinx_pitch.exe" />
+    <Content Include="Pocketsphinx\sphinx_seg.exe" />
     <Content Include="Resources\TextFile.txt" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Controllers\VoiceRecognitionController.cs" />
     <Compile Include="Controllers\PythonController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -94,9 +108,28 @@
     <Compile Include="IoC\Container.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestHandlers\PythonRequestHandler.cs" />
+    <Compile Include="RequestHandlers\VoiceRecognitionHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <Content Include="Pocketsphinx\model\AdvancedDictionary.dic" />
+    <Content Include="Pocketsphinx\model\AdvancedLanguageModel.lm" />
+    <Content Include="Pocketsphinx\model\en-us\cmudict-en-us.dict" />
+    <Content Include="Pocketsphinx\model\en-us\en-us-phone.lm.bin" />
+    <Content Include="Pocketsphinx\model\en-us\en-us.lm.bin" />
+    <Content Include="Pocketsphinx\model\en-us\en-us\feat.params" />
+    <Content Include="Pocketsphinx\model\en-us\en-us\mdef" />
+    <Content Include="Pocketsphinx\model\en-us\en-us\means" />
+    <Content Include="Pocketsphinx\model\en-us\en-us\noisedict" />
+    <Content Include="Pocketsphinx\model\en-us\en-us\README" />
+    <Content Include="Pocketsphinx\model\en-us\en-us\sendump" />
+    <Content Include="Pocketsphinx\model\en-us\en-us\transition_matrices" />
+    <Content Include="Pocketsphinx\model\en-us\en-us\variances" />
+    <Content Include="Pocketsphinx\model\Makefile.am" />
+    <Content Include="Pocketsphinx\pocketsphinx.exp" />
+    <Content Include="Pocketsphinx\pocketsphinx.lib" />
+    <Content Include="Pocketsphinx\sphinxbase.exp" />
+    <Content Include="Pocketsphinx\sphinxbase.lib" />
     <None Include="Properties\PublishProfiles\DataCentreDeploy-ConnorPC.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -107,7 +140,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

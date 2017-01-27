@@ -53,6 +53,7 @@ var createdServer = http.createServer(function (req, res)
             command.on('exit', function(code) {
         	res.write(childProcessResponse);
                 console.log("CPU Average in the last min: " + os.loadavg()[0]);
+                ExecuteRemoteVoiceRecognition();
         	res.end();
             });
         });
@@ -68,3 +69,40 @@ createdServer.on('error',function(err)
 createdServer.listen(externalPort);
 
 console.log("Started Node.js server");
+
+function ExecuteRemoteVoiceRecognition() 
+{
+   var data = fs.readFileSync("../SavedFile/output.wav"),
+       client,
+       request;
+    
+    client = http.createClient(3000, "connor-pc");
+    
+    request = client.request('POST', '/api/voicerecognition', {
+        'Host': 'connor-pc',
+        'Port': 3000,
+        'User-Agent': 'Node.JS',
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': data.length
+    });
+
+    request.write(data);
+    request.end();
+
+    request.on('error', function (err) {
+        console.log("ERROR with request: " + err);
+    });
+
+    request.on('response', function (response) {
+        var responseData = "";
+        response.setEncoding('utf8');
+
+        response.on('data', function (chunk) {
+            responseData += chunk;
+        });
+
+        response.on('end', function () {
+            console.log(responseData);
+        });
+    });
+}

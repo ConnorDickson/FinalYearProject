@@ -8,5 +8,10 @@ namespace DataCentreWebServer.IoC
         {
             return new PythonRequestHandler();
         }
+
+        public static VoiceRecognitionHandler ResolveVoiceRecognitionHandler()
+        {
+            return new VoiceRecognitionHandler();
+        }
     }
 }
