@@ -29,8 +29,9 @@
         
         <div class="flexContainer">
             <button class="button" id="ScriptButton" onclick="ExecuteVoiceRecognitionScript()">Execute Local Recognition</button>
-            <button style="" class="button" id="PostButton" onclick="ExecuteRemoteVoiceRecognition()">Execute Remote Recognition</button>      
-        </div>      
+            <button class="button" id="PostButton" onclick="ExecuteRemoteVoiceRecognition()">Execute Remote Recognition</button>
+            <input class="checkbox" type="checkbox" id="useEdgeNodeCheckbox" value="Yes">Preprocess on edge node</input>
+        </div>
         
         <div class="flexContainer">
             <p class="InfoBox" id='localResultsParagraph'></p>      

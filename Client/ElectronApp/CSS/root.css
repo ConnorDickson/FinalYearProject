@@ -98,3 +98,7 @@ h1
 
     align-items: stretch;
 }
+
+.checkbox {
+    -webkit-app-region: no-drag;
+}

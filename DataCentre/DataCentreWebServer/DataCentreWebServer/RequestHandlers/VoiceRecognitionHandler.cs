@@ -10,53 +10,7 @@ namespace DataCentreWebServer.RequestHandlers
 {
     public class VoiceRecognitionHandler
     {
-        public HttpResponseMessage GenerateHttpResponse()
-        {
-            var outputError = false;
-
-            var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
-            var pocketsphinxExe = rootPath +"\\Pocketsphinx\\pocketsphinx_continuous.exe ";
-            var hmm = "-hmm " + rootPath + "\\Pocketsphinx\\model\\en-us\\en-us ";
-            var lm = "-lm " + rootPath + "\\Pocketsphinx\\model\\AdvancedLanguageModel.lm ";
-            var dic = "-dict " + rootPath + "\\Pocketsphinx\\model\\AdvancedDictionary.dic ";
-            var args = "-samprate 48000 -inmic yes -nfft 2048 ";
-            var infile = "-infile " + rootPath + "\\Pocketsphinx\\output.wav";
-
-            Process p = new Process();
-            p.StartInfo.UseShellExecute = false;
-            if(outputError)
-            {
-                p.StartInfo.RedirectStandardError = true;
-            }
-            else
-            {
-                p.StartInfo.RedirectStandardOutput = true;
-            }
-            p.StartInfo.FileName = pocketsphinxExe;
-            p.StartInfo.Arguments = hmm + lm + dic + args + infile;
-            p.Start();
-
-            string output = string.Empty;
-
-            if (outputError)
-            {
-                output = p.StandardError.ReadToEnd();
-            }
-            else
-            {
-                output = p.StandardOutput.ReadToEnd();
-            }
-
-            p.WaitForExit();
-
-            var response = new HttpResponseMessage();
-            response.StatusCode = HttpStatusCode.OK;
-
-            response.Content = new StringContent("You said \"" + output.Trim() + "\"");
-            return response;
-        }
-
-        internal async Task<HttpResponseMessage> ReceivePostData(HttpRequestMessage request)
+        internal async Task<HttpResponseMessage> ReceivePostDataForProcessing(HttpRequestMessage request)
         {
             var response = new HttpResponseMessage();
 
@@ -71,8 +25,45 @@ namespace DataCentreWebServer.RequestHandlers
                     fs.Write(bytesInStream, 0, bytesInStream.Length);
                 }
 
+                var outputError = false;
+                
+                var pocketsphinxExe = rootPath + "\\Pocketsphinx\\pocketsphinx_continuous.exe ";
+                var hmm = "-hmm " + rootPath + "\\Pocketsphinx\\model\\en-us\\en-us ";
+                var lm = "-lm " + rootPath + "\\Pocketsphinx\\model\\AdvancedLanguageModel.lm ";
+                var dic = "-dict " + rootPath + "\\Pocketsphinx\\model\\AdvancedDictionary.dic ";
+                var args = "-samprate 48000 -inmic yes -nfft 2048 ";
+                var infile = "-infile " + rootPath + "\\Pocketsphinx\\output.wav";
+
+                Process p = new Process();
+                p.StartInfo.UseShellExecute = false;
+                if (outputError)
+                {
+                    p.StartInfo.RedirectStandardError = true;
+                }
+                else
+                {
+                    p.StartInfo.RedirectStandardOutput = true;
+                }
+                p.StartInfo.FileName = pocketsphinxExe;
+                p.StartInfo.Arguments = hmm + lm + dic + args + infile;
+                p.Start();
+
+                string output = string.Empty;
+
+                if (outputError)
+                {
+                    output = p.StandardError.ReadToEnd();
+                }
+                else
+                {
+                    output = p.StandardOutput.ReadToEnd();
+                }
+
+                p.WaitForExit();
+                
                 response.StatusCode = HttpStatusCode.OK;
-                response.Content = new StringContent("You posted successfully");
+
+                response.Content = new StringContent("You said \"" + output.Trim() + "\"");
                 return response;
             }
             catch(Exception ex)
@@ -81,6 +72,15 @@ namespace DataCentreWebServer.RequestHandlers
                 response.Content = new StringContent(ex.Message);
                 return response;
             }
+        }
+
+        internal async Task<HttpResponseMessage> ReceivePreProcessedPostData(HttpRequestMessage request)
+        {
+            var response = new HttpResponseMessage();
+            var preprocessedString = await request.Content.ReadAsStringAsync();
+            response.Content = new StringContent("You sent pre processed data: " + preprocessedString);
+            response.StatusCode = HttpStatusCode.OK;
+            return response;
         }
     }
 }

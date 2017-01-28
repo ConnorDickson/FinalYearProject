@@ -78,14 +78,15 @@ function ExecuteRemoteVoiceRecognition() {
         client,
         request;
     
-   client = http.createClient(3002, "edgepi01");
+    client = http.createClient(3002, "edgepi01");
     
     request = client.request('POST', '/', {
         'Host': 'edgepi01',
         'Port': 3002,
         'User-Agent': 'Node.JS',
         'Content-Type': 'application/octet-stream',
-        'Content-Length': data.length
+        'Content-Length': data.length,
+        'Preprocess-Request': document.getElementById('useEdgeNodeCheckbox').checked
     });
 
     request.write(data);
