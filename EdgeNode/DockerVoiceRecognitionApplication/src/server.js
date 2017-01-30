@@ -3,6 +3,7 @@ var os = require('os');
 var http = require('http');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
+var cpu = require('./cpu');
 
 console.log("Starting...");
 
@@ -10,6 +11,8 @@ var externalPort = process.env.port || 3003;
 
 var createdServer = http.createServer(function (req, res) 
 {
+    cpu.cpuStart();
+
     console.log('Received Request');
 
     //Set error handlers
@@ -99,9 +102,11 @@ function PreProcessVoiceRecognition(res) {
     
             response.on('end', function () {
                 console.log("From connor-pc: " + responseData);
-                res.write("From edge-node: " + responseData);
-                //console.log("CPU Average in the last min: " + os.loadavg()[0]);
-                res.end();
+
+                var dataToReturn = {};
+                dataToReturn.VoiceRecognitionResponse = responseData;
+
+                EndRequest(res, dataToReturn);
             });
         });
     });
@@ -140,8 +145,18 @@ function ExecuteRemoteVoiceRecognition(ogResponse)
 
         response.on('end', function () {
             console.log("From connor-pc: " + responseData);
-            ogResponse.write(responseData);
-            ogResponse.end();
+            
+            var dataToReturn = {};
+            dataToReturn.VoiceRecognitionResponse = responseData.trim();
+            
+            EndRequest(ogResponse, dataToReturn); 
         });
     });
+}
+
+function EndRequest(res, dataToReturn) {
+    var load = cpu.cpuEnd();
+    dataToReturn.CPUInfo = load.percent;
+    res.write(JSON.stringify(dataToReturn));
+    res.end();
 }

@@ -93,12 +93,16 @@ h1
     display: flex;
 
     justify-content: space-between;
-    margin-left: 30%;
-    margin-right: 30%;
+
 
     align-items: stretch;
 }
 
 .checkbox {
     -webkit-app-region: no-drag;
+}
+
+.tableContainer {
+    margin-left: auto;
+    margin-right: auto;
 }

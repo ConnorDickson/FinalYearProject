@@ -1,6 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
+﻿using DataCentreWebServer.Helpers;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,6 +9,14 @@ namespace DataCentreWebServer.RequestHandlers
 {
     public class VoiceRecognitionHandler
     {
+        FileSystemHelper _fileSystemHelper;
+        VoiceRecognitionHelper _voiceRecognitionHelper;
+        public VoiceRecognitionHandler(FileSystemHelper fileSystemHelper, VoiceRecognitionHelper voiceRecognitionHelper)
+        {
+            _fileSystemHelper = fileSystemHelper;
+            _voiceRecognitionHelper = voiceRecognitionHelper;
+        }
+
         internal async Task<HttpResponseMessage> ReceivePostDataForProcessing(HttpRequestMessage request)
         {
             var response = new HttpResponseMessage();
@@ -17,56 +24,25 @@ namespace DataCentreWebServer.RequestHandlers
             try
             {
                 var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
-                var requestStream = await request.Content.ReadAsStreamAsync();
-                using(var fs = File.Create(rootPath + "\\Pocketsphinx\\output.wav"))
-                {
-                    var bytesInStream = new byte[requestStream.Length];
-                    requestStream.Read(bytesInStream, 0, bytesInStream.Length);
-                    fs.Write(bytesInStream, 0, bytesInStream.Length);
-                }
+                var filePath = rootPath + "\\Pocketsphinx\\output.wav";
+                var pocketsphinxexe = rootPath + "\\Pocketsphinx\\pocketsphinx_continuous.exe ";
+                var pocketsphinxargs = "-hmm " + rootPath + "\\Pocketsphinx\\model\\en-us\\en-us "
+                                        + "-lm " + rootPath + "\\Pocketsphinx\\model\\AdvancedLanguageModel.lm "
+                                        + "-dict " + rootPath + "\\Pocketsphinx\\model\\AdvancedDictionary.dic "
+                                        + "-samprate 48000 -inmic yes -nfft 2048 "
+                                        + "-infile " + filePath;
 
-                var outputError = false;
-                
-                var pocketsphinxExe = rootPath + "\\Pocketsphinx\\pocketsphinx_continuous.exe ";
-                var hmm = "-hmm " + rootPath + "\\Pocketsphinx\\model\\en-us\\en-us ";
-                var lm = "-lm " + rootPath + "\\Pocketsphinx\\model\\AdvancedLanguageModel.lm ";
-                var dic = "-dict " + rootPath + "\\Pocketsphinx\\model\\AdvancedDictionary.dic ";
-                var args = "-samprate 48000 -inmic yes -nfft 2048 ";
-                var infile = "-infile " + rootPath + "\\Pocketsphinx\\output.wav";
+                await _fileSystemHelper.WriteFileToDisk(request, filePath);
 
-                Process p = new Process();
-                p.StartInfo.UseShellExecute = false;
-                if (outputError)
-                {
-                    p.StartInfo.RedirectStandardError = true;
-                }
-                else
-                {
-                    p.StartInfo.RedirectStandardOutput = true;
-                }
-                p.StartInfo.FileName = pocketsphinxExe;
-                p.StartInfo.Arguments = hmm + lm + dic + args + infile;
-                p.Start();
+                var output = _voiceRecognitionHelper.ProcessVoice(pocketsphinxexe, pocketsphinxargs);
 
-                string output = string.Empty;
-
-                if (outputError)
-                {
-                    output = p.StandardError.ReadToEnd();
-                }
-                else
-                {
-                    output = p.StandardOutput.ReadToEnd();
-                }
-
-                p.WaitForExit();
-                
                 response.StatusCode = HttpStatusCode.OK;
 
-                response.Content = new StringContent("You said \"" + output.Trim() + "\"");
+                response.Content = new StringContent(output.Trim());
+
                 return response;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 response.StatusCode = HttpStatusCode.InternalServerError;
                 response.Content = new StringContent(ex.Message);
@@ -78,7 +54,7 @@ namespace DataCentreWebServer.RequestHandlers
         {
             var response = new HttpResponseMessage();
             var preprocessedString = await request.Content.ReadAsStringAsync();
-            response.Content = new StringContent("You sent pre processed data: " + preprocessedString);
+            response.Content = new StringContent(preprocessedString.Trim());
             response.StatusCode = HttpStatusCode.OK;
             return response;
         }

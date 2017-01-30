@@ -1,4 +1,5 @@
-﻿using DataCentreWebServer.RequestHandlers;
+﻿using DataCentreWebServer.Helpers;
+using DataCentreWebServer.RequestHandlers;
 
 namespace DataCentreWebServer.IoC
 {
@@ -11,7 +12,17 @@ namespace DataCentreWebServer.IoC
 
         public static VoiceRecognitionHandler ResolveVoiceRecognitionHandler()
         {
-            return new VoiceRecognitionHandler();
+            return new VoiceRecognitionHandler(ResolveFileSystemHelper(), ResolveVoiceRecognitionHelper());
+        }
+
+        private static VoiceRecognitionHelper ResolveVoiceRecognitionHelper()
+        {
+            return new VoiceRecognitionHelper();
+        }
+
+        private static FileSystemHelper ResolveFileSystemHelper()
+        {
+            return new FileSystemHelper();
         }
     }
 }

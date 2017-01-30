@@ -22,35 +22,69 @@
         
         <br><br><br><br>
         
-        <div class="flexContainer">
-            <h2 id="localResultsHeader">Local Processing:</h2>
-            <h2 id="remoteResultsHeader">Edge Processing:</h2>
-        </div>  
-        
-        <div class="flexContainer">
-            <button class="button" id="ScriptButton" onclick="ExecuteVoiceRecognitionScript()">Execute Local Recognition</button>
-            <button class="button" id="PostButton" onclick="ExecuteRemoteVoiceRecognition()">Execute Remote Recognition</button>
-            <input class="checkbox" type="checkbox" id="useEdgeNodeCheckbox" value="Yes">Preprocess on edge node</input>
-        </div>
-        
-        <div class="flexContainer">
-            <p class="InfoBox" id='localResultsParagraph'></p>      
-            <p class="InfoBox" id='remoteResultsParagraph'></p> 
-        </div>
-        
-        <div class="flexContainer">
-            <p class="InfoBox" id="localSysProcessor"></p>
-            <p class="InfoBox" id="remoteSysProcessor"></p>
-        </div>
-        
-        <div class="flexContainer">
-            <p class="InfoBox" id="localSysMemory"></p>
-            <p class="InfoBox" id="remoteSysMemory"></p>
-        </div>
-        
-        <div class="flexContainer">
-            <p class="InfoBox" id='localStopwatchResults'></p>
-            <p class="InfoBox" id='remoteStopwatchResults'></p>
-        </div>
+        <table class="tableContainer">
+            <tr>
+                <td>
+                    <h2 id="localResultsHeader">Local Processing:</h2>
+                </td>
+                <td>
+                    <h2 id="remoteResultsHeader">Edge Processing:</h2>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button class="button" id="ScriptButton" onclick="ExecuteVoiceRecognitionScript()">Execute Local Recognition</button>     
+                </td>
+                <td>
+                    <button class="button" id="PostButton" onclick="ExecuteRemoteVoiceRecognition()">Execute Remote Recognition</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    <input class="checkbox" type="checkbox" id="useEdgeNodeCheckbox" value="Yes">Preprocess on edge node</input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p class="InfoBox" id='localResultsParagraph'></p>      
+                </td>
+                <td>
+                    <p class="InfoBox" id='remoteResultsParagraph'></p> 
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p class="InfoBox" id="localSysProcessor"></p>
+                </td>
+                <td>
+                    <p class="InfoBox" id="remoteSysProcessor"></p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p class="InfoBox" id="localSysMemory"></p>
+                </td>
+                <td>
+                    <p class="InfoBox" id="edgeNodeProcessor"></p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p class="InfoBox" id='localStopwatchResults'></p>
+                </td>
+                <td>
+                    <p class="InfoBox" id="remoteSysMemory"></p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    <p class="InfoBox" id='remoteStopwatchResults'></p>
+                </td>
+            </tr>
+        </table>
     </body>
 </html>

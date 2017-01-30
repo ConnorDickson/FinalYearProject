@@ -118,26 +118,31 @@ function SetLocalResultsAsProcessing() {
 
 function SetRemoteResultsAsProcessing() {
     document.getElementById('remoteSysProcessor').innerHTML = "Processing...";
+    document.getElementById('edgeNodeProcessor').innerHTML =  "Processing...";
     document.getElementById('remoteSysMemory').innerHTML = "Processing...";
     document.getElementById('remoteResultsParagraph').innerHTML = "Processing...";
 }
 
 function SetLocalResultsAsFinished(response) {
+    var load = cpu.cpuEnd();
     localStopwatch.stop();
     var freeMemory = cpu.freeMemory();
-    document.getElementById('localSysMemory').innerHTML = freeMemory + "GB RAM Free.";
-    var load = cpu.cpuEnd();
-    document.getElementById('localSysProcessor').innerHTML = load.percent + "% CPU Usage.";
+    
     document.getElementById('localResultsParagraph').innerHTML = "You said: \"" + response.trim() + "\"";
+    document.getElementById('localSysMemory').innerHTML = freeMemory + "GB RAM Free.";
+    document.getElementById('localSysProcessor').innerHTML = load.percent + "% CPU Usage.";
 }
 
 function SetRemoteResultsAsFinished(responseData) {
+    var load = cpu.cpuEnd();
     remoteStopwatch.stop();
     var freeMemory = cpu.freeMemory();
-    document.getElementById('remoteSysMemory').innerHTML = freeMemory + "GB RAM Free.";
-    var load = cpu.cpuEnd();
-    document.getElementById('remoteSysProcessor').innerHTML = load.percent + "% CPU Usage.";
-    document.getElementById('remoteResultsParagraph').innerHTML = "You said: \"" + responseData.trim() + "\"";
+    var jsonResult = JSON.parse(responseData);
+
+    document.getElementById('remoteResultsParagraph').innerHTML = "You said: \"" + jsonResult.VoiceRecognitionResponse.trim() + "\"";
+    document.getElementById('remoteSysMemory').innerHTML = freeMemory + "GB Local RAM Free.";
+    document.getElementById('remoteSysProcessor').innerHTML = load.percent + "% Local CPU Usage.";
+    document.getElementById('edgeNodeProcessor').innerHTML =  jsonResult.CPUInfo + "% Edge Node CPU Usage";
 }
 
 window.onload = function() {
