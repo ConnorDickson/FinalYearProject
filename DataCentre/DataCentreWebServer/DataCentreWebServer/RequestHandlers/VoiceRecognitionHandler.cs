@@ -27,8 +27,8 @@ namespace DataCentreWebServer.RequestHandlers
                 var filePath = rootPath + "\\Pocketsphinx\\output.wav";
                 var pocketsphinxexe = rootPath + "\\Pocketsphinx\\pocketsphinx_continuous.exe ";
                 var pocketsphinxargs = "-hmm " + rootPath + "\\Pocketsphinx\\model\\en-us\\en-us "
-                                        + "-lm " + rootPath + "\\Pocketsphinx\\model\\AdvancedLanguageModel.lm "
-                                        + "-dict " + rootPath + "\\Pocketsphinx\\model\\AdvancedDictionary.dic "
+                                        + "-lm " + rootPath + "\\Pocketsphinx\\model\\LanguageModel.lm "
+                                        + "-dict " + rootPath + "\\Pocketsphinx\\model\\Dictionary.dic "
                                         + "-samprate 48000 -inmic yes -nfft 2048 "
                                         + "-infile " + filePath;
 

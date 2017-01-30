@@ -80,7 +80,7 @@ function ExecuteRemoteVoiceRecognition() {
     
     client = http.createClient(3002, "edgepi01");
     
-    request = client.request('POST', '/', {
+    request = client.request('POST', 'http://connor-pc:3000/api/voicerecognition/PostForPreProcessedData', {
         'Host': 'edgepi01',
         'Port': 3002,
         'User-Agent': 'Node.JS',

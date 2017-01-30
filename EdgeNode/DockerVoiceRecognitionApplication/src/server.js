@@ -4,10 +4,21 @@ var http = require('http');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 var cpu = require('./cpu');
+var httpProxy = require('http-proxy');
 
 console.log("Starting...");
 
 var externalPort = process.env.port || 3003;
+var internalPort = 3501;
+
+var proxyServer = httpProxy.createProxyServer({
+    target: 'http://localhost:' + internalPort,
+    toProxy: true
+}).listen(externalPort);
+
+proxyServer.on('error', function(err) {
+    console.error('ERROR WITH PROXY SERVER: ' + err.stack);
+});
 
 var createdServer = http.createServer(function (req, res) 
 {
@@ -54,7 +65,7 @@ createdServer.on('error',function(err)
     console.error("AN ERROR OCCURRED WITH THE SERVER: " + err.stack);
 });
 
-createdServer.listen(externalPort);
+createdServer.listen(internalPort);
 
 console.log("Started Node.js server");
 
