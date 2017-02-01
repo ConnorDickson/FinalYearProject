@@ -7,3 +7,8 @@ function NavigateToVoiceRecognitionApplication()
 {
     window.location.href = "Pages/VoiceRecognitionApplication.html";
 }
+
+function NavigateToMachineLearningApplication() 
+{
+    window.location.href = "Pages/MachineLearningApplication.html";
+}

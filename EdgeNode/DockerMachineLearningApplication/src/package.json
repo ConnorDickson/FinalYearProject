@@ -1,0 +1,16 @@
+{
+  "name": "machinelearningapp",
+  "version": "0.0.1",
+  "description": "Machine Learning Application",
+  "main": "server.js",
+  "author": {
+    "name": "",
+    "email": ""
+  },
+  "scripts": {
+	"start": "node server.js"
+  },
+  "dependencies":  {
+    "util": "0.10.3"
+  }
+}

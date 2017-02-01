@@ -100,15 +100,18 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Controllers\MachineLearningController.cs" />
     <Compile Include="Controllers\VoiceRecognitionController.cs" />
     <Compile Include="Controllers\PythonController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\MachineLearningHelper.cs" />
     <Compile Include="Helpers\FileSystemHelper.cs" />
     <Compile Include="Helpers\VoiceRecognitionHelper.cs" />
     <Compile Include="IoC\Container.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestHandlers\MachineLearningHandler.cs" />
     <Compile Include="RequestHandlers\PythonRequestHandler.cs" />
     <Compile Include="RequestHandlers\VoiceRecognitionHandler.cs" />
   </ItemGroup>

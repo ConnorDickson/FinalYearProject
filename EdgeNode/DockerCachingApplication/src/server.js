@@ -136,7 +136,7 @@ function MakeAndStoreRequest(requestedUrl, res)
             //console.log("Completed request and going to store " + requestedUrl + " in Redis");
             //console.log("Completed request and going to store in Redis");
             redisclient.set(requestedUrl,body);
-            redisclient.expire(requestedUrl,120);
+            redisclient.expire(requestedUrl,30);
         }
     }).on('error',function(err) {
         console.error("ERROR WITH CUSTOM REQUEST: " + err.stack);
