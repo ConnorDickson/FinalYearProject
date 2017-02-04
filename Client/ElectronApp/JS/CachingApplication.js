@@ -65,3 +65,9 @@ function NavigateBrowser()
     var browser = document.getElementById("WebView");
     browser.setAttribute("src", url);
 }
+
+function ClearCache() {
+    var url = "http://edgepi01:3000/ClearCache";
+    var browser = document.getElementById("WebView");
+    browser.setAttribute("src", url);
+}

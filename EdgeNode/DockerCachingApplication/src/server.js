@@ -5,6 +5,7 @@ var http = require('http');
 var url = require('url');
 var request = require('request');
 var httpProxy = require('http-proxy');
+var spawn = require('child_process').spawn;
 
 var externalPort = process.env.port || 3001;
 var internalPort = 3500;
@@ -24,6 +25,8 @@ proxyServer.on('error',function(err) {
 
 var createdServer = http.createServer(function (req, res) 
 {
+    console.log("New Request");
+
     //Set error handlers
     req.on('error', function(err) 
     {
@@ -55,13 +58,31 @@ var createdServer = http.createServer(function (req, res)
 
     //console.log("Updated request for: " + requestedUrl);
 
-    if(req.url == "/clearcache")
+    if(requestedUrl == "ClearCache")
     {
-        //clear redis cache here
-        console.log("TODO - Clear Redis Cache");
-    }
+        console.log("Clear Cache Request");
+        var command = spawn('redis-cli',['-h','edgepi01','flushall']);
 
-    GetOrSetRequestValueFromRedis(requestedUrl,res);
+        var redisClearResponse = "";
+
+        command.stdout.on('data', function(data) {
+            redisClearResponse += data;
+        });
+
+        command.stderr.on('data', function(data) {
+            redisClearResponse += "ERROR: " + data;
+        });
+
+        command.on('exit', function(exitCode) {
+            redisClearResponse += "EXIT: " + exitCode;
+
+            console.log("Finished Clear Cache: " + redisClearResponse);
+    
+            res.end(redisClearResponse);
+        });
+    } else {
+        GetOrSetRequestValueFromRedis(requestedUrl,res);
+    }
 });
 
 //I don't think I should do this in production because the code continues
@@ -84,12 +105,14 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
         {
             if(reply != null) 
             {
-                console.log("Found " + requestedUrl + " value in redis");
+                //console.log("Found " + requestedUrl + " value in redis");
+                console.log("Found URL in redis");
                 //redisResponse = reply.toString();
                 //res.writeHead(200, {'Content-Type':'text/html'});
                 //res.writeHead(200, {
                   //  'Content-Type':reply.ContentType
                 //});
+                //JSON this request?
                 res.end(reply);
                 return;
             } else {
@@ -102,7 +125,7 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
 function MakeAndStoreRequest(requestedUrl, res) 
 {
     //console.log("Going to make custom request to " + requestedUrl);
-    console.log("Going to make custom request");
+    //console.log("Going to make custom request");
     
     var requestOptions = {
         url: requestedUrl,
@@ -123,8 +146,6 @@ function MakeAndStoreRequest(requestedUrl, res)
         } 
         else 
         {
-            //STORE THIS ALL IN REDIS. Images and all
-
             //This was a successful request
             var contentType = response.headers['content-type'];
 
@@ -136,7 +157,7 @@ function MakeAndStoreRequest(requestedUrl, res)
             //console.log("Completed request and going to store " + requestedUrl + " in Redis");
             //console.log("Completed request and going to store in Redis");
             redisclient.set(requestedUrl,body);
-            redisclient.expire(requestedUrl,30);
+            //redisclient.expire(requestedUrl,30);
         }
     }).on('error',function(err) {
         console.error("ERROR WITH CUSTOM REQUEST: " + err.stack);

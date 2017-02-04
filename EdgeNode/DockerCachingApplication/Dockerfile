@@ -1,4 +1,4 @@
-FROM hypriot/rpi-node:boron
+FROM edgepi01:5000/cachingbase:latest 
 
 RUN npm install python-shell && \
     npm install redis && \
