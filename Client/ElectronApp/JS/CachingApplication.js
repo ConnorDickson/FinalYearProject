@@ -21,7 +21,8 @@ onload = () =>
             receiveTime = (new Date()).getTime();
             var resultTime = ((receiveTime - sendTime)/1000).toFixed(2);
             previousResults.push(resultTime);
-            document.getElementById("requestResult").innerHTML = "Total Request Time: " + previousResults.toString() + " seconds";   
+            var totalTime = previousResults.reduce(add,0);
+            document.getElementById("requestResult").innerHTML = "Total Request Time: " + totalTime + " seconds";   
         }
     }
     
@@ -34,6 +35,10 @@ onload = () =>
     webview.addEventListener('did-start-loading', loadstart);
     webview.addEventListener('did-stop-loading', loadstop);
     webview.addEventListener('did-fail-load', failload);
+}
+
+function add(a,b) {
+    return parseFloat(a) + parseFloat(b);
 }
 
 function ClearResults() 
@@ -51,14 +56,7 @@ function NavigateBrowser()
 {
     ClearResults();
 
-//    var useCachingApplication = document.getElementById("useCachingApplicationCheckbox").checked;
-    
     var url = "";
-    
-//    if(useCachingApplication) 
-//    {
-//        url += "http://edgepi01:3000/?url="    
-//    }
     
     url += document.getElementById("urlAddress").value;
     
@@ -67,7 +65,10 @@ function NavigateBrowser()
 }
 
 function ClearCache() {
+    ClearResults();
+    
     var url = "http://edgepi01:3000/ClearCache";
+    
     var browser = document.getElementById("WebView");
     browser.setAttribute("src", url);
 }

@@ -18,7 +18,7 @@ namespace DataCentreWebServer.IoC
 
         public static MachineLearningHandler ResolveMachineLearningHandler()
         {
-            return new MachineLearningHandler(ResolveMachineLearningHelper());
+            return new MachineLearningHandler(ResolveMachineLearningHelper(), ResolveFileSystemHelper());
         }
 
         private static MachineLearningHelper ResolveMachineLearningHelper()

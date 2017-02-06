@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
+    <Content Include="MachineLearning\CurrentResults.txt" />
     <Content Include="Pocketsphinx\output.wav" />
     <Content Include="Pocketsphinx\pocketsphinx.dll" />
     <Content Include="Pocketsphinx\pocketsphinx_batch.exe" />

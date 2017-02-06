@@ -25,8 +25,6 @@ proxyServer.on('error',function(err) {
 
 var createdServer = http.createServer(function (req, res) 
 {
-    console.log("New Request");
-
     //Set error handlers
     req.on('error', function(err) 
     {
@@ -41,7 +39,7 @@ var createdServer = http.createServer(function (req, res)
     //console.log("Request for: " + req.url);
     
     var requestedUrl = req.url;
-
+ 
     if(typeof requestedUrl == 'undefined') 
     {
         console.error("Received undefined request");
@@ -58,9 +56,9 @@ var createdServer = http.createServer(function (req, res)
 
     //console.log("Updated request for: " + requestedUrl);
 
-    if(requestedUrl == "ClearCache")
+    if(requestedUrl.includes("ClearCache"))
     {
-        console.log("Clear Cache Request");
+        console.log("Clear Cache Request: " + requestedUrl);
         var command = spawn('redis-cli',['-h','edgepi01','flushall']);
 
         var redisClearResponse = "";
@@ -106,7 +104,7 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
             if(reply != null) 
             {
                 //console.log("Found " + requestedUrl + " value in redis");
-                console.log("Found URL in redis");
+                //console.log("Found URL in redis");
                 //redisResponse = reply.toString();
                 //res.writeHead(200, {'Content-Type':'text/html'});
                 //res.writeHead(200, {

@@ -1,6 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace DataCentreWebServer.Helpers
 {
@@ -16,6 +20,41 @@ namespace DataCentreWebServer.Helpers
                 requestStream.Read(bytesInStream, 0, bytesInStream.Length);
                 fs.Write(bytesInStream, 0, bytesInStream.Length);
             }
+        }
+
+        public async Task<bool> WriteMachineLearningAnswerToDisk(HttpRequestMessage request)
+        {
+            var requestData = await request.Content.ReadAsStringAsync();
+
+            var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
+            var filePath = rootPath + "\\MachineLearning\\CurrentResults.txt";
+
+            if (!File.Exists(filePath))
+            {
+                using (File.Create(filePath))
+                {
+
+                }
+            }
+
+            File.AppendAllText(filePath, requestData + Environment.NewLine);
+
+            return true;
+        }
+
+        internal List<string> ReadPreviousMachineLearningAnswers()
+        {
+            var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
+            var filePath = rootPath + "\\MachineLearning\\CurrentResults.txt";
+
+            if (!File.Exists(filePath))
+            {
+                return null;
+            }
+
+            var lines = File.ReadAllLines(filePath);
+                        
+            return lines.ToList();
         }
     }
 }
