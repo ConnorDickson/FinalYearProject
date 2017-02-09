@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DataCentreWebServer.MachineLearning;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,6 +28,8 @@ namespace DataCentreWebServer.Helpers
         {
             var requestData = await request.Content.ReadAsStringAsync();
 
+            var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
+
             var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
             var filePath = rootPath + "\\MachineLearning\\CurrentResults.txt";
 
@@ -37,7 +41,7 @@ namespace DataCentreWebServer.Helpers
                 }
             }
 
-            File.AppendAllText(filePath, requestData + Environment.NewLine);
+            File.AppendAllText(filePath, machineLearningRequest.CurrentChoice + Environment.NewLine);
 
             return true;
         }
@@ -53,7 +57,7 @@ namespace DataCentreWebServer.Helpers
             }
 
             var lines = File.ReadAllLines(filePath);
-                        
+            
             return lines.ToList();
         }
     }

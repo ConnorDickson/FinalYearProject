@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace DataCentreWebServer.Helpers
 {
     public class MachineLearningHelper
     {
-        public string GenerateResponse()
-        {
-            return "From MachineLearning";
-        }
-
         internal string GenerateResponse(List<string> prevResults)
         {
             var mostCommonResult = prevResults

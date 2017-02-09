@@ -31,18 +31,35 @@ var createdServer = http.createServer(function (req, res)
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
 
-    var requestOptions = {
-        url: "http://connor-pc:3000/api/machinelearning/processInfo",
-        method: 'POST',
-        encoding: null
-    };
+    var requestedUrl = req.url;
+ 
+    if(typeof requestedUrl == 'undefined') 
+    {
+        console.error("Received undefined request");
+        res.end("Cannot process undefined request");
+        return;
+    } 
+    else 
+    {
+        if(requestedUrl.length > 1 && requestedUrl.substring(0,1) == '/') 
+        {
+            requestedUrl = requestedUrl.substring(1);
+        }
+    }
 
-    request(requestOptions, function(error,response,body) {
-        if(error) {
-            console.error("There was an error requesting content from connor-pc");
+    var reqBody = "";
+
+    req.on('data', function(chunk) {
+        reqBody += chunk;
+    });
+
+    req.on('end', function() {
+        console.log("Received " + req.method + " request.");
+
+        if(req.method == 'POST') {
+            MakePostRequest(requestedUrl, res, reqBody);
         } else {
-            console.log("Received info from connor-pc");
-            res.end("Received by Edge Node: " + body);
+            MakeGetRequest(requestedUrl, res);
         }
     });
 });
@@ -56,3 +73,48 @@ createdServer.on('error',function(err)
 createdServer.listen(internalPort);
  
 console.log("Started Node.js server");
+
+function MakePostRequest(requestedUrl, res, reqBody) {
+   console.log("Making POST request to " + requestedUrl); 
+
+   console.log("Received: " + reqBody);
+
+    var jsonRecieved = JSON.parse(reqBody);
+
+    console.log("Parsed JSON: " + jsonRecieved);
+
+    var requestOptions = {
+        url: requestedUrl,
+        method: 'POST',
+        encoding: null,
+        form: reqBody
+    };
+
+    request.post(requestOptions, function(error,response,body) {
+        if(error) {
+            console.error("There was an error requesting content from connor-pc: " + error);
+        } else {
+            console.log("Received info from connor-pc");
+            res.end(body);
+        }
+    });
+};
+
+function MakeGetRequest(requestedUrl, res) {
+    console.log("Making GET request for: " + requestedUrl);
+
+     var requestOptions = {
+        url: requestedUrl,
+        method: 'GET',
+        encoding: null
+    };
+
+    request(requestOptions, function(error,response,body) {
+        if(error) {
+            console.error("There was an error requesting content from connor-pc: " + error);
+        } else {
+            console.log("Received info from connor-pc: " + body);
+            res.end(body);
+        }
+    });   
+};

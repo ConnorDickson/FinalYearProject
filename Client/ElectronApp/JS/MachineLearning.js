@@ -1,10 +1,11 @@
 const http = require('http');
 
-function ExecuteMachingLearningRequest() 
-{
+var prevResults;
+
+window.onload = function() {
     var client = http.createClient(3004, "edgepi01");
-    
-    var request = client.request('POST', '/', {
+
+    var request = client.request('GET', 'http://connor-pc:3000/api/MachineLearning/GetResults', {
         'Host': 'edgepi01',
         'Port': 3004,
         'User-Agent': 'Node.JS',
@@ -26,7 +27,10 @@ function ExecuteMachingLearningRequest()
         });
 
         response.on('end', function () {
-            document.getElementById('requestResult').innerHTML = responseData;
+            var jsonData = JSON.parse(responseData);
+            prevResults = jsonData;
+            localStorage.setItem('prevResults', prevResults);
+            document.getElementById('requestResult').innerHTML = prevResults.PrevResults + " " + prevResults.Evaluation;
         });
     });
 }
@@ -37,15 +41,19 @@ function EvaluateButtonClick()
     
     var client = http.createClient(3004, "edgepi01");
     
+    prevResults.CurrentChoice = selectedChoice;
+    
+    var requestData = JSON.stringify(prevResults);
+    
     var request = client.request('POST', 'http://connor-pc:3000/api/MachineLearning/ProcessInfo', {
         'Host': 'edgepi01',
         'Port': 3004,
         'User-Agent': 'Node.JS',
         'Content-Type': 'application/octet-stream',
-        'Content-Length': selectedChoice.length
+        'Content-Length': requestData.length
     });
 
-    request.write(selectedChoice);
+    request.write(requestData);
     
     request.end();
 
@@ -62,7 +70,10 @@ function EvaluateButtonClick()
         });
 
         response.on('end', function () {
-            document.getElementById('requestResult').innerHTML = responseData;
+            var jsonData = JSON.parse(responseData);
+            prevResults = jsonData;
+            localStorage.setItem('prevResults', prevResults);
+            document.getElementById('requestResult').innerHTML = prevResults.PrevResults + " " + prevResults.Evaluation;
         });
     });
 }
