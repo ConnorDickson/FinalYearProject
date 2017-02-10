@@ -18,22 +18,28 @@ namespace DataCentreWebServer.RequestHandlers
             _fileSystemHelper = fileSystemHelper;
         }
 
-        public async Task<HttpResponseMessage> GenerateHttpResponse(HttpRequestMessage request)
+        public async Task<HttpResponseMessage> ProcessRequest(HttpRequestMessage request)
         {
-            await _fileSystemHelper.WriteMachineLearningAnswerToDisk(request);
+            var requestData = await request.Content.ReadAsStringAsync();
+            
+            var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
+
+            _fileSystemHelper.WriteMachineLearningAnswerToDisk(machineLearningRequest.CurrentChoice);
+
             var prevResults = _fileSystemHelper.ReadPreviousMachineLearningAnswers();
 
             var machineLearningEvaluation = _machineLearningHelper.GenerateResponse(prevResults);
 
-            MachineLearningMessage machineLearningResponse = new MachineLearningMessage();
-            machineLearningResponse.PrevResults = prevResults;
-            machineLearningResponse.Evaluation = machineLearningEvaluation;
+            machineLearningRequest.PrevResults = prevResults;
+            machineLearningRequest.Evaluation = machineLearningEvaluation;
 
-            var jsonString = JsonConvert.SerializeObject(machineLearningResponse);
-            var response = new HttpResponseMessage();
-            response.StatusCode = HttpStatusCode.OK;
-            response.Content = new StringContent(jsonString);
-            return response;
+            var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
+
+            return new HttpResponseMessage()
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(jsonString)
+            };
         }
 
         public HttpResponseMessage GenerateHttpResponse()
@@ -41,9 +47,7 @@ namespace DataCentreWebServer.RequestHandlers
             var prevResults = _fileSystemHelper.ReadPreviousMachineLearningAnswers();
 
             var machineLearningEvaluation = _machineLearningHelper.GenerateResponse(prevResults);
-
-            //In here I want to create an object that contains prev results but also deals with special values such as most common etc
-
+            
             MachineLearningMessage machineLearningResponse = new MachineLearningMessage();
             machineLearningResponse.PrevResults = prevResults;
             machineLearningResponse.Evaluation = machineLearningEvaluation;

@@ -32,6 +32,8 @@ var createdServer = http.createServer(function (req, res)
     });
 
     var requestedUrl = req.url;
+
+    console.log("Requested URL: " + requestedUrl);
  
     if(typeof requestedUrl == 'undefined') 
     {
@@ -57,7 +59,7 @@ var createdServer = http.createServer(function (req, res)
         console.log("Received " + req.method + " request.");
 
         if(req.method == 'POST') {
-            MakePostRequest(requestedUrl, res, reqBody);
+            PreProcessRequest(requestedUrl, res, reqBody);
         } else {
             MakeGetRequest(requestedUrl, res);
         }
@@ -74,27 +76,31 @@ createdServer.listen(internalPort);
  
 console.log("Started Node.js server");
 
-function MakePostRequest(requestedUrl, res, reqBody) {
+function PreProcessRequest(requestedUrl, res, reqBody) {
    console.log("Making POST request to " + requestedUrl); 
 
    console.log("Received: " + reqBody);
 
     var jsonRecieved = JSON.parse(reqBody);
 
-    console.log("Parsed JSON: " + jsonRecieved);
+    jsonRecieved.PreProcessedData = "Pre Processed on Edge Node";
+
+    var preProcessedString = JSON.stringify(jsonRecieved);
+
+    console.log("Updated JSON: " + preProcessedString);
 
     var requestOptions = {
         url: requestedUrl,
         method: 'POST',
         encoding: null,
-        form: reqBody
+        form: preProcessedString
     };
 
     request.post(requestOptions, function(error,response,body) {
         if(error) {
-            console.error("There was an error requesting content from connor-pc: " + error);
+            console.error("There was an error requesting content from Data Center: " + error);
         } else {
-            console.log("Received info from connor-pc");
+            console.log("Received info from Data Center");
             res.end(body);
         }
     });
@@ -111,9 +117,9 @@ function MakeGetRequest(requestedUrl, res) {
 
     request(requestOptions, function(error,response,body) {
         if(error) {
-            console.error("There was an error requesting content from connor-pc: " + error);
+            console.error("There was an error requesting content from Data Center: " + error);
         } else {
-            console.log("Received info from connor-pc: " + body);
+            console.log("Received info from Data Center: " + body);
             res.end(body);
         }
     });   

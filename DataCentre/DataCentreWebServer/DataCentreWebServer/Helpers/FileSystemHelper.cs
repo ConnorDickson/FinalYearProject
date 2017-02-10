@@ -24,12 +24,8 @@ namespace DataCentreWebServer.Helpers
             }
         }
 
-        public async Task<bool> WriteMachineLearningAnswerToDisk(HttpRequestMessage request)
+        public bool WriteMachineLearningAnswerToDisk(string currentChoice)
         {
-            var requestData = await request.Content.ReadAsStringAsync();
-
-            var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
-
             var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
             var filePath = rootPath + "\\MachineLearning\\CurrentResults.txt";
 
@@ -41,7 +37,7 @@ namespace DataCentreWebServer.Helpers
                 }
             }
 
-            File.AppendAllText(filePath, machineLearningRequest.CurrentChoice + Environment.NewLine);
+            File.AppendAllText(filePath, currentChoice + Environment.NewLine);
 
             return true;
         }

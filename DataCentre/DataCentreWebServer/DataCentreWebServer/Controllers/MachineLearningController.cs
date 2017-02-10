@@ -11,7 +11,7 @@ namespace DataCentreWebServer.Controllers
         {
             var machineLearningHandler = Container.ResolveMachineLearningHandler();
 
-            return await machineLearningHandler.GenerateHttpResponse(Request);
+            return await machineLearningHandler.ProcessRequest(Request);
         }
 
         public HttpResponseMessage GetResults()

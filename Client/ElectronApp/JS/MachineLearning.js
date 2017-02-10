@@ -73,7 +73,7 @@ function EvaluateButtonClick()
             var jsonData = JSON.parse(responseData);
             prevResults = jsonData;
             localStorage.setItem('prevResults', prevResults);
-            document.getElementById('requestResult').innerHTML = prevResults.PrevResults + " " + prevResults.Evaluation;
+            document.getElementById('requestResult').innerHTML = prevResults.PrevResults + " " + prevResults.Evaluation + "<br>" + prevResults.PreProcessedData;
         });
     });
 }

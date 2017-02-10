@@ -6,6 +6,7 @@ namespace DataCentreWebServer.MachineLearning
     {
         public List<string> PrevResults;
         public string Evaluation;
+        public string PreProcessedData;
         public string CurrentChoice;
     }
 }
