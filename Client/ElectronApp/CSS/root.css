@@ -106,3 +106,13 @@ h1
     margin-left: auto;
     margin-right: auto;
 }
+
+.NumericalInput {
+    border-radius: 4px;
+    padding: 5px 20px;
+    border-top: 2px solid #FDF3E7;
+    border-left: 2px solid #FDF3E7;
+    border-right: 2px solid #F4B971;
+    border-bottom: 2px solid #F4B971;
+    -webkit-app-region: no-drag;
+}
