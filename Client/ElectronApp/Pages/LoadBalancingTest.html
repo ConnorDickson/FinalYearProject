@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Client</title>
+        <link rel="stylesheet" type="text/css" href="../CSS/root.css">
+    </head>
+    <body>
+        <script src="../JS/Common.js"></script>
+        <script src="../JS/VoiceRecognition.js"></script>
+        <script src="../JS/LoadBalancing.js"></script>
+        <script src="../JS/Stopwatch.js"></script>
+        <h1>Load Balancing</h1>
+        <button class="button" onclick="NavigateHome()">Home</button>
+        <br>
+        <div> 
+            <h2>Voice Recogntition</h2>
+            <p class="InfoBox" >Number of Requests:        
+                <input id="NumberOfVoiceRecognitionRequests" class="NumericalInput" type="text">
+                <input class="checkbox" type="checkbox" id="useEdgeNodeCheckbox" value="Yes">Preprocess on edge node</input>
+                <button class="button" onclick="ExecuteVoiceRecognitionLoadBalance()">Go</button>
+            </p>
+            <p class="InfoBox" id="VoiceRecognitionResults"></p>
+        </div>
+    </body>
+</html>

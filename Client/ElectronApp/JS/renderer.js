@@ -12,3 +12,8 @@ function NavigateToMachineLearningApplication()
 {
     window.location.href = "Pages/MachineLearningApplication.html";
 }
+
+function NavigateToLoadBalancingTest() 
+{
+    window.location.href = "Pages/LoadBalancingTest.html";
+}
