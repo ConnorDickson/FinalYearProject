@@ -24,7 +24,7 @@ namespace DataCentreWebServer.RequestHandlers
             try
             {
                 var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
-                var filePath = rootPath + "\\Pocketsphinx\\output.wav";
+                var filePath = rootPath + "\\Pocketsphinx\\output" + Guid.NewGuid() + ".wav";
                 var pocketsphinxexe = rootPath + "\\Pocketsphinx\\pocketsphinx_continuous.exe ";
                 var pocketsphinxargs = "-hmm " + rootPath + "\\Pocketsphinx\\model\\en-us\\en-us "
                                         + "-lm " + rootPath + "\\Pocketsphinx\\model\\LanguageModel.lm "
@@ -39,6 +39,8 @@ namespace DataCentreWebServer.RequestHandlers
                 response.StatusCode = HttpStatusCode.OK;
 
                 response.Content = new StringContent(output.Trim());
+
+                _fileSystemHelper.DeleteFile(filePath);
 
                 return response;
             }

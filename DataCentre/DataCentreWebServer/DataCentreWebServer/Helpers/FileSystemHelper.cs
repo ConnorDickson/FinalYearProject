@@ -56,5 +56,18 @@ namespace DataCentreWebServer.Helpers
             
             return lines.ToList();
         }
+
+        internal bool DeleteFile(string filePath)
+        {
+            try
+            {
+                File.Delete(filePath);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

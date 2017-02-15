@@ -17,10 +17,33 @@
             <h2>Voice Recogntition</h2>
             <p class="InfoBox" >Number of Requests:        
                 <input id="NumberOfVoiceRecognitionRequests" class="NumericalInput" type="text">
+                <br>
                 <input class="checkbox" type="checkbox" id="useEdgeNodeCheckbox" value="Yes">Preprocess on edge node</input>
                 <button class="button" onclick="ExecuteVoiceRecognitionLoadBalance()">Go</button>
             </p>
-            <p class="InfoBox" id="VoiceRecognitionResults"></p>
+    
+            <table class="tableContainer">
+                <tr>
+                    <td>
+                        <div class="InfoBox" id='localStopwatchResults'></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="InfoBox" id='averageLocalCPUResult'></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="InfoBox" id='averageRemoteCPUResult'></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="InfoBox" id="VoiceRecognitionResults"></div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </body>
 </html>
