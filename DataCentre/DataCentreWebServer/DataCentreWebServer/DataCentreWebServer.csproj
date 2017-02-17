@@ -107,9 +107,11 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\LoggerHelper.cs" />
     <Compile Include="Helpers\MachineLearningHelper.cs" />
     <Compile Include="Helpers\FileSystemHelper.cs" />
     <Compile Include="Helpers\VoiceRecognitionHelper.cs" />
+    <Compile Include="Helpers\InMemoryMultipartFormDataStreamProvider.cs" />
     <Compile Include="IoC\Container.cs" />
     <Compile Include="MachineLearning\MachineLearningMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -78,9 +78,17 @@ function ExecuteRemoteVoiceRecognition() {
         client,
         request;
     
+    var urlToPostTo;
+    
+    if(document.getElementById('useEdgeNodeCheckbox').checked) {
+        urlToPostTo = 'http://connor-pc:3000/api/voicerecognition/PostForPreProcessedData';
+    } else {
+        urlToPostTo = 'http://connor-pc:3000/api/voicerecognition/PostForProcessingData';
+    }
+    
     client = http.createClient(3002, "edgepi01");
     
-    request = client.request('POST', 'http://connor-pc:3000/api/voicerecognition/PostForPreProcessedData', {
+    request = client.request('POST', urlToPostTo, {
         'Host': 'edgepi01',
         'Port': 3002,
         'User-Agent': 'Node.JS',

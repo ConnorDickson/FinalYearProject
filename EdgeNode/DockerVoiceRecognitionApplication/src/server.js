@@ -5,6 +5,7 @@ var fs = require('fs');
 var spawn = require('child_process').spawn;
 var cpu = require('./cpu');
 var httpProxy = require('http-proxy');
+var request = require('request');
 
 console.log("Starting...");
 
@@ -37,6 +38,24 @@ var createdServer = http.createServer(function (req, res)
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
 
+    var requestedUrl = req.url;
+ 
+    if(typeof requestedUrl == 'undefined') 
+    {
+        console.error("Received undefined request");
+        res.end("Cannot process undefined request");
+        return;
+    } 
+    else 
+    {
+        if(requestedUrl.length > 1 && requestedUrl.substring(0,1) == '/') 
+        {
+            requestedUrl = requestedUrl.substring(1);
+        }
+    }
+ 
+    console.log("Requested URL: " + requestedUrl);
+    
     var body = [];
 
     req.on('data', function(chunk) {
@@ -51,10 +70,10 @@ var createdServer = http.createServer(function (req, res)
 
         if(req.headers['preprocess-request'] == 'true') {
             console.log('Preprocess request by performing voice recognition on edge node');
-            PreProcessVoiceRecognition(res);
+            PreProcessVoiceRecognition(requestedUrl, res);
         } else {
             console.log('Forward request to data centre for processing');
-            ExecuteRemoteVoiceRecognition(res);
+            ExecuteRemoteVoiceRecognition(requestedUrl, res);
         }
     }); 
 });
@@ -69,7 +88,8 @@ createdServer.listen(internalPort);
 
 console.log("Started Node.js server");
 
-function PreProcessVoiceRecognition(res) {
+function PreProcessVoiceRecognition(requestedUrl, res) 
+{
     var childProcessResponse = "";
 
     var command = spawn('sh', ['../SH/ProcessVoiceFile.sh']);
@@ -85,83 +105,50 @@ function PreProcessVoiceRecognition(res) {
     });
 
     command.on('exit', function(code) {
+        var requestOptions = {
+            url: requestedUrl,
+            method: 'POST',
+            form: childProcessResponse
+        };
 
-	client = http.createClient(3000, "connor-pc");
+        request.post(requestOptions, function(error, response, body) {
+            if(error) {
+                console.log("Error with remote request: " + error);
+            } else {
+                console.log("Remote PC Body: " + body);
     
-        request = client.request('POST', '/api/voicerecognition/PostForPreProcessedData', {
-            'Host': 'connor-pc',
-            'Port': 3000,
-            'User-Agent': 'Node.JS',
-            'Content-Type': 'application/octet-stream',
-            'Content-Length': childProcessResponse.length
-        });
-    
-        request.write(childProcessResponse);
-        request.end();
-    
-        request.on('error', function (err) {
-            console.log("ERROR with request: " + err);
-        });
-    
-        request.on('response', function (response) {
-            var responseData = "";
-            response.setEncoding('utf8');
-    
-            response.on('data', function (chunk) {
-                responseData += chunk;
-            });
-    
-            response.on('end', function () {
-                console.log("From connor-pc: " + responseData);
-
                 var dataToReturn = {};
-                dataToReturn.VoiceRecognitionResponse = responseData;
-
-                EndRequest(res, dataToReturn);
-            });
+                dataToReturn.VoiceRecognitionResponse = body;
+    
+                EndRequest(res, dataToReturn); 
+            }
         });
     });
 }
 
-function ExecuteRemoteVoiceRecognition(ogResponse)
+function ExecuteRemoteVoiceRecognition(requestedUrl, ogResponse)
 {
-   var data = fs.readFileSync("../SavedFile/output.wav"),
-       client,
-       request;
-    
-    client = http.createClient(3000, "connor-pc");
-    
-    request = client.request('POST', '/api/voicerecognition/PostForProcessingData', {
-        'Host': 'connor-pc',
-        'Port': 3000,
-        'User-Agent': 'Node.JS',
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': data.length
-    });
+    var myFormData = {
+        my_file: fs.createReadStream("../SavedFile/output.wav")
+    };
 
-    request.write(data);
-    request.end();
+    var requestOptions = {
+        url: requestedUrl,
+        method: 'POST',
+        formData: myFormData
+    };
 
-    request.on('error', function (err) {
-        console.log("ERROR with request: " + err);
-    });
-
-    request.on('response', function (response) {
-        var responseData = "";
-        response.setEncoding('utf8');
-
-        response.on('data', function (chunk) {
-            responseData += chunk;
-        });
-
-        response.on('end', function () {
-            console.log("From connor-pc: " + responseData);
-            
+    request.post(requestOptions, function(error, response, body) {
+        if(error) {
+            console.log("Error with remote request: " + error);
+        } else {
+            console.log("Remote PC Body: " + body);
+   
             var dataToReturn = {};
-            dataToReturn.VoiceRecognitionResponse = responseData.trim();
-            
-            EndRequest(ogResponse, dataToReturn); 
-        });
+            dataToReturn.VoiceRecognitionResponse = body;
+    
+            EndRequest(ogResponse, dataToReturn);
+        }
     });
 }
 

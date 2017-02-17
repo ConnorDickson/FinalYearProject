@@ -1,6 +1,7 @@
 FROM edgepi01:5000/voicerecognitionbase:latest
 
-RUN npm install http-proxy --save
+RUN npm install request && \
+    npm install http-proxy --save
 
 ADD . .
 

@@ -32,7 +32,13 @@ namespace DataCentreWebServer.RequestHandlers
                                         + "-samprate 48000 -inmic yes -nfft 2048 "
                                         + "-infile " + filePath;
 
-                await _fileSystemHelper.WriteFileToDisk(request, filePath);
+                var wroteFile = await _fileSystemHelper.WriteFileToDisk(request, filePath);
+
+                if (!wroteFile)
+                {
+                    LoggerHelper.Log("Something went wrong writing the file");
+                    return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                }
 
                 var output = _voiceRecognitionHelper.ProcessVoice(pocketsphinxexe, pocketsphinxargs);
 
@@ -46,6 +52,8 @@ namespace DataCentreWebServer.RequestHandlers
             }
             catch (Exception ex)
             {
+                LoggerHelper.Log("An error occurred while processing the voice: " + ex.Message + Environment.NewLine + ex.StackTrace);
+
                 response.StatusCode = HttpStatusCode.InternalServerError;
                 response.Content = new StringContent(ex.Message);
                 return response;
