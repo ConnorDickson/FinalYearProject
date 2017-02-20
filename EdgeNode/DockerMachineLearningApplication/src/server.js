@@ -3,10 +3,11 @@ var os = require('os');
 var http = require('http');
 var request = require('request');
 var httpProxy = require('http-proxy');
+var fs = require('fs');
 
 var externalPort = process.env.port || 3005;
 var internalPort = 3502;
-
+var machineLearningFilePath = "../MLResults/prevResults.txt";
 console.log("Starting...");
 
 var proxyServer = httpProxy.createProxyServer({
@@ -83,8 +84,15 @@ function PreProcessRequest(requestedUrl, res, reqBody) {
 
     var jsonRecieved = JSON.parse(reqBody);
 
-    jsonRecieved.PreProcessedData = "Pre Processed on Edge Node";
+    var answer = jsonRecieved.Choice1 + "," + jsonRecieved.Choice2 + "," + jsonRecieved.Choice3 + "," + jsonRecieved.Choice4 + '\r\n';
+    
+    //got to make this work for concurrent requests
+    fs.appendFileSync(machineLearningFilePath, answer);
+    
+    var preProcessedData = PreProcessData(jsonRecieved);
 
+    jsonRecieved.PreProcessedData = preProcessedData;
+    
     var preProcessedString = JSON.stringify(jsonRecieved);
 
     console.log("Updated JSON: " + preProcessedString);
@@ -105,6 +113,51 @@ function PreProcessRequest(requestedUrl, res, reqBody) {
         }
     });
 };
+
+function PreProcessData(jsonString) {
+    console.log("Pre processing data");
+    var allText = fs.readFileSync(machineLearningFilePath).toString();
+    
+    if(typeof(allText) == "undefined") {
+        console.log("allText: " + allText);
+        return "allText is undefined";
+    }
+
+    console.log("Read text: " + typeof(allText) + " " + allText);
+    
+    var allTextLines = allText.split(/\r\n|\n/);
+   
+    if(typeof(allTextLines) == "undefined") {
+        console.log("allTextLines: " + allTextLines);
+        return "allTextLines is undefined";
+    }  
+   
+    console.log("Read: " + allTextLines.length + " lines");
+
+    var choiceOnes = [];
+    var choiceTwos = [];
+    var choiceThrees = [];
+    var choiceFours = [];
+
+    for(i = 0; i < allTextLines.length; i++) {
+        var lineEntry = allTextLines[i].split(',');
+
+        if(lineEntry == '') {
+            continue;
+        }
+
+        console.log("Entries: " + lineEntry);
+
+        choiceOnes.push(lineEntry[0]);
+        choiceTwos.push(lineEntry[1]);
+        choiceThrees.push(lineEntry[2]);
+        choiceFours.push(lineEntry[3]);
+    }
+
+    console.log("Read all results: " + choiceOnes + " " + choiceTwos + " " + choiceThrees + " " + choiceFours);
+
+    return "I did it";
+}
 
 function MakeGetRequest(requestedUrl, res) {
     console.log("Making GET request for: " + requestedUrl);

@@ -24,7 +24,9 @@ namespace DataCentreWebServer.RequestHandlers
             
             var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
 
-            _fileSystemHelper.WriteMachineLearningAnswerToDisk(machineLearningRequest.CurrentChoice);
+            var answer = machineLearningRequest.Choice1 + "," + machineLearningRequest.Choice2 + "," + machineLearningRequest.Choice3 + "," + machineLearningRequest.Choice4;
+
+            _fileSystemHelper.WriteMachineLearningAnswerToDisk(answer);
 
             var prevResults = _fileSystemHelper.ReadPreviousMachineLearningAnswers();
 

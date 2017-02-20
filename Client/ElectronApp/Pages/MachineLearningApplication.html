@@ -11,18 +11,45 @@
         <h1>Machine Learning Application</h1>
         <button class="button" onclick="NavigateHome()">Home</button>
         <br><br>
-        <div id="RecognitionButtons">
-            <button class="button" onclick="EvaluateButtonClick()">1</button>
-            <button class="button" onclick="EvaluateButtonClick()">2</button>
-            <button class="button" onclick="EvaluateButtonClick()">3</button>
-            <button class="button" onclick="EvaluateButtonClick()">4</button>
-            <button class="button" onclick="EvaluateButtonClick()">5</button>
-            <button class="button" onclick="EvaluateButtonClick()">6</button>
-            <button class="button" onclick="EvaluateButtonClick()">7</button>
-            <button class="button" onclick="EvaluateButtonClick()">8</button>
-            <button class="button" onclick="EvaluateButtonClick()">9</button>
-            <button class="button" onclick="EvaluateButtonClick()">10</button>
-        </div>
+        <table id="RecognitionButtons" class="MachineLearningTable">
+             <tr>
+                <td>
+                    <div id="Choice1">
+                        <h2>Choice 1</h2>
+                        <button class="button" onclick="EvaluateButtonClick()">True</button>
+                        <button class="button" onclick="EvaluateButtonClick()">False</button>
+                        <p id="Choice1Result"> </p>
+                    </div>
+                </td>
+                <td>
+                    <div id="Choice2">
+                        <h2>Choice 2</h2>
+                        <button class="button" onclick="EvaluateButtonClick()">True</button>
+                        <button class="button" onclick="EvaluateButtonClick()">False</button>
+                        <p id="Choice2Result"> </p>
+                    </div>                
+                 </td>                
+                 <td>
+                    <div id="Choice3">
+                        <h2>Choice 3</h2>
+                        <button class="button" onclick="EvaluateButtonClick()">True</button>
+                        <button class="button" onclick="EvaluateButtonClick()">False</button>
+                        <p id="Choice3Result"> </p>
+                    </div>                
+                 </td>
+                 <td>
+                    <div id="Choice4">
+                        <h2>Choice 4</h2>
+                        <button class="button" onclick="EvaluateButtonClick()">True</button>
+                        <button class="button" onclick="EvaluateButtonClick()">False</button>
+                        <p id="Choice4Result"> </p>
+                    </div>                
+                 </td>
+            </tr>
+        </table>
+        <br>
+        <p class="InfoBox" id="currentEvaluation"></p>
+        <button class="button" onclick="SendResults()">Send Choices</button>
         <br>
         <p class="InfoBox" id="requestResult"></p>
     </body>

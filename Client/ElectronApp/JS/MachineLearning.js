@@ -1,5 +1,7 @@
 const http = require('http');
 
+const totalChoices = 4;
+
 var prevResults;
 
 window.onload = function() {
@@ -38,11 +40,30 @@ window.onload = function() {
 function EvaluateButtonClick() 
 {
     var selectedChoice = event.srcElement.innerHTML;
+
+    var choiceNum = event.srcElement.parentElement.id;
     
+    document.getElementById(choiceNum + "Result").innerHTML = selectedChoice;
+}
+
+function SendResults() {
     var client = http.createClient(3004, "edgepi01");
     
-    prevResults.CurrentChoice = selectedChoice;
+    var choice1 = document.getElementById('Choice1Result').innerHTML;
+    var choice2 = document.getElementById('Choice2Result').innerHTML;
+    var choice3 = document.getElementById('Choice3Result').innerHTML;
+    var choice4 = document.getElementById('Choice4Result').innerHTML;
+
+    if(choice1 == "" || choice2 == "" || choice3 == "" || choice4 == "") {
+        document.getElementById('requestResult').innerHTML = "Please fill out the responses";
+        return;
+    }
     
+    prevResults.Choice1 = choice1;
+    prevResults.Choice2 = choice2;
+    prevResults.Choice3 = choice3;
+    prevResults.Choice4 = choice4; 
+
     var requestData = JSON.stringify(prevResults);
     
     var request = client.request('POST', 'http://connor-pc:3000/api/MachineLearning/ProcessInfo', {

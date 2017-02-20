@@ -107,6 +107,12 @@ h1
     margin-right: auto;
 }
 
+.MachineLearningTable {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
 .NumericalInput {
     border-radius: 4px;
     padding: 5px 20px;
