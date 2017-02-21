@@ -78,18 +78,23 @@ createdServer.listen(internalPort);
 console.log("Started Node.js server");
 
 function PreProcessRequest(requestedUrl, res, reqBody) {
-   console.log("Making POST request to " + requestedUrl); 
+    console.log("Making POST request to " + requestedUrl); 
 
-   console.log("Received: " + reqBody);
+    console.log("Received: " + reqBody);
 
     var jsonRecieved = JSON.parse(reqBody);
 
     var answer = jsonRecieved.Choice1 + "," + jsonRecieved.Choice2 + "," + jsonRecieved.Choice3 + "," + jsonRecieved.Choice4 + '\r\n';
-    
-    //got to make this work for concurrent requests
-    fs.appendFileSync(machineLearningFilePath, answer);
-    
-    var preProcessedData = PreProcessData(jsonRecieved);
+
+    var preProcessedData;
+
+    if(answer.includes("Query")) {
+        preProcessedData = PreProcessData(jsonRecieved);
+    } else {
+        //got to make this work for concurrent requests
+        fs.appendFileSync(machineLearningFilePath, answer);
+        preProcessedData = "Saved results to disk";
+    }    
 
     jsonRecieved.PreProcessedData = preProcessedData;
     
@@ -156,7 +161,25 @@ function PreProcessData(jsonString) {
 
     console.log("Read all results: " + choiceOnes + " " + choiceTwos + " " + choiceThrees + " " + choiceFours);
 
-    return "I did it";
+    var result = '';
+    
+    if(jsonString.Choice1 == "Query") {
+        result += "The first choice will be evaluated\r\n";
+    }
+
+    if(jsonString.Choice2 == "Query") {
+        result += "The second choice will be evaluated\r\n";
+    } 
+
+    if(jsonString.Choice3 == "Query") {
+        result += "The third choice will be evaluated\r\n";
+    }
+
+    if(jsonString.Choice4 == "Query") {
+        result += "The fourth choice will be evaluated\r\n";
+    } 
+
+    return result;
 }
 
 function MakeGetRequest(requestedUrl, res) {

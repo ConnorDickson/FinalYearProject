@@ -12,3 +12,7 @@ False,False,False,False
 False,False,False,False
 False,False,False,False
 True,True,True,True
+True,Query,False,Query
+True,Query,False,Query
+True,False,False,Query
+True,Query,False,Query

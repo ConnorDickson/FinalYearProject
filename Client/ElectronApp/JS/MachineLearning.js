@@ -32,7 +32,7 @@ window.onload = function() {
             var jsonData = JSON.parse(responseData);
             prevResults = jsonData;
             localStorage.setItem('prevResults', prevResults);
-            document.getElementById('requestResult').innerHTML = prevResults.PrevResults + " " + prevResults.Evaluation;
+//            document.getElementById('requestResult').innerHTML = prevResults.PrevResults + " " + prevResults.Evaluation;
         });
     });
 }
@@ -94,7 +94,7 @@ function SendResults() {
             var jsonData = JSON.parse(responseData);
             prevResults = jsonData;
             localStorage.setItem('prevResults', prevResults);
-            document.getElementById('requestResult').innerHTML = prevResults.PrevResults + " " + prevResults.Evaluation + "<br>" + prevResults.PreProcessedData;
+            document.getElementById('requestResult').innerHTML = "PreProcessedData: " + prevResults.PreProcessedData + "<br><br>" + "Evaluation: " + prevResults.Evaluation;
         });
     });
 }
