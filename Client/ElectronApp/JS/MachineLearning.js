@@ -54,8 +54,7 @@ function SendResults() {
     var choice3 = document.getElementById('Choice3Result').innerHTML;
     var choice4 = document.getElementById('Choice4Result').innerHTML;
 
-    if(choice1 == "" || choice2 == "" || choice3 == "" || choice4 == "") {
-        document.getElementById('requestResult').innerHTML = "Please fill out the responses";
+    if(!ValidateUserData(choice1, choice2, choice3, choice4)) {
         return;
     }
     
@@ -97,4 +96,37 @@ function SendResults() {
             document.getElementById('requestResult').innerHTML = "PreProcessedData: " + prevResults.PreProcessedData + "<br><br>" + "Evaluation: " + prevResults.Evaluation;
         });
     });
+}
+
+function ValidateUserData(choice1, choice2, choice3, choice4) {
+    if(choice1 == "" || choice2 == "" || choice3 == "" || choice4 == "") {
+        document.getElementById('requestResult').innerHTML = "Please fill out the responses";
+        return false;
+    }
+    
+    var queryCount = 0;
+    var queryText = 'Query';
+    
+    if(choice1 == queryText) {
+        queryCount++;
+    }
+    
+    if(choice2 == queryText) {
+        queryCount++;
+    }
+    
+    if(choice3 == queryText) {
+        queryCount++;
+    }
+    
+    if(choice4 == queryText) {
+        queryCount++;
+    }
+    
+    if(queryCount > 1) {
+        document.getElementById('requestResult').innerHTML = "Please only query one value";
+        return false;
+    }
+    
+    return true;
 }

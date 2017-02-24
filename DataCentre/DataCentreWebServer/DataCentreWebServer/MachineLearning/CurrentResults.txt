@@ -16,3 +16,9 @@ True,Query,False,Query
 True,Query,False,Query
 True,False,False,Query
 True,Query,False,Query
+False,Query,False,True
+False,Query,False,False
+False,Query,False,False
+False,Query,False,False
+Query,True,True,True
+Query,True,True,True
