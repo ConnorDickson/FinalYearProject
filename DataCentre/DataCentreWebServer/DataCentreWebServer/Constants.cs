@@ -9,7 +9,7 @@
 
         public static class MachineLearning
         {
-
+            public static string Query = "Query";
         }
     }
 }

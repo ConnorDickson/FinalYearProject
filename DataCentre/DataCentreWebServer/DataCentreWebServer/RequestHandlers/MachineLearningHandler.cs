@@ -21,21 +21,23 @@ namespace DataCentreWebServer.RequestHandlers
         public async Task<HttpResponseMessage> ProcessRequest(HttpRequestMessage request)
         {
             var requestData = await request.Content.ReadAsStringAsync();
-            
             var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
-
-            var answer = machineLearningRequest.Choice1 + "," + machineLearningRequest.Choice2 + "," + machineLearningRequest.Choice3 + "," + machineLearningRequest.Choice4;
-
             var prevResults = _fileSystemHelper.ReadPreviousMachineLearningAnswers();
-            machineLearningRequest.PrevResults = prevResults;
 
-            if (answer.Contains("Query"))
+            machineLearningRequest.PrevResults = prevResults;
+            var numOfQueries = _machineLearningHelper.NumberOfQueries(machineLearningRequest);
+            if (numOfQueries == 1)
             {
-                var machineLearningEvaluation = _machineLearningHelper.GenerateResponse(prevResults);
+                var machineLearningEvaluation = _machineLearningHelper.PerformEvaluation(machineLearningRequest, prevResults);
                 machineLearningRequest.Evaluation = machineLearningEvaluation;
+            }
+            else if (numOfQueries > 1)
+            {
+                machineLearningRequest.Evaluation = "Too many queries";
             }
             else
             {
+                var answer = machineLearningRequest.Choice1 + "," + machineLearningRequest.Choice2 + "," + machineLearningRequest.Choice3 + "," + machineLearningRequest.Choice4;
                 _fileSystemHelper.WriteMachineLearningAnswerToDisk(answer);
                 machineLearningRequest.Evaluation = "Written answer to DC disk";
             }
@@ -53,7 +55,7 @@ namespace DataCentreWebServer.RequestHandlers
         {
             var prevResults = _fileSystemHelper.ReadPreviousMachineLearningAnswers();
 
-            var machineLearningEvaluation = _machineLearningHelper.GenerateResponse(prevResults);
+            var machineLearningEvaluation = _machineLearningHelper.PrintResults(prevResults);
             
             MachineLearningMessage machineLearningResponse = new MachineLearningMessage();
             machineLearningResponse.PrevResults = prevResults;
@@ -65,6 +67,5 @@ namespace DataCentreWebServer.RequestHandlers
             response.Content = new StringContent(jsonString);
             return response;
         }
-
     }
 }
