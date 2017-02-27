@@ -13,14 +13,15 @@ namespace DataCentreWebServer.Helpers
                                         .Select(x => x.Key)
                                         .FirstOrDefault();
 
-            var response = string.Empty;
+            //var response = string.Empty;
 
-            foreach(var result in prevResults)
-            {
-                response += result + ",";
-            }
+            //foreach(var result in prevResults)
+            //{
+            //    response += result + ",";
+            //}
 
-            return response.TrimEnd(',') + "<br>The most common result is: " + mostCommonResult;
+            //return response.TrimEnd(',') + "<br>The most common result is: " + mostCommonResult;
+            return "The most common result is: " + mostCommonResult;
         }
     }
 }

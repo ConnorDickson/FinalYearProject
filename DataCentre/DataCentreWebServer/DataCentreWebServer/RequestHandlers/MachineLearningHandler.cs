@@ -26,14 +26,19 @@ namespace DataCentreWebServer.RequestHandlers
 
             var answer = machineLearningRequest.Choice1 + "," + machineLearningRequest.Choice2 + "," + machineLearningRequest.Choice3 + "," + machineLearningRequest.Choice4;
 
-            _fileSystemHelper.WriteMachineLearningAnswerToDisk(answer);
-
             var prevResults = _fileSystemHelper.ReadPreviousMachineLearningAnswers();
-
-            var machineLearningEvaluation = _machineLearningHelper.GenerateResponse(prevResults);
-
             machineLearningRequest.PrevResults = prevResults;
-            machineLearningRequest.Evaluation = machineLearningEvaluation;
+
+            if (answer.Contains("Query"))
+            {
+                var machineLearningEvaluation = _machineLearningHelper.GenerateResponse(prevResults);
+                machineLearningRequest.Evaluation = machineLearningEvaluation;
+            }
+            else
+            {
+                _fileSystemHelper.WriteMachineLearningAnswerToDisk(answer);
+                machineLearningRequest.Evaluation = "Written answer to DC disk";
+            }
 
             var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
 

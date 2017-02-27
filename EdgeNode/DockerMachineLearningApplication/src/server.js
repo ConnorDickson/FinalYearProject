@@ -80,27 +80,30 @@ console.log("Started Node.js server");
 function PreProcessRequest(requestedUrl, res, reqBody) {
     console.log("Making POST request to " + requestedUrl); 
 
-    console.log("Received: " + reqBody);
+    var jsonEvaluation = JSON.parse(reqBody);
 
-    var jsonRecieved = JSON.parse(reqBody);
-
-    var answer = jsonRecieved.Choice1 + "," + jsonRecieved.Choice2 + "," + jsonRecieved.Choice3 + "," + jsonRecieved.Choice4 + '\r\n';
+    var answer = jsonEvaluation.Choice1 + "," + jsonEvaluation.Choice2 + "," + jsonEvaluation.Choice3 + "," + jsonEvaluation.Choice4 + '\r\n';
 
     var preProcessedData;
 
-    if(answer.includes("Query")) {
-        preProcessedData = PreProcessData(jsonRecieved);
+    //Here could be an example of when the data centre does not need to be queried?
+    //We can handle all requests here if we have enough training data
+    //However do we need to query it if we don't have enough training data on the edge node? Or just make it that we always do?
+
+    var queryCount = jsonQueryCount(jsonEvaluation);
+    if(queryCount == 1) {
+        preProcessedData = PreProcessData(jsonEvaluation);
+    } else if(queryCount > 1) {
+        preProcessedData = "Too many queries";
     } else {
         //got to make this work for concurrent requests
         fs.appendFileSync(machineLearningFilePath, answer);
         preProcessedData = "Saved results to disk";
     }    
 
-    jsonRecieved.PreProcessedData = preProcessedData;
+    jsonEvaluation.PreProcessedData = preProcessedData;
     
-    var preProcessedString = JSON.stringify(jsonRecieved);
-
-    console.log("Updated JSON: " + preProcessedString);
+    var preProcessedString = JSON.stringify(jsonEvaluation);
 
     var requestOptions = {
         url: requestedUrl,
@@ -119,7 +122,30 @@ function PreProcessRequest(requestedUrl, res, reqBody) {
     });
 };
 
-function PreProcessData(jsonString) {
+function jsonQueryCount(json) {
+    var queryCount = 0;
+    var queryText = 'Query';
+    
+    if(json.Choice1 == queryText) {
+        queryCount++;
+    }
+    
+    if(json.Choice2 == queryText) {
+        queryCount++;
+    }
+    
+    if(json.Choice3 == queryText) {
+        queryCount++;
+    }
+    
+    if(json.Choice4 == queryText) {
+        queryCount++;
+    }
+    
+    return queryCount;
+}
+
+function PreProcessData(jsonEvaluation) {
     console.log("Pre processing data");
     var allText = fs.readFileSync(machineLearningFilePath).toString();
     
@@ -127,9 +153,7 @@ function PreProcessData(jsonString) {
         console.log("allText: " + allText);
         return "allText is undefined";
     }
-
-    console.log("Read text: " + typeof(allText) + " " + allText);
-    
+ 
     var allTextLines = allText.split(/\r\n|\n/);
    
     if(typeof(allTextLines) == "undefined") {
@@ -138,7 +162,84 @@ function PreProcessData(jsonString) {
     }  
    
     console.log("Read: " + allTextLines.length + " lines");
+    
+    //var result = SplitLinesIntoArray(allTextLines, jsonString);
+    var result = EvaluateProbability(allTextLines, jsonEvaluation);
 
+    return result;
+}
+
+function EvaluateProbability(allTextLines, jsonEvaluation) {
+    //So if we are given YY?Y
+    //Need to work out max(P(YYYY), P(YYNY))
+
+    var result = '';
+    var yResults = 0;
+    var nResults = 0;
+
+    if(jsonEvaluation.Choice1 == "Query") {
+        yResults = Probability(allTextLines, "True", jsonEvaluation.Choice2, jsonEvaluation.Choice3, jsonEvaluation.Choice4);
+        nResults = Probability(allTextLines, "False", jsonEvaluation.Choice2, jsonEvaluation.Choice3, jsonEvaluation.Choice4);
+        result += "The first choice will be evaluated\r\n";        
+    } else if(jsonEvaluation.Choice2 == "Query") {
+        yResults = Probability(allTextLines, jsonEvaluation.Choice1, "True", jsonEvaluation.Choice3, jsonEvaluation.Choice4);
+        nResults = Probability(allTextLines, jsonEvaluation.Choice2, "False", jsonEvaluation.Choice3, jsonEvaluation.Choice4);
+        result += "The second choice will be evaluated\r\n";
+    } else if(jsonEvaluation.Choice3 == "Query") {
+        yResults = Probability(allTextLines, jsonEvaluation.Choice1, jsonEvaluation.Choice2, "True", jsonEvaluation.Choice4);
+        nResults = Probability(allTextLines, jsonEvaluation.Choice1, jsonEvaluation.Choice2, "False", jsonEvaluation.Choice4);
+        result += "The third choice will be evaluated\r\n";    
+    } else if(jsonEvaluation.Choice4 == "Query") {
+        yResults = Probability(allTextLines, jsonEvaluation.Choice1, jsonEvaluation.Choice2, jsonEvaluation.Choice3, "True");
+        nResults = Probability(allTextLines, jsonEvaluation.Choice1, jsonEvaluation.Choice2, jsonEvaluation.Choice3, "False");
+        result += "The fourth choice will be evaluated\r\n"; 
+    }
+
+    if(yResults > nResults) {
+        result += "The result is True";
+    } else {
+        result += "The result is False";
+    }
+
+    return result;
+}
+
+function Probability(allTextLines, choice1, choice2, choice3, choice4) {
+    var predictedChoices = choice1 + "," + choice2 + "," + choice3 + "," + choice4;
+    console.log("Evaluating prob: " + predictedChoices);
+
+    var totalCount = 0;
+    allTextLines.forEach(function(textLine) {
+        console.log("Evaluating textLine: " + textLine);
+
+        if(textLine == predictedChoices) {
+            totalCount++;
+        }
+    });
+
+    return totalCount;
+}
+
+function MakeGetRequest(requestedUrl, res) {
+    console.log("Making GET request for: " + requestedUrl);
+
+     var requestOptions = {
+        url: requestedUrl,
+        method: 'GET',
+        encoding: null
+    };
+
+    request(requestOptions, function(error,response,body) {
+        if(error) {
+            console.error("There was an error requesting content from Data Center: " + error);
+        } else {
+            console.log("Received info from Data Center: " + body);
+            res.end(body);
+        }
+    });   
+};
+
+function SplitLinesIntoArray(allTextLines, jsonString) {
     var choiceOnes = [];
     var choiceTwos = [];
     var choiceThrees = [];
@@ -164,6 +265,12 @@ function PreProcessData(jsonString) {
     var result = '';
     
     if(jsonString.Choice1 == "Query") {
+        var resultOnesTwos = f(choiceOnes, choiceTwos);
+        var resultOnesThrees = f(choiceOnes, choiceThrees);
+        var resultOnesFours = f(choiceOnes, choiceFours);
+        var resultTwosThrees = f(choiceTwos, choiceThrees);
+        var resultTwosFours = f(choiceTwos, choiceFours);
+        var resultThreesFours = f(choiceThrees, choiceFours);
         result += "The first choice will be evaluated\r\n";
     }
 
@@ -182,21 +289,6 @@ function PreProcessData(jsonString) {
     return result;
 }
 
-function MakeGetRequest(requestedUrl, res) {
-    console.log("Making GET request for: " + requestedUrl);
-
-     var requestOptions = {
-        url: requestedUrl,
-        method: 'GET',
-        encoding: null
-    };
-
-    request(requestOptions, function(error,response,body) {
-        if(error) {
-            console.error("There was an error requesting content from Data Center: " + error);
-        } else {
-            console.log("Received info from Data Center: " + body);
-            res.end(body);
-        }
-    });   
-};
+function f(a,b) {
+    //#(a,b)/totalNum     
+}
