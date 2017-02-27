@@ -35,47 +35,53 @@ function ExecuteVoiceRecognitionLoadBalance() {
 }
 
 function ExecuteLoadBalanceRemoteVoiceRecognition() {
-    var data = fs.readFileSync("../../Downloads/output.wav"),
-        client,
-        request;
-    
-    var client = http.createClient(3002, "edgepi01");
-    
-    var request = client.request('POST', 'http://connor-pc:3000/api/voicerecognition/PostForPreProcessedData', {
-        'Host': 'edgepi01',
-        'Port': 3002,
-        'User-Agent': 'Node.JS',
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': data.length,
-        'Preprocess-Request': document.getElementById('useEdgeNodeCheckbox').checked
-    });
+    fs.readFile("../../Downloads/output.wav", (err, data) => {
+        var urlToPostTo;
 
-    request.write(data);
-    request.end();
+        if(document.getElementById('useEdgeNodeCheckbox').checked) {
+            urlToPostTo = 'http://connor-pc:3000/api/voicerecognition/PostForPreProcessedData';
+        } else {
+            urlToPostTo = 'http://connor-pc:3000/api/voicerecognition/PostForProcessingData';
+        }
 
-    request.on('error', function (err) {
-        console.log(err);
-    });
+        var client = http.createClient(3002, "edgepi01");
 
-    request.on('response', function (response) {
-        var responseData = "";
-        response.setEncoding('utf8');
-
-        response.on('data', function (chunk) {
-            responseData += chunk;
+        var request = client.request('POST', urlToPostTo, {
+            'Host': 'edgepi01',
+            'Port': 3002,
+            'User-Agent': 'Node.JS',
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': data.length,
+            'Preprocess-Request': document.getElementById('useEdgeNodeCheckbox').checked
         });
 
-        response.on('end', function () {
-            requestsLeft--;
-            if(requestsLeft == 0) {
-                localStopwatch.stop();
-                var averageLocalCPUResult = Average(localCPURecords);
-                var averageRemoteCPUResult = Average(remoteCPURecords);
-                document.getElementById('averageLocalCPUResult').innerHTML = "Average local CPU: " + averageLocalCPUResult;
-                document.getElementById('averageRemoteCPUResult').innerHTML = "Average remote CPU: " + averageRemoteCPUResult;
-            }
-            SetVoiceRecognitionResults(responseData);
+        request.write(data);
+        request.end();
+
+        request.on('error', function (err) {
+            console.log(err);
         });
+
+        request.on('response', function (response) {
+            var responseData = "";
+            response.setEncoding('utf8');
+
+            response.on('data', function (chunk) {
+                responseData += chunk;
+            });
+
+            response.on('end', function () {
+                requestsLeft--;
+                if(requestsLeft == 0) {
+                    localStopwatch.stop();
+                    var averageLocalCPUResult = Average(localCPURecords);
+                    var averageRemoteCPUResult = Average(remoteCPURecords);
+                    document.getElementById('averageLocalCPUResult').innerHTML = "Average local CPU: " + averageLocalCPUResult;
+                    document.getElementById('averageRemoteCPUResult').innerHTML = "Average remote CPU: " + averageRemoteCPUResult;
+                }
+                SetVoiceRecognitionResults(responseData);
+            });
+        }); 
     });
 }
 

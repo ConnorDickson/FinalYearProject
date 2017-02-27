@@ -64,17 +64,20 @@ var createdServer = http.createServer(function (req, res)
   
     req.on('end', function() {
         var postData = Buffer.concat(body);
-        fs.writeFileSync("../SavedFile/output.wav", postData);
         
-        console.log("Wrote file to disk successfully");
-
-        if(req.headers['preprocess-request'] == 'true') {
-            console.log('Preprocess request by performing voice recognition on edge node');
-            PreProcessVoiceRecognition(requestedUrl, res);
-        } else {
-            console.log('Forward request to data centre for processing');
-            ExecuteRemoteVoiceRecognition(requestedUrl, res);
-        }
+        var fileName = "../SavedFile/output" + guid() + ".wav"; 
+        fs.writeFile(fileName, postData, function() {
+ 
+            console.log("Wrote file to disk successfully");
+    
+            if(req.headers['preprocess-request'] == 'true') {
+                console.log('Preprocess request by performing voice recognition on edge node');
+                PreProcessVoiceRecognition(fileName, requestedUrl, res);
+            } else {
+                console.log('Forward request to data centre for processing');
+                ExecuteRemoteVoiceRecognition(fileName, requestedUrl, res);
+            }
+        });
     }); 
 });
 
@@ -88,11 +91,11 @@ createdServer.listen(internalPort);
 
 console.log("Started Node.js server");
 
-function PreProcessVoiceRecognition(requestedUrl, res) 
+function PreProcessVoiceRecognition(fileName, requestedUrl, res) 
 {
     var childProcessResponse = "";
 
-    var command = spawn('sh', ['../SH/ProcessVoiceFile.sh']);
+    var command = spawn('sh', ['../SH/ProcessVoiceFile.sh', fileName]);
 
     command.stdout.on('data', function(data) {
         childProcessResponse += data;
@@ -120,16 +123,16 @@ function PreProcessVoiceRecognition(requestedUrl, res)
                 var dataToReturn = {};
                 dataToReturn.VoiceRecognitionResponse = body;
     
-                EndRequest(res, dataToReturn); 
+                EndRequest(fileName, res, dataToReturn); 
             }
         });
     });
 }
 
-function ExecuteRemoteVoiceRecognition(requestedUrl, ogResponse)
+function ExecuteRemoteVoiceRecognition(fileName, requestedUrl, ogResponse)
 {
     var myFormData = {
-        my_file: fs.createReadStream("../SavedFile/output.wav")
+        my_file: fs.createReadStream(fileName)
     };
 
     var requestOptions = {
@@ -147,14 +150,25 @@ function ExecuteRemoteVoiceRecognition(requestedUrl, ogResponse)
             var dataToReturn = {};
             dataToReturn.VoiceRecognitionResponse = body;
     
-            EndRequest(ogResponse, dataToReturn);
+            EndRequest(fileName, ogResponse, dataToReturn);
         }
     });
 }
 
-function EndRequest(res, dataToReturn) {
+function EndRequest(fileName, res, dataToReturn) {
     var load = cpu.cpuEnd();
     dataToReturn.CPUInfo = load.percent;
     res.write(JSON.stringify(dataToReturn));
     res.end();
+
+    fs.unlink(fileName, (err) => {
+    });
+}
+
+function guid() {
+    //http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript/2117523#2117523
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+        return v.toString(16);
+    });
 }
