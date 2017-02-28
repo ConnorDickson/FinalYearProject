@@ -50,6 +50,7 @@ h1
 .container
 {
     width: 100%;
+    border-spacing: 1em;
 }
 
 .container input
