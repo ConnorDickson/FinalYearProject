@@ -19,5 +19,5 @@ https://webaudiodemos.appspot.com/AudioRecorder/index.html
 to learn about the recorder.js file (with licence)
 
 I used this;
-https://wolfpaulus.com/embedded/raspberrypi2-sr/
+https://wolfpaulus.com/embedded/raspberrypi2-sr
 to learn how to use PocketSphinx

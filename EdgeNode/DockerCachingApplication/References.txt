@@ -1,0 +1,33 @@
+I used this;
+https://github.com/NodeRedis/node_redis
+so that I would know how to use the library they made and connect to redis from Nodejs and access/store information
+
+I used this image;
+https://hub.docker.com/r/hypriot/rpi-node
+so that I would have a base for using Nodejs in a container image
+
+I used this;
+https://docs.docker.com/registry/deploying
+to learn some of the commands used to deploy images (and found the following image)
+
+I used this;
+https://hub.docker.com/r/vdavy/registry-arm
+as it was an arm based registry that I could use for my local docker swarm
+
+I used this;
+http://blog.yohanliyanage.com/2015/05/docker-clean-up-after-yourself
+to learn some docker commands that I use to clean up my swarm
+
+I used this;
+https://hub.docker.com/r/hypriot/rpi-redis
+as it is a prebuild and freely available redis image for the Raspberry Pi
+
+I used this;
+https://www.sitepoint.com/making-http-requests-in-node-js
+and 
+https://www.npmjs.com/package/request
+to learn how to make requests in nodejs
+
+I used this;
+https://github.com/nodejitsu/node-http-proxy
+to learn how to access my web server as a proxied service
