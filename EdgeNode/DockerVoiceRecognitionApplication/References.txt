@@ -1,0 +1,13 @@
+I used;
+https://nodejs.org/api/child_process.html
+to learn about spawning processes
+
+I ran into issues with the audio device when tring to record my voice but running as root (sudo) seemed to fix it temporarily but it then stopped the playback working
+
+Here;
+http://cmusphinx.sourceforge.net/wiki/faq
+mentions infile which I use for processing my recording
+
+I used a stopwatch from here;
+http://stackoverflow.com/questions/20318822/how-to-create-a-stopwatch-using-javascript
+and altered it quite a bit as the constant posting to the UI increased CPU use and muddled my CPU modules readings. So now the stopwatch starts and records a time then stops
