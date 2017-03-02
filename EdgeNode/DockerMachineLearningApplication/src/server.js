@@ -8,29 +8,31 @@ var fs = require('fs');
 var externalPort = process.env.port || 3005;
 var internalPort = 3502;
 var machineLearningFilePath = "../MLResults/prevResults.txt";
+
 console.log("Starting...");
 
 var proxyServer = httpProxy.createProxyServer({
     target: 'http://localhost:' + internalPort,
     toProxy: true
-}).listen(externalPort);
+});
 
-proxyServer.on('error',function(err) {
+proxyServer.on('error', function(err) {
     console.error("ERROR WITH PROXY SERVER:\n" + err.stack);
 });
 
-var createdServer = http.createServer(function (req, res) 
-{
+proxyServer.listen(externalPort);
+
+var createdServer = http.createServer(function (req, res) {
     //Set error handlers
-    req.on('error', function(err) 
-    {
+    req.on('error', function(err) {
         console.error("REQUEST ERROR:\n" + err.stack);
     });
 
-    res.on('error', function(err)
-    {
+    res.on('error', function(err) {
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
+
+    PrintComputerInformation();
 
     var requestedUrl = req.url;
 
@@ -68,8 +70,7 @@ var createdServer = http.createServer(function (req, res)
 });
 
 //I don't think I should do this in production because the code continues
-createdServer.on('error',function(err)
-{
+createdServer.on('error', function(err) {
     console.error("AN ERROR OCCURRED WITH THE SERVER: " + err.stack);
 });
 
@@ -77,7 +78,8 @@ createdServer.listen(internalPort);
  
 console.log("Started Node.js server");
 
-function PreProcessRequest(requestedUrl, res, reqBody) {
+function PreProcessRequest(requestedUrl, res, reqBody) 
+{
     console.log("Making POST request to " + requestedUrl); 
 
     var jsonEvaluation = JSON.parse(reqBody);
@@ -122,41 +124,50 @@ function PreProcessRequest(requestedUrl, res, reqBody) {
     });
 };
 
-function jsonQueryCount(json) {
+function jsonQueryCount(json) 
+{
     var queryCount = 0;
     var queryText = 'Query';
     
-    if(json.Choice1 == queryText) {
+    if(json.Choice1 == queryText) 
+    {
         queryCount++;
     }
     
-    if(json.Choice2 == queryText) {
+    if(json.Choice2 == queryText) 
+    {
         queryCount++;
     }
     
-    if(json.Choice3 == queryText) {
+    if(json.Choice3 == queryText) 
+    {
         queryCount++;
     }
     
-    if(json.Choice4 == queryText) {
+    if(json.Choice4 == queryText) 
+    {
         queryCount++;
     }
     
     return queryCount;
 }
 
-function PreProcessData(jsonEvaluation) {
+function PreProcessData(jsonEvaluation) 
+{
     console.log("Pre processing data");
+
     var allText = fs.readFileSync(machineLearningFilePath).toString();
     
-    if(typeof(allText) == "undefined") {
+    if(typeof(allText) == "undefined") 
+    {
         console.log("allText: " + allText);
         return "allText is undefined";
     }
  
     var allTextLines = allText.split(/\r\n|\n/);
    
-    if(typeof(allTextLines) == "undefined") {
+    if(typeof(allTextLines) == "undefined") 
+    {
         console.log("allTextLines: " + allTextLines);
         return "allTextLines is undefined";
     }  
@@ -169,7 +180,8 @@ function PreProcessData(jsonEvaluation) {
     return result;
 }
 
-function EvaluateProbability(allTextLines, jsonEvaluation) {
+function EvaluateProbability(allTextLines, jsonEvaluation) 
+{
     //So if we are given YY?Y
     //Need to work out max(P(YYYY), P(YYNY))
 
@@ -177,19 +189,26 @@ function EvaluateProbability(allTextLines, jsonEvaluation) {
     var yResults = 0;
     var nResults = 0;
 
-    if(jsonEvaluation.Choice1 == "Query") {
+    if(jsonEvaluation.Choice1 == "Query") 
+    {
         yResults = Probability(allTextLines, "True", jsonEvaluation.Choice2, jsonEvaluation.Choice3, jsonEvaluation.Choice4);
         nResults = Probability(allTextLines, "False", jsonEvaluation.Choice2, jsonEvaluation.Choice3, jsonEvaluation.Choice4);
         result += "The first choice will be evaluated\r\n";        
-    } else if(jsonEvaluation.Choice2 == "Query") {
+    } 
+    else if(jsonEvaluation.Choice2 == "Query") 
+    {
         yResults = Probability(allTextLines, jsonEvaluation.Choice1, "True", jsonEvaluation.Choice3, jsonEvaluation.Choice4);
         nResults = Probability(allTextLines, jsonEvaluation.Choice2, "False", jsonEvaluation.Choice3, jsonEvaluation.Choice4);
         result += "The second choice will be evaluated\r\n";
-    } else if(jsonEvaluation.Choice3 == "Query") {
+    } 
+    else if(jsonEvaluation.Choice3 == "Query") 
+    {
         yResults = Probability(allTextLines, jsonEvaluation.Choice1, jsonEvaluation.Choice2, "True", jsonEvaluation.Choice4);
         nResults = Probability(allTextLines, jsonEvaluation.Choice1, jsonEvaluation.Choice2, "False", jsonEvaluation.Choice4);
         result += "The third choice will be evaluated\r\n";    
-    } else if(jsonEvaluation.Choice4 == "Query") {
+    }
+    else if(jsonEvaluation.Choice4 == "Query") 
+    {
         yResults = Probability(allTextLines, jsonEvaluation.Choice1, jsonEvaluation.Choice2, jsonEvaluation.Choice3, "True");
         nResults = Probability(allTextLines, jsonEvaluation.Choice1, jsonEvaluation.Choice2, jsonEvaluation.Choice3, "False");
         result += "The fourth choice will be evaluated\r\n"; 
@@ -204,15 +223,20 @@ function EvaluateProbability(allTextLines, jsonEvaluation) {
     return result;
 }
 
-function Probability(allTextLines, choice1, choice2, choice3, choice4) {
+function Probability(allTextLines, choice1, choice2, choice3, choice4) 
+{
     var predictedChoices = choice1 + "," + choice2 + "," + choice3 + "," + choice4;
+
     console.log("Evaluating prob: " + predictedChoices);
 
     var totalCount = 0;
-    allTextLines.forEach(function(textLine) {
+    
+    allTextLines.forEach(function(textLine) 
+    {
         console.log("Evaluating textLine: " + textLine);
 
-        if(textLine == predictedChoices) {
+        if(textLine == predictedChoices) 
+        {
             totalCount++;
         }
     });
@@ -220,7 +244,8 @@ function Probability(allTextLines, choice1, choice2, choice3, choice4) {
     return totalCount;
 }
 
-function MakeGetRequest(requestedUrl, res) {
+function MakeGetRequest(requestedUrl, res) 
+{
     console.log("Making GET request for: " + requestedUrl);
 
      var requestOptions = {
@@ -239,16 +264,19 @@ function MakeGetRequest(requestedUrl, res) {
     });   
 };
 
-function SplitLinesIntoArray(allTextLines, jsonString) {
+function SplitLinesIntoArray(allTextLines, jsonString) 
+{
     var choiceOnes = [];
     var choiceTwos = [];
     var choiceThrees = [];
     var choiceFours = [];
 
-    for(i = 0; i < allTextLines.length; i++) {
+    for(i = 0; i < allTextLines.length; i++) 
+    {
         var lineEntry = allTextLines[i].split(',');
 
-        if(lineEntry == '') {
+        if(lineEntry == '') 
+        {
             continue;
         }
 
@@ -264,7 +292,8 @@ function SplitLinesIntoArray(allTextLines, jsonString) {
 
     var result = '';
     
-    if(jsonString.Choice1 == "Query") {
+    if(jsonString.Choice1 == "Query") 
+    {
         var resultOnesTwos = f(choiceOnes, choiceTwos);
         var resultOnesThrees = f(choiceOnes, choiceThrees);
         var resultOnesFours = f(choiceOnes, choiceFours);
@@ -274,21 +303,49 @@ function SplitLinesIntoArray(allTextLines, jsonString) {
         result += "The first choice will be evaluated\r\n";
     }
 
-    if(jsonString.Choice2 == "Query") {
+    if(jsonString.Choice2 == "Query") 
+    {
         result += "The second choice will be evaluated\r\n";
     } 
 
-    if(jsonString.Choice3 == "Query") {
+    if(jsonString.Choice3 == "Query") 
+    {
         result += "The third choice will be evaluated\r\n";
     }
 
-    if(jsonString.Choice4 == "Query") {
+    if(jsonString.Choice4 == "Query") 
+    {
         result += "The fourth choice will be evaluated\r\n";
     } 
 
     return result;
 }
 
-function f(a,b) {
+function f(a,b) 
+{
     //#(a,b)/totalNum     
+}
+
+function PrintComputerInformation() 
+{
+    var ifaces = os.networkInterfaces();
+    Object.keys(ifaces).forEach(function (ifname) {
+      var alias = 0;
+    
+      ifaces[ifname].forEach(function (iface) {
+        if ('IPv4' !== iface.family || iface.internal !== false) {
+          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+          return;
+        }
+    
+        if (alias >= 1) {
+          // this single interface has multiple ipv4 addresses
+          console.log(ifname + ':' + alias, iface.address);
+        } else {
+          // this interface has only one ipv4 adress
+          console.log(ifname, iface.address);
+        }
+        ++alias;
+      });
+    });
 }

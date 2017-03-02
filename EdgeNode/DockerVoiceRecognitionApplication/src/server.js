@@ -15,26 +15,25 @@ var internalPort = 3501;
 var proxyServer = httpProxy.createProxyServer({
     target: 'http://localhost:' + internalPort,
     toProxy: true
-}).listen(externalPort);
+});
 
 proxyServer.on('error', function(err) {
     console.error('ERROR WITH PROXY SERVER: ' + err.stack);
 });
 
-var createdServer = http.createServer(function (req, res) 
-{
+proxyServer.listen(externalPort);
+
+var createdServer = http.createServer(function (req, res) {
     cpu.cpuStart();
 
     console.log('Received Request');
 
     //Set error handlers
-    req.on('error', function(err) 
-    {
+    req.on('error', function(err) {
         console.error("REQUEST ERROR:\n" + err.stack);
     });
 
-    res.on('error', function(err)
-    {
+    res.on('error', function(err) {
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
 
@@ -79,12 +78,6 @@ var createdServer = http.createServer(function (req, res)
             }
         });
     }); 
-});
-
-//I don't think I should do this in production because the code continues
-createdServer.on('error',function(err)
-{
-    console.error("AN ERROR OCCURRED WITH THE SERVER: " + err.stack);
 });
 
 createdServer.listen(internalPort);
@@ -155,17 +148,20 @@ function ExecuteRemoteVoiceRecognition(fileName, requestedUrl, ogResponse)
     });
 }
 
-function EndRequest(fileName, res, dataToReturn) {
+function EndRequest(fileName, res, dataToReturn) 
+{
     var load = cpu.cpuEnd();
     dataToReturn.CPUInfo = load.percent;
     res.write(JSON.stringify(dataToReturn));
     res.end();
 
     fs.unlink(fileName, (err) => {
+        //I don't need to log if it failed
     });
 }
 
-function guid() {
+function guid() 
+{
     //http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript/2117523#2117523
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);

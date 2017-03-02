@@ -7,7 +7,7 @@ namespace DataCentreWebServer.Helpers
 {
     public class MachineLearningHelper
     {
-        internal string PerformEvaluation(MachineLearningMessage machineLearningRequest, List<string> prevResults)
+        public string PerformEvaluation(MachineLearningMessage machineLearningRequest, List<string> prevResults)
         {
             var mostCommonResult = prevResults
                                         .GroupBy(x => x)
@@ -55,7 +55,7 @@ namespace DataCentreWebServer.Helpers
             return result;
         }
 
-        internal string PrintResults(List<string> prevResults)
+        public string PrintResults(List<string> prevResults)
         {
             var result = string.Empty;
 
@@ -67,7 +67,7 @@ namespace DataCentreWebServer.Helpers
             return result;
         }
 
-        private int Probability(List<string> prevResults, string choice1, string choice2, string choice3, string choice4)
+        public int Probability(List<string> prevResults, string choice1, string choice2, string choice3, string choice4)
         {
             var predictedChoices = choice1 + "," + choice2 + "," + choice3 + "," + choice4;
             LoggerHelper.Log("Evaluating prob: " + predictedChoices);
@@ -84,7 +84,7 @@ namespace DataCentreWebServer.Helpers
             return totalCount;
         }
 
-        internal int NumberOfQueries(MachineLearningMessage machineLearningRequest)
+        public int NumberOfQueries(MachineLearningMessage machineLearningRequest)
         {
             var countNumber = 0;
 

@@ -31,3 +31,7 @@ to learn how to make requests in nodejs
 I used this;
 https://github.com/nodejitsu/node-http-proxy
 to learn how to access my web server as a proxied service
+
+I used this;
+https://blog.tompawlak.org/calculate-checksum-hash-nodejs-javascript
+to learn how to use the Crypto module

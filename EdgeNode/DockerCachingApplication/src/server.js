@@ -6,38 +6,38 @@ var url = require('url');
 var request = require('request');
 var httpProxy = require('http-proxy');
 var spawn = require('child_process').spawn;
+var crypto = require('crypto');
 
 var externalPort = process.env.port || 3001;
 var internalPort = 3500;
-var redishost = 'edgenode01';
+var masterNode = '192.168.1.185';
 var redisport = '6379';
+var redisHosts = ['192.168.1.185', 'EdgePi02', 'EdgePi03'];
+var redisClients = [];
 
 console.log("Starting...");
 
 var proxyServer = httpProxy.createProxyServer({
     target: 'http://localhost:' + internalPort,
     toProxy: true
-}).listen(externalPort);
+});
 
-proxyServer.on('error',function(err) {
+proxyServer.on('error', function(err) {
     console.error("ERROR WITH PROXY SERVER:\n" + err.stack);
 });
 
-var createdServer = http.createServer(function (req, res) 
-{
+proxyServer.listen(externalPort);
+
+var createdServer = http.createServer(function (req, res) {
     //Set error handlers
-    req.on('error', function(err) 
-    {
+    req.on('error', function(err) {
         console.error("REQUEST ERROR:\n" + err.stack);
     });
 
-    res.on('error', function(err)
-    {
+    res.on('error', function(err) {
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
 
-    //console.log("Request for: " + req.url);
-    
     var requestedUrl = req.url;
  
     if(typeof requestedUrl == 'undefined') 
@@ -54,47 +54,45 @@ var createdServer = http.createServer(function (req, res)
         }
     }
 
-    //console.log("Updated request for: " + requestedUrl);
-
     if(requestedUrl.includes("ClearCache"))
     {
-        console.log("Clear Cache Request: " + requestedUrl);
-        var command = spawn('redis-cli',['-h','edgepi01','flushall']);
-
-        var redisClearResponse = "";
-
-        command.stdout.on('data', function(data) {
-            redisClearResponse += data;
-        });
-
-        command.stderr.on('data', function(data) {
-            redisClearResponse += "ERROR: " + data;
-        });
-
-        command.on('exit', function(exitCode) {
-            redisClearResponse += "EXIT: " + exitCode;
-
-            console.log("Finished Clear Cache: " + redisClearResponse);
-    
-            res.end(redisClearResponse);
-        });
+        ClearCaches(requestedUrl, res);
     } else {
         GetOrSetRequestValueFromRedis(requestedUrl,res);
     }
 });
 
-//I don't think I should do this in production because the code continues
-createdServer.on('error',function(err)
+function ClearCaches(requestedUrl, res)
 {
-    console.error("AN ERROR OCCURRED WITH THE SERVER: " + err.stack);
-});
+    //ToDo - Clear all caches
+    console.log("Clear Cache Request: " + requestedUrl);
+        
+    var command = spawn('redis-cli',['-h', masterNode, 'flushall']);
+
+    var redisClearResponse = "";
+
+    command.stdout.on('data', function(data) {
+        redisClearResponse += data;
+    });
+
+    command.stderr.on('data', function(data) {
+        redisClearResponse += "ERROR: " + data;
+    });
+
+    command.on('exit', function(exitCode) {
+        redisClearResponse += "EXIT: " + exitCode;
+
+        console.log("Finished Clear Cache: " + redisClearResponse);
+   
+        res.end(redisClearResponse);
+    });
+}
 
 createdServer.listen(internalPort);
 
 function GetOrSetRequestValueFromRedis(requestedUrl, res) 
 {
-    redisclient.get(requestedUrl,function(err,reply)
-    {
+    redisClients[0].get(requestedUrl, function(err,reply) {
         if(err) 
         {
             console.error(err);
@@ -104,7 +102,7 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
             if(reply != null) 
             {
                 //console.log("Found " + requestedUrl + " value in redis");
-                //console.log("Found URL in redis");
+                console.log("Found URL in redis");
                 //redisResponse = reply.toString();
                 //res.writeHead(200, {'Content-Type':'text/html'});
                 //res.writeHead(200, {
@@ -123,7 +121,7 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
 function MakeAndStoreRequest(requestedUrl, res) 
 {
     //console.log("Going to make custom request to " + requestedUrl);
-    //console.log("Going to make custom request");
+    console.log("Going to make external request");
     
     var requestOptions = {
         url: requestedUrl,
@@ -131,8 +129,8 @@ function MakeAndStoreRequest(requestedUrl, res)
         encoding: null
     };
 
-    request(requestOptions, function(error,response,body) 
-    {
+    //Request.on data instead and save [] data?
+    request(requestOptions, function(error,response,body) {
         if(error)
         {
             console.error("There was an error with the custom request: " + error.stack);
@@ -154,29 +152,48 @@ function MakeAndStoreRequest(requestedUrl, res)
             res.end(body);
             //console.log("Completed request and going to store " + requestedUrl + " in Redis");
             //console.log("Completed request and going to store in Redis");
-            redisclient.set(requestedUrl,body);
+            redisClients[0].set(requestedUrl,body);
             //redisclient.expire(requestedUrl,30);
         }
     }).on('error',function(err) {
         console.error("ERROR WITH CUSTOM REQUEST: " + err.stack);
     });
 }
- 
+
+function MD5(url) 
+{
+    return crypto.createHash('md5').update(url, 'utf8').digest('hex');
+}
+
+function MD5ToMod(md5Value, mod) 
+{
+    //convert hex to dec
+    var dec = parseInt(md5Value, 16);
+    //return mod
+    return dec % mod;
+}
+
 console.log("Started Node.js server");
 
-console.log("Trying to connect to redis");
+console.log("Trying to connect to redis nodes;");
 
-var redisclient = redis.createClient(6379,'edgepi01',{
-    no_ready_check: true,
-    return_buffers: true
-});
+redisHosts.forEach(function(redisHost) {
+    console.log("Connecting to " + redisHost);
 
-redisclient.on('connect',function () 
-{
-   console.log("Connected to Redis");
-});
+    var redisClient = redis.createClient(6379, redisHost,{
+        no_ready_check: true,
+        return_buffers: true
+    });
+    
+    redisClient.on('connect', function () {
+       console.log("Connected to Redis: " + redisHost);
+    });
+    
+    redisClient.on('error', function(err) {
+        console.error("REDIS ERROR:\n" + err.stack);
+    });
 
-redisclient.on('error',function(err) 
-{
-    console.error("REDIS ERROR:\n" + err.stack);
+    redisClients.push(redisClient);
+
+    console.log("Added " + redisHost + " to clients. Total Count: " + redisClients.length);
 });
