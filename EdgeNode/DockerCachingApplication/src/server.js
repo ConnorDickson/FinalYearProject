@@ -103,7 +103,7 @@ createdServer.listen(internalPort);
 function GetOrSetRequestValueFromRedis(requestedUrl, res) 
 {
     var md5Hash = MD5(requestedUrl);
-    var md5Mod = MD5ToMod(md5Hash, 3);
+    var md5Mod = MD5ToMod(md5Hash, redisHosts.length);
     console.log("Going to try to get data from: " + md5Mod + " redisClient");
 
     redisClients[md5Mod].get(requestedUrl, function(err,reply) {
