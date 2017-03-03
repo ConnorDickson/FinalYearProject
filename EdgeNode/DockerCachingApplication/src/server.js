@@ -10,7 +10,6 @@ var crypto = require('crypto');
 
 var externalPort = process.env.port || 3001;
 var internalPort = 3500;
-var masterNode = '192.168.1.185';
 var redisport = '6379';
 var redisHosts = ['192.168.1.185', 'EdgePi02', 'EdgePi03'];
 var redisClients = [];
@@ -30,6 +29,8 @@ proxyServer.listen(externalPort);
 
 var createdServer = http.createServer(function (req, res) {
     //Set error handlers
+    console.log("New Request\n");
+
     req.on('error', function(err) {
         console.error("REQUEST ERROR:\n" + err.stack);
     });
@@ -66,33 +67,46 @@ function ClearCaches(requestedUrl, res)
 {
     //ToDo - Clear all caches
     console.log("Clear Cache Request: " + requestedUrl);
-        
-    var command = spawn('redis-cli',['-h', masterNode, 'flushall']);
+    
+    var count = 0;
+    redisHosts.forEach(function(redisHost) {
+        var command = spawn('redis-cli',['-h', redisHost, 'flushall']);
+        var redisClearResponse = "";
 
-    var redisClearResponse = "";
+        command.stdout.on('data', function(data) {
+            redisClearResponse += data;
+        });
 
-    command.stdout.on('data', function(data) {
-        redisClearResponse += data;
-    });
+        command.stderr.on('data', function(data) {
+            redisClearResponse += "ERROR: " + data;
+        });
 
-    command.stderr.on('data', function(data) {
-        redisClearResponse += "ERROR: " + data;
-    });
+        command.on('exit', function(exitCode) {
+            count++;
+            redisClearResponse += "EXIT " + redisHost + ": " + exitCode + "\r\n"; 
 
-    command.on('exit', function(exitCode) {
-        redisClearResponse += "EXIT: " + exitCode;
-
-        console.log("Finished Clear Cache: " + redisClearResponse);
-   
-        res.end(redisClearResponse);
+            console.log("Finished Clear Cache from " + redisHost + ": " + redisClearResponse);
+            res.write(redisClearResponse);
+            //If last request 
+            if(count == redisHosts.length) 
+            {
+                console.log("Reached end of request");
+                res.end();
+            }
+        });
     });
 }
+
 
 createdServer.listen(internalPort);
 
 function GetOrSetRequestValueFromRedis(requestedUrl, res) 
 {
-    redisClients[0].get(requestedUrl, function(err,reply) {
+    var md5Hash = MD5(requestedUrl);
+    var md5Mod = MD5ToMod(md5Hash, 3);
+    console.log("Going to try to get data from: " + md5Mod + " redisClient");
+
+    redisClients[md5Mod].get(requestedUrl, function(err,reply) {
         if(err) 
         {
             console.error(err);
@@ -112,13 +126,13 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
                 res.end(reply);
                 return;
             } else {
-                MakeAndStoreRequest(requestedUrl,res);
+                MakeAndStoreRequest(requestedUrl, res, md5Mod);
             }
         }
     });
 }
 
-function MakeAndStoreRequest(requestedUrl, res) 
+function MakeAndStoreRequest(requestedUrl, res, md5Mod) 
 {
     //console.log("Going to make custom request to " + requestedUrl);
     console.log("Going to make external request");
@@ -152,7 +166,7 @@ function MakeAndStoreRequest(requestedUrl, res)
             res.end(body);
             //console.log("Completed request and going to store " + requestedUrl + " in Redis");
             //console.log("Completed request and going to store in Redis");
-            redisClients[0].set(requestedUrl,body);
+            redisClients[md5Mod].set(requestedUrl,body);
             //redisclient.expire(requestedUrl,30);
         }
     }).on('error',function(err) {
