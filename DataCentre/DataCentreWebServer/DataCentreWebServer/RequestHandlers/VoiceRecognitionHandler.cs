@@ -1,5 +1,7 @@
 ﻿using DataCentreWebServer.Helpers;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -15,6 +17,28 @@ namespace DataCentreWebServer.RequestHandlers
         {
             _fileSystemHelper = fileSystemHelper;
             _voiceRecognitionHelper = voiceRecognitionHelper;
+        }
+
+        internal Task<HttpResponseMessage> EvaluateVoiceRequest(HttpRequestMessage request)
+        {
+            IEnumerable<string> dataPreProcessedHeader;
+            request.Headers.TryGetValues("DataIsPreProcessed", out dataPreProcessedHeader);
+
+            var dataIsPreProcessed = false;
+            if(dataPreProcessedHeader != null && dataPreProcessedHeader.FirstOrDefault() == "True")
+            {
+                dataIsPreProcessed = true;
+            }
+
+            if(dataIsPreProcessed)
+            {
+                return ReceivePreProcessedPostData(request);
+            }
+            else
+            {
+
+                return ReceivePostDataForProcessing(request);
+            }
         }
 
         internal async Task<HttpResponseMessage> ReceivePostDataForProcessing(HttpRequestMessage request)

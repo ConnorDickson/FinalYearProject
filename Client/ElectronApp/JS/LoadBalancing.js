@@ -11,8 +11,16 @@ window.onload = function() {
 };
 
 function ExecuteVoiceRecognitionLoadBalance() {
+    var numberOfRequests = parseInt(document.getElementById('NumberOfVoiceRecognitionRequests').value);
+
+    if(numberOfRequests > 100) {
+        document.getElementById('VoiceRecognitionResults').innerHTML = "Please make less than 100 requests";
+        return;
+    }
+    
     document.getElementById('averageLocalCPUResult').innerHTML = "Processing...";
     document.getElementById('averageRemoteCPUResult').innerHTML = "Processing...";
+    document.getElementById('requestsLeft').innerHTML = "Processing...";
     
     localStopwatch.reset();
     localStopwatch.start();
@@ -20,9 +28,7 @@ function ExecuteVoiceRecognitionLoadBalance() {
     document.getElementById('VoiceRecognitionResults').innerHTML = "";
     
     cpu.cpuStart();
-    
-    var numberOfRequests = parseInt(document.getElementById('NumberOfVoiceRecognitionRequests').value);
-    
+        
     requestsLeft = numberOfRequests;
     initialCountOfRequests = numberOfRequests;
     
@@ -36,13 +42,7 @@ function ExecuteVoiceRecognitionLoadBalance() {
 
 function ExecuteLoadBalanceRemoteVoiceRecognition() {
     fs.readFile("../../Downloads/output.wav", (err, data) => {
-        var urlToPostTo;
-
-        if(document.getElementById('useEdgeNodeCheckbox').checked) {
-            urlToPostTo = 'http://connor-pc:3000/api/voicerecognition/PostForPreProcessedData';
-        } else {
-            urlToPostTo = 'http://connor-pc:3000/api/voicerecognition/PostForProcessingData';
-        }
+        var urlToPostTo = 'http://connor-pc:3000/api/voicerecognition/PostVoiceRequest';
 
         var client = http.createClient(3002, "edgepi01");
 
@@ -72,6 +72,9 @@ function ExecuteLoadBalanceRemoteVoiceRecognition() {
 
             response.on('end', function () {
                 requestsLeft--;
+                
+                document.getElementById('requestsLeft').innerHTML = "Requests left: " + requestsLeft + '/' + initialCountOfRequests;                
+                
                 if(requestsLeft == 0) {
                     localStopwatch.stop();
                     var averageLocalCPUResult = Average(localCPURecords);

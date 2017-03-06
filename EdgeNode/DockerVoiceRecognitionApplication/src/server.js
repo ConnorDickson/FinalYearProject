@@ -3,6 +3,7 @@ var os = require('os');
 var http = require('http');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
+var stressTestCpu = require('./cpu');
 var cpu = require('./cpu');
 var httpProxy = require('http-proxy');
 var request = require('request');
@@ -11,6 +12,7 @@ console.log("Starting...");
 
 var externalPort = process.env.port || 3003;
 var internalPort = 3501;
+var serverLoadThreshold = 70;
 
 var proxyServer = httpProxy.createProxyServer({
     target: 'http://localhost:' + internalPort,
@@ -24,6 +26,7 @@ proxyServer.on('error', function(err) {
 proxyServer.listen(externalPort);
 
 var createdServer = http.createServer(function (req, res) {
+    stressTestCpu.cpuStart();
     cpu.cpuStart();
 
     console.log('Received Request');
@@ -69,7 +72,7 @@ var createdServer = http.createServer(function (req, res) {
  
             console.log("Wrote file to disk successfully");
     
-            if(req.headers['preprocess-request'] == 'true') {
+            if(req.headers['preprocess-request'] == 'true' && !SystemUnderStress()) {
                 console.log('Preprocess request by performing voice recognition on edge node');
                 PreProcessVoiceRecognition(fileName, requestedUrl, res);
             } else {
@@ -83,6 +86,19 @@ var createdServer = http.createServer(function (req, res) {
 createdServer.listen(internalPort);
 
 console.log("Started Node.js server");
+
+function SystemUnderStress() 
+{
+    var load = stressTestCpu.cpuEnd();
+
+    var result = false;
+    if(load.percent > serverLoadThreshold) {
+        console.log("System is under too much stress");
+        result = true;
+    }
+
+    return result;
+}
 
 function PreProcessVoiceRecognition(fileName, requestedUrl, res) 
 {
@@ -103,6 +119,9 @@ function PreProcessVoiceRecognition(fileName, requestedUrl, res)
     command.on('exit', function(code) {
         var requestOptions = {
             url: requestedUrl,
+            headers: {
+                'DataIsPreProcessed': 'True'
+            },
             method: 'POST',
             form: childProcessResponse
         };
@@ -111,8 +130,8 @@ function PreProcessVoiceRecognition(fileName, requestedUrl, res)
             if(error) {
                 console.log("Error with remote request: " + error);
             } else {
-                console.log("Remote PC Body: " + body);
-    
+                //console.log("Remote PC Body: " + body);
+                
                 var dataToReturn = {};
                 dataToReturn.VoiceRecognitionResponse = body;
     
@@ -138,8 +157,7 @@ function ExecuteRemoteVoiceRecognition(fileName, requestedUrl, ogResponse)
         if(error) {
             console.log("Error with remote request: " + error);
         } else {
-            console.log("Remote PC Body: " + body);
-   
+            //console.log("Remote PC Body: " + body);
             var dataToReturn = {};
             dataToReturn.VoiceRecognitionResponse = body;
     

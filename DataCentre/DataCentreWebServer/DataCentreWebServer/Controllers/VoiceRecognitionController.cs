@@ -7,17 +7,12 @@ namespace DataCentreWebServer.Controllers
 {
     public class VoiceRecognitionController : ApiController
     {
-        public async Task<HttpResponseMessage> PostForProcessingData()
+        public async Task<HttpResponseMessage> PostVoiceRequest()
         {
             var voiceRecognitionHandler = Container.ResolveVoiceRecognitionHandler();
-            var returnMessage = await voiceRecognitionHandler.ReceivePostDataForProcessing(Request);
-            return returnMessage;
-        }
 
-        public async Task<HttpResponseMessage> PostForPreProcessedData()
-        {
-            var voiceRecognitionHandler = Container.ResolveVoiceRecognitionHandler();
-            var returnMessage = await voiceRecognitionHandler.ReceivePreProcessedPostData(Request);
+            var returnMessage = await voiceRecognitionHandler.EvaluateVoiceRequest(Request);
+
             return returnMessage;
         }
     }
