@@ -8,6 +8,7 @@ var fs = require('fs');
 var externalPort = process.env.port || 3005;
 var internalPort = 3502;
 var machineLearningFilePath = "../MLResults/prevResults.txt";
+var dataCentreURL = "http://connor-pc:3000/api/MachineLearning/ProcessInfo";
 
 console.log("Starting...");
 
@@ -31,8 +32,6 @@ var createdServer = http.createServer(function (req, res) {
     res.on('error', function(err) {
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
-
-    PrintComputerInformation();
 
     var requestedUrl = req.url;
 
@@ -62,7 +61,7 @@ var createdServer = http.createServer(function (req, res) {
         console.log("Received " + req.method + " request.");
 
         if(req.method == 'POST') {
-            PreProcessRequest(requestedUrl, res, reqBody);
+            ProcessRequest(requestedUrl, res, reqBody);
         } else {
             MakeGetRequest(requestedUrl, res);
         }
@@ -78,13 +77,13 @@ createdServer.listen(internalPort);
  
 console.log("Started Node.js server");
 
-function PreProcessRequest(requestedUrl, res, reqBody) 
+function ProcessRequest(requestedUrl, res, reqBody) 
 {
-    console.log("Making POST request to " + requestedUrl); 
-
     var jsonEvaluation = JSON.parse(reqBody);
 
-    var answer = jsonEvaluation.Choice1 + "," + jsonEvaluation.Choice2 + "," + jsonEvaluation.Choice3 + "," + jsonEvaluation.Choice4 + '\r\n';
+    var answer = jsonEvaluation.Choice1 + "," + jsonEvaluation.Choice2 + "," + jsonEvaluation.Choice3 + "," + jsonEvaluation.Choice4 + "," + jsonEvaluation.Choice5 + "," + jsonEvaluation.Choice6 + '\r\n';
+
+    console.log("Received " + answer);
 
     var preProcessedData;
 
@@ -92,92 +91,51 @@ function PreProcessRequest(requestedUrl, res, reqBody)
     //We can handle all requests here if we have enough training data
     //However do we need to query it if we don't have enough training data on the edge node? Or just make it that we always do?
 
-    var queryCount = jsonQueryCount(jsonEvaluation);
-    if(queryCount == 1) {
-        preProcessedData = PreProcessData(jsonEvaluation);
-    } else if(queryCount > 1) {
-        preProcessedData = "Too many queries";
-    } else {
-        //got to make this work for concurrent requests
-        fs.appendFileSync(machineLearningFilePath, answer);
-        preProcessedData = "Saved results to disk";
-    }    
+    fs.appendFileSync(machineLearningFilePath, answer);
+    preProcessedData = "Saved results to disk";    
+
+    //This needs to be altered I think
+    //PreProcessData(jsonEvaluation);
 
     jsonEvaluation.PreProcessedData = preProcessedData;
     
     var preProcessedString = JSON.stringify(jsonEvaluation);
 
-    var requestOptions = {
-        url: requestedUrl,
-        method: 'POST',
-        encoding: null,
-        form: preProcessedString
-    };
-
-    request.post(requestOptions, function(error,response,body) {
-        if(error) {
-            console.error("There was an error requesting content from Data Center: " + error);
-        } else {
-            console.log("Received info from Data Center");
-            res.end(body);
-        }
-    });
+    res.end(preProcessedString);
 };
-
-function jsonQueryCount(json) 
-{
-    var queryCount = 0;
-    var queryText = 'Query';
-    
-    if(json.Choice1 == queryText) 
-    {
-        queryCount++;
-    }
-    
-    if(json.Choice2 == queryText) 
-    {
-        queryCount++;
-    }
-    
-    if(json.Choice3 == queryText) 
-    {
-        queryCount++;
-    }
-    
-    if(json.Choice4 == queryText) 
-    {
-        queryCount++;
-    }
-    
-    return queryCount;
-}
 
 function PreProcessData(jsonEvaluation) 
 {
     console.log("Pre processing data");
 
-    var allText = fs.readFileSync(machineLearningFilePath).toString();
-    
-    if(typeof(allText) == "undefined") 
-    {
-        console.log("allText: " + allText);
-        return "allText is undefined";
-    }
- 
-    var allTextLines = allText.split(/\r\n|\n/);
-   
-    if(typeof(allTextLines) == "undefined") 
-    {
-        console.log("allTextLines: " + allTextLines);
-        return "allTextLines is undefined";
-    }  
-   
-    console.log("Read: " + allTextLines.length + " lines");
-    
-    //var result = SplitLinesIntoArray(allTextLines, jsonString);
-    var result = EvaluateProbability(allTextLines, jsonEvaluation);
+    fs.readFile(machineLearningFilePath, (err, data) => {
+        if(err) {
+            throw err;
+        }
 
-    return result;
+        var allText = data.toString();
+ 
+        if(typeof(allText) == "undefined") 
+        {
+            console.log("allText: " + allText);
+            return "allText is undefined";
+        }
+     
+        var allTextLines = allText.split(/\r\n|\n/);
+       
+        if(typeof(allTextLines) == "undefined") 
+        {
+            console.log("allTextLines: " + allTextLines);
+            return "allTextLines is undefined";
+        }  
+       
+        console.log("Read: " + allTextLines.length + " lines");
+        
+        //var result = SplitLinesIntoArray(allTextLines, jsonString);
+        var result = EvaluateProbability(allTextLines, jsonEvaluation);
+
+        return result;
+    });
 }
 
 function EvaluateProbability(allTextLines, jsonEvaluation) 
@@ -258,11 +216,78 @@ function MakeGetRequest(requestedUrl, res)
         if(error) {
             console.error("There was an error requesting content from Data Center: " + error);
         } else {
-            console.log("Received info from Data Center: " + body);
+            //console.log("Received info from Data Center: " + body);
             res.end(body);
         }
     });   
 };
+
+function PostResultsToDataCentreAndUpdateResults() 
+{
+    console.log("Making POST request to update DC with current results"); 
+    fs.readFile(machineLearningFilePath, (err, data) => {
+        if(err) {
+            throw err;
+        }
+
+        var allText = data.toString();
+ 
+        if(typeof(allText) == "undefined") 
+        {
+            console.log("allText: " + allText);
+            return "allText is undefined";
+        }
+     
+        var allTextLines = allText.split(/\r\n|\n/);
+       
+        if(typeof(allTextLines) == "undefined") 
+        {
+            console.log("allTextLines: " + allTextLines);
+            return "allTextLines is undefined";
+        }  
+       
+        console.log("Read: " + allTextLines.length + " lines");
+        
+        var compressedResults = [];
+
+        allTextLines.forEach(function(textLine) {
+            //Process data into block
+            compressedResults.push(textLine);
+        });
+        
+        //Get machine hostname
+        var hostname = os.hostname();
+
+        //Create JSON obj with hostname and summary of all the results currently stored on disk
+        var jsonObject = {};
+        
+        jsonObject.hostname = hostname;
+        jsonObject.results = compressedResults;
+
+        var jsonString = JSON.stringify(jsonObject);
+
+        console.log("Data to send to DC: \r\n" + jsonString);
+
+        var requestOptions = {
+            url: dataCentreURL,
+            method: 'POST',
+            encoding: null,
+            form: jsonString
+        };
+
+        request.post(requestOptions, function(error,response,body) {
+            if(error) {
+                console.error("There was an error requesting content from Data Center: " + error);
+            } else {
+                console.log("Received info from Data Center: " + body);
+                setTimeout(PostResultsToDataCentreAndUpdateResults, 30000);
+            }
+        });   
+    });
+}
+
+//This will send updated data about what is stored on disk to the data centre every 30 seconds
+setTimeout(PostResultsToDataCentreAndUpdateResults, 30000);
 
 function SplitLinesIntoArray(allTextLines, jsonString) 
 {
@@ -324,28 +349,4 @@ function SplitLinesIntoArray(allTextLines, jsonString)
 function f(a,b) 
 {
     //#(a,b)/totalNum     
-}
-
-function PrintComputerInformation() 
-{
-    var ifaces = os.networkInterfaces();
-    Object.keys(ifaces).forEach(function (ifname) {
-      var alias = 0;
-    
-      ifaces[ifname].forEach(function (iface) {
-        if ('IPv4' !== iface.family || iface.internal !== false) {
-          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-          return;
-        }
-    
-        if (alias >= 1) {
-          // this single interface has multiple ipv4 addresses
-          console.log(ifname + ':' + alias, iface.address);
-        } else {
-          // this interface has only one ipv4 adress
-          console.log(ifname, iface.address);
-        }
-        ++alias;
-      });
-    });
 }

@@ -2,67 +2,64 @@ const http = require('http');
 
 const totalChoices = 4;
 
-var prevResults;
+var prevResults = {};
 
-window.onload = function() {
-    var client = http.createClient(3004, "edgepi01");
-
-    var request = client.request('GET', 'http://connor-pc:3000/api/MachineLearning/GetResults', {
-        'Host': 'edgepi01',
-        'Port': 3004,
-        'User-Agent': 'Node.JS',
-        'Content-Type': 'application/octet-stream'
-    });
-
-    request.end();
-
-    request.on('error', function (err) {
-        console.log(err);
-    });
-
-    request.on('response', function (response) {
-        var responseData = "";
-        response.setEncoding('utf8');
-
-        response.on('data', function (chunk) {
-            responseData += chunk;
-        });
-
-        response.on('end', function () {
-            var jsonData = JSON.parse(responseData);
-            prevResults = jsonData;
-            localStorage.setItem('prevResults', prevResults);
-//            document.getElementById('requestResult').innerHTML = prevResults.PrevResults + " " + prevResults.Evaluation;
-        });
-    });
-}
+//window.onload = function() {
+//    var client = http.createClient(3004, "edgepi01");
+//
+//    var request = client.request('GET', 'http://connor-pc:3000/api/MachineLearning/GetResults', {
+//        'Host': 'edgepi01',
+//        'Port': 3004,
+//        'User-Agent': 'Node.JS',
+//        'Content-Type': 'application/octet-stream'
+//    });
+//
+//    request.end();
+//
+//    request.on('error', function (err) {
+//        console.log(err);
+//    });
+//
+//    request.on('response', function (response) {
+//        var responseData = "";
+//        response.setEncoding('utf8');
+//
+//        response.on('data', function (chunk) {
+//            responseData += chunk;
+//        });
+//
+//        response.on('end', function () {
+//            var jsonData = JSON.parse(responseData);
+//            prevResults = jsonData;
+//            localStorage.setItem('prevResults', prevResults);
+////            document.getElementById('requestResult').innerHTML = prevResults.PrevResults + " " + prevResults.Evaluation;
+//        });
+//    });
+//}
 
 function EvaluateButtonClick() 
 {
-    var selectedChoice = event.srcElement.innerHTML;
+    var selectedChoice = event.srcElement.parentElement.children[0].innerHTML;
 
-    var choiceNum = event.srcElement.parentElement.id;
+    var genre = event.srcElement.parentElement.getAttribute('genre');
     
-    document.getElementById(choiceNum + "Result").innerHTML = selectedChoice;
+    var choiceNum = event.srcElement.parentElement.id;
+        
+    SendResults(genre);
 }
 
-function SendResults() {
+function SendResults(genre) {    
     var client = http.createClient(3004, "edgepi01");
     
-    var choice1 = document.getElementById('Choice1Result').innerHTML;
-    var choice2 = document.getElementById('Choice2Result').innerHTML;
-    var choice3 = document.getElementById('Choice3Result').innerHTML;
-    var choice4 = document.getElementById('Choice4Result').innerHTML;
-
-    if(!ValidateUserData(choice1, choice2, choice3, choice4)) {
-        return;
-    }
+    var genreArray = genre.split('');
+        
+    prevResults.Choice1 = genreArray[0];
+    prevResults.Choice2 = genreArray[1];
+    prevResults.Choice3 = genreArray[2];
+    prevResults.Choice4 = genreArray[3];
+    prevResults.Choice5 = genreArray[4];
+    prevResults.Choice6 = genreArray[5];
     
-    prevResults.Choice1 = choice1;
-    prevResults.Choice2 = choice2;
-    prevResults.Choice3 = choice3;
-    prevResults.Choice4 = choice4; 
-
     var requestData = JSON.stringify(prevResults);
     
     var request = client.request('POST', 'http://connor-pc:3000/api/MachineLearning/ProcessInfo', {
@@ -93,40 +90,7 @@ function SendResults() {
             var jsonData = JSON.parse(responseData);
             prevResults = jsonData;
             localStorage.setItem('prevResults', prevResults);
-            document.getElementById('requestResult').innerHTML = "PreProcessedData: " + prevResults.PreProcessedData + "<br><br>" + "Evaluation: " + prevResults.Evaluation;
+            document.getElementById('recommendations').innerHTML = "PreProcessedData: " + prevResults.PreProcessedData + "<br><br>" + "Evaluation: " + prevResults.Evaluation;
         });
     });
-}
-
-function ValidateUserData(choice1, choice2, choice3, choice4) {
-    if(choice1 == "" || choice2 == "" || choice3 == "" || choice4 == "") {
-        document.getElementById('requestResult').innerHTML = "Please fill out the responses";
-        return false;
-    }
-    
-    var queryCount = 0;
-    var queryText = 'Query';
-    
-    if(choice1 == queryText) {
-        queryCount++;
-    }
-    
-    if(choice2 == queryText) {
-        queryCount++;
-    }
-    
-    if(choice3 == queryText) {
-        queryCount++;
-    }
-    
-    if(choice4 == queryText) {
-        queryCount++;
-    }
-    
-    if(queryCount > 1) {
-        document.getElementById('requestResult').innerHTML = "Please only query one value";
-        return false;
-    }
-    
-    return true;
 }

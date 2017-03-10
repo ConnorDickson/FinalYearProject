@@ -16,41 +16,41 @@ namespace DataCentreWebServer.Helpers
                                         .FirstOrDefault();
 
             var result = "The most common result is: " + mostCommonResult + Environment.NewLine;
-            var yResults = 0;
-            var nResults = 0;
+            //var yResults = 0;
+            //var nResults = 0;
 
-            if (machineLearningRequest.Choice1 == Constants.MachineLearning.Query)
-            {
-                yResults = Probability(prevResults, "True", machineLearningRequest.Choice2, machineLearningRequest.Choice3, machineLearningRequest.Choice4);
-                nResults = Probability(prevResults, "False", machineLearningRequest.Choice2, machineLearningRequest.Choice3, machineLearningRequest.Choice4);
-                result += "The first choice will be evaluated" + Environment.NewLine;
-            }
-            else if (machineLearningRequest.Choice2 == Constants.MachineLearning.Query)
-            {
-                yResults = Probability(prevResults, machineLearningRequest.Choice1, "True", machineLearningRequest.Choice3, machineLearningRequest.Choice4);
-                nResults = Probability(prevResults, machineLearningRequest.Choice1, "False", machineLearningRequest.Choice3, machineLearningRequest.Choice4);
-                result += "The second choice will be evaluated" + Environment.NewLine;
-            }
-            else if (machineLearningRequest.Choice3 == Constants.MachineLearning.Query)
-            {
-                yResults = Probability(prevResults, machineLearningRequest.Choice1, machineLearningRequest.Choice2, "True", machineLearningRequest.Choice4);
-                nResults = Probability(prevResults, machineLearningRequest.Choice1, machineLearningRequest.Choice2, "False", machineLearningRequest.Choice4);
-                result += "The third choice will be evaluated" + Environment.NewLine;
-            }
-            else if (machineLearningRequest.Choice4 == Constants.MachineLearning.Query)
-            {
-                yResults = Probability(prevResults, machineLearningRequest.Choice1, machineLearningRequest.Choice2, machineLearningRequest.Choice3, "True");
-                nResults = Probability(prevResults, machineLearningRequest.Choice1, machineLearningRequest.Choice2, machineLearningRequest.Choice2, "False");
-                result += "The fourth choice will be evaluated" + Environment.NewLine;
-            }
+            //if (machineLearningRequest.Choice1 == Constants.MachineLearning.Query)
+            //{
+            //    yResults = Probability(prevResults, "True", machineLearningRequest.Choice2, machineLearningRequest.Choice3, machineLearningRequest.Choice4);
+            //    nResults = Probability(prevResults, "False", machineLearningRequest.Choice2, machineLearningRequest.Choice3, machineLearningRequest.Choice4);
+            //    result += "The first choice will be evaluated" + Environment.NewLine;
+            //}
+            //else if (machineLearningRequest.Choice2 == Constants.MachineLearning.Query)
+            //{
+            //    yResults = Probability(prevResults, machineLearningRequest.Choice1, "True", machineLearningRequest.Choice3, machineLearningRequest.Choice4);
+            //    nResults = Probability(prevResults, machineLearningRequest.Choice1, "False", machineLearningRequest.Choice3, machineLearningRequest.Choice4);
+            //    result += "The second choice will be evaluated" + Environment.NewLine;
+            //}
+            //else if (machineLearningRequest.Choice3 == Constants.MachineLearning.Query)
+            //{
+            //    yResults = Probability(prevResults, machineLearningRequest.Choice1, machineLearningRequest.Choice2, "True", machineLearningRequest.Choice4);
+            //    nResults = Probability(prevResults, machineLearningRequest.Choice1, machineLearningRequest.Choice2, "False", machineLearningRequest.Choice4);
+            //    result += "The third choice will be evaluated" + Environment.NewLine;
+            //}
+            //else if (machineLearningRequest.Choice4 == Constants.MachineLearning.Query)
+            //{
+            //    yResults = Probability(prevResults, machineLearningRequest.Choice1, machineLearningRequest.Choice2, machineLearningRequest.Choice3, "True");
+            //    nResults = Probability(prevResults, machineLearningRequest.Choice1, machineLearningRequest.Choice2, machineLearningRequest.Choice2, "False");
+            //    result += "The fourth choice will be evaluated" + Environment.NewLine;
+            //}
 
-            if (yResults > nResults)
-            {
-                result += "The result is True";
-            } else
-            {
-                result += "The result is False";
-            }
+            //if (yResults > nResults)
+            //{
+            //    result += "The result is True";
+            //} else
+            //{
+            //    result += "The result is False";
+            //}
 
             return result;
         }
@@ -82,33 +82,6 @@ namespace DataCentreWebServer.Helpers
             }
 
             return totalCount;
-        }
-
-        public int NumberOfQueries(MachineLearningMessage machineLearningRequest)
-        {
-            var countNumber = 0;
-
-            if(machineLearningRequest.Choice1 == "Query")
-            {
-                countNumber++;
-            }
-
-            if (machineLearningRequest.Choice2 == "Query")
-            {
-                countNumber++;
-            }
-
-            if (machineLearningRequest.Choice3 == "Query")
-            {
-                countNumber++;
-            }
-
-            if (machineLearningRequest.Choice4 == "Query")
-            {
-                countNumber++;
-            }
-
-            return countNumber;
         }
     }
 }

@@ -20,27 +20,36 @@ namespace DataCentreWebServer.RequestHandlers
 
         public async Task<HttpResponseMessage> ProcessRequest(HttpRequestMessage request)
         {
-            var requestData = await request.Content.ReadAsStringAsync();
-            var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
-            var prevResults = _fileSystemHelper.ReadPreviousMachineLearningAnswers();
+            //Receive summary information from node
+            //Store summary info with node name
+            //Summarise all other data from all other nodes 
+            //Return summariesed data to requesting node (use compressedResults property)
 
-            machineLearningRequest.PrevResults = prevResults;
-            var numOfQueries = _machineLearningHelper.NumberOfQueries(machineLearningRequest);
-            if (numOfQueries == 1)
-            {
-                var machineLearningEvaluation = _machineLearningHelper.PerformEvaluation(machineLearningRequest, prevResults);
-                machineLearningRequest.Evaluation = machineLearningEvaluation;
-            }
-            else if (numOfQueries > 1)
-            {
-                machineLearningRequest.Evaluation = "Too many queries";
-            }
-            else
-            {
-                var answer = machineLearningRequest.Choice1 + "," + machineLearningRequest.Choice2 + "," + machineLearningRequest.Choice3 + "," + machineLearningRequest.Choice4;
-                _fileSystemHelper.WriteMachineLearningAnswerToDisk(answer);
-                machineLearningRequest.Evaluation = "Written answer to DC disk";
-            }
+            var requestData = await request.Content.ReadAsStringAsync();
+
+            LoggerHelper.Log(requestData);
+
+            var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
+
+            //var prevResults = _fileSystemHelper.ReadPreviousMachineLearningAnswers();
+
+            //machineLearningRequest.PrevResults = prevResults;
+            //var numOfQueries = _machineLearningHelper.NumberOfQueries(machineLearningRequest);
+            //if (numOfQueries == 1)
+            //{
+            //    var machineLearningEvaluation = _machineLearningHelper.PerformEvaluation(machineLearningRequest, prevResults);
+            //    machineLearningRequest.Evaluation = machineLearningEvaluation;
+            //}
+            //else if (numOfQueries > 1)
+            //{
+            //    machineLearningRequest.Evaluation = "Too many queries";
+            //}
+            //else
+            //{
+            //    var answer = machineLearningRequest.Choice1 + "," + machineLearningRequest.Choice2 + "," + machineLearningRequest.Choice3 + "," + machineLearningRequest.Choice4;
+            //    _fileSystemHelper.WriteMachineLearningAnswerToDisk(answer);
+            //    machineLearningRequest.Evaluation = "Written answer to DC disk";
+            //}
 
             var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
 
@@ -58,8 +67,8 @@ namespace DataCentreWebServer.RequestHandlers
             var machineLearningEvaluation = _machineLearningHelper.PrintResults(prevResults);
             
             MachineLearningMessage machineLearningResponse = new MachineLearningMessage();
-            machineLearningResponse.PrevResults = prevResults;
-            machineLearningResponse.Evaluation = machineLearningEvaluation;
+            //machineLearningResponse.PrevResults = prevResults;
+            //machineLearningResponse.Evaluation = machineLearningEvaluation;
 
             var jsonString = JsonConvert.SerializeObject(machineLearningResponse);
             var response = new HttpResponseMessage();
