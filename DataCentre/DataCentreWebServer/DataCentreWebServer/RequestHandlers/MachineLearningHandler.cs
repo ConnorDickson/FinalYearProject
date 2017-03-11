@@ -26,8 +26,6 @@ namespace DataCentreWebServer.RequestHandlers
                 //Receive summary information from node
                 var requestData = await request.Content.ReadAsStringAsync();
 
-                LoggerHelper.Log(requestData);
-
                 var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
 
                 //Store summary info with node name

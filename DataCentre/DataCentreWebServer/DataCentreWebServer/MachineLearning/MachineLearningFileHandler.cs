@@ -1,8 +1,10 @@
 ﻿using DataCentreWebServer.Helpers;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Web;
+using System.Linq;
 
 namespace DataCentreWebServer.MachineLearning
 {
@@ -67,17 +69,61 @@ namespace DataCentreWebServer.MachineLearning
 
             try
             {
-            //read all lines except for the machineName of the requesting host
-            //Add all other common ones together. So if M1 and M2 both have TTTTT that becomes TTTTT 2
-            //We should trim the first bit up to ':' then split by ';' so we have each result and then substring by ' ' so we have the count
-            //dfac90f46307: F,T,F,F,F,F 2; F,F,T,F,F,F 2; F,F,F,T,F,F 4; F,F,F,F,T,F 3;
+                //read all lines except for the machineName of the requesting host
+                //Add all other common ones together. So if M1 and M2 both have TTTTT that becomes TTTTT 2
+                //We should trim the first bit up to ':' then split by ';' so we have each result and then substring by ' ' so we have the count
+                //dfac90f46307: F,T,F,F,F,F 2; F,F,T,F,F,F 2; F,F,F,T,F,F 4; F,F,F,F,T,F 3;
+                var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
+                var filePath = rootPath + Constants.MachineLearning.MachineLearningFile;
+                var lines = File.ReadAllLines(filePath);
 
-                return null;
+                List<string[]> totalResults = new List<string[]>();
+                //Each line is from a unique node
+                foreach (var line in lines)
+                {
+                    if (line.StartsWith(hostRequestingAllResults))
+                    {
+                        continue;
+                    }
+
+                    //Get components of line
+                    var lineWithoutHost = line.Substring(line.LastIndexOf(':') + 1, line.Length - ( line.LastIndexOf(':') + 1));
+                    var results = lineWithoutHost.Split(';');
+                    foreach(var result in results)
+                    {
+                        if(result.Length == 0)
+                        {
+                            continue;
+                        }
+
+                        //If the choice has already been recorded in the list
+                        var choice = result.Substring(0, result.LastIndexOf(' '));
+                        var count = result.Substring(result.LastIndexOf(' '), result.Length - result.LastIndexOf(' '));
+
+                        if (totalResults.FirstOrDefault(x => x[0].Equals(choice)) != null)
+                        {
+                            //Split this up to make it more robust
+                            totalResults.FirstOrDefault(x => x[0].Equals(choice))[1] = (int.Parse(totalResults.FirstOrDefault(x => x[0].Equals(choice))[1]) + int.Parse(count)).ToString();
+                        }
+                        else
+                        {
+                            totalResults.Add(new string[2] { choice, count });
+                        }
+                    }                    
+                }
+
+                return totalResults.ToArray();
+            }
+            catch(Exception ex)
+            {
+                LoggerHelper.Log("An error occurred while counting the results: " + ex.Message + "\n" + ex.StackTrace);
             }
             finally
             {
                 _readWriteLock.ExitReadLock();
             }
+
+            return null;
         }
     }
 }
