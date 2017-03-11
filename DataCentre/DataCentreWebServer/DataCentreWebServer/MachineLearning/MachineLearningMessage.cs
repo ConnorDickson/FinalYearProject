@@ -4,7 +4,7 @@ namespace DataCentreWebServer.MachineLearning
 {
     public class MachineLearningMessage
     {
-        List<string> compressedResults;
-        string hostName;
+        public string[][] results;
+        public string hostName;
     }
 }

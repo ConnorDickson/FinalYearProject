@@ -7,7 +7,8 @@ var fs = require('fs');
 
 var externalPort = process.env.port || 3005;
 var internalPort = 3502;
-var machineLearningFilePath = "../MLResults/prevResults.txt";
+var machineLearningLocalResultsFilePath = "../MLResults/LocalResults.txt";
+var machineLearningRemoteResultsFilePath = "../MLResults/RemoteResults.txt";
 var dataCentreURL = "http://connor-pc:3000/api/MachineLearning/ProcessInfo";
 
 console.log("Starting...");
@@ -58,12 +59,14 @@ var createdServer = http.createServer(function (req, res) {
     });
 
     req.on('end', function() {
-        console.log("Received " + req.method + " request.");
+        var jsonObject = JSON.parse(reqBody);
 
-        if(req.method == 'POST') {
-            ProcessRequest(requestedUrl, res, reqBody);
+        if(requestedUrl != 'GetRecommendations') {
+            ProcessRequest(res, jsonObject);
         } else {
-            MakeGetRequest(requestedUrl, res);
+            //This get request should produce a reccommendation and not query the DC
+            console.log("Request was for recommendations");
+            ProcessRecommendationRequest(res, jsonObject);
         }
     });
 });
@@ -77,28 +80,23 @@ createdServer.listen(internalPort);
  
 console.log("Started Node.js server");
 
-function ProcessRequest(requestedUrl, res, reqBody) 
+function ProcessRequest(res, jsonEvaluation) 
 {
-    var jsonEvaluation = JSON.parse(reqBody);
-
-    var answer = jsonEvaluation.Choice1 + "," + jsonEvaluation.Choice2 + "," + jsonEvaluation.Choice3 + "," + jsonEvaluation.Choice4 + "," + jsonEvaluation.Choice5 + "," + jsonEvaluation.Choice6 + '\r\n';
+    var answer = jsonEvaluation.UserID + ":" + jsonEvaluation.Choice1 + "," + jsonEvaluation.Choice2 + "," + jsonEvaluation.Choice3 + "," + jsonEvaluation.Choice4 + "," + jsonEvaluation.Choice5 + "," + jsonEvaluation.Choice6 + '\r\n';
 
     console.log("Received " + answer);
 
     var preProcessedData;
 
-    //Here could be an example of when the data centre does not need to be queried?
-    //We can handle all requests here if we have enough training data
-    //However do we need to query it if we don't have enough training data on the edge node? Or just make it that we always do?
-
-    fs.appendFileSync(machineLearningFilePath, answer);
+    fs.appendFileSync(machineLearningLocalResultsFilePath, answer);
     preProcessedData = "Saved results to disk";    
 
     //This needs to be altered I think
     //PreProcessData(jsonEvaluation);
 
     jsonEvaluation.PreProcessedData = preProcessedData;
-    
+    jsonEvaluation.Recommendation = "This will be the result from a prediction method";
+
     var preProcessedString = JSON.stringify(jsonEvaluation);
 
     res.end(preProcessedString);
@@ -106,9 +104,12 @@ function ProcessRequest(requestedUrl, res, reqBody)
 
 function PreProcessData(jsonEvaluation) 
 {
+    //The way that a prediction needs to be made is to remove items and see which produces the highest prob
+    //See picture and notes from meeting with Cassio
+
     console.log("Pre processing data");
 
-    fs.readFile(machineLearningFilePath, (err, data) => {
+    fs.readFile(machineLearningLocalResultsFilePath, (err, data) => {
         if(err) {
             throw err;
         }
@@ -191,6 +192,10 @@ function Probability(allTextLines, choice1, choice2, choice3, choice4)
     
     allTextLines.forEach(function(textLine) 
     {
+        if(textLine == "") {
+            return;
+        }
+
         console.log("Evaluating textLine: " + textLine);
 
         if(textLine == predictedChoices) 
@@ -202,31 +207,26 @@ function Probability(allTextLines, choice1, choice2, choice3, choice4)
     return totalCount;
 }
 
-function MakeGetRequest(requestedUrl, res) 
+function ProcessRecommendationRequest(res, jsonObject)
 {
-    console.log("Making GET request for: " + requestedUrl);
+    //This will have to take into account the username
+    console.log("Processing get request and producing a reccomendation for " + jsonObject.UserID);
 
-     var requestOptions = {
-        url: requestedUrl,
-        method: 'GET',
-        encoding: null
-    };
+    var jsonEvaluation = {};
+    
+    jsonEvaluation.Recommendation = "This will be the result from a prediction method";
+ 
+    var preProcessedString = JSON.stringify(jsonEvaluation);
 
-    request(requestOptions, function(error,response,body) {
-        if(error) {
-            console.error("There was an error requesting content from Data Center: " + error);
-        } else {
-            //console.log("Received info from Data Center: " + body);
-            res.end(body);
-        }
-    });   
+    res.end(preProcessedString);
 };
 
 function PostResultsToDataCentreAndUpdateResults() 
 {
     console.log("Making POST request to update DC with current results"); 
-    fs.readFile(machineLearningFilePath, (err, data) => {
-        if(err) {
+    fs.readFile(machineLearningLocalResultsFilePath, (err, data) => {
+        if(err) 
+        {
             throw err;
         }
 
@@ -251,10 +251,31 @@ function PostResultsToDataCentreAndUpdateResults()
         var compressedResults = [];
 
         allTextLines.forEach(function(textLine) {
-            //Process data into block
-            compressedResults.push(textLine);
+            if(textLine == "") 
+            {
+                return;
+            }
+            
+            //Strip out userdata
+            var anonData = textLine.substring(textLine.lastIndexOf(":") + 1, textLine.length);
+
+            console.log("AnonData: " + anonData);
+           
+            var updatedRecord = false;
+
+            for(var i = 0; i < compressedResults.length; i++) {
+                if(compressedResults[i][0] == anonData) {
+                    compressedResults[i][1]++;
+                    updatedRecord = true;
+                }
+            }
+            
+            if(!updatedRecord) {
+                //This must be a new result
+                compressedResults.push([anonData, 1]);
+            }
         });
-        
+
         //Get machine hostname
         var hostname = os.hostname();
 
@@ -287,7 +308,12 @@ function PostResultsToDataCentreAndUpdateResults()
 }
 
 //This will send updated data about what is stored on disk to the data centre every 30 seconds
-setTimeout(PostResultsToDataCentreAndUpdateResults, 30000);
+PostResultsToDataCentreAndUpdateResults();
+
+//function DataRecord(Combination, Count) {
+//    this.Combination = Combination;
+//    this.Count = Count;
+//}
 
 function SplitLinesIntoArray(allTextLines, jsonString) 
 {

@@ -1,0 +1,9 @@
+Connor:F,T,F,F,F,F
+Connor:F,T,F,F,F,F
+Connor:F,F,T,F,F,F
+Connor:F,F,T,F,F,F
+Connor:F,F,F,T,F,F
+Connor:F,F,F,T,F,F
+Connor:F,F,F,T,F,F
+Connor:F,F,F,T,F,F
+

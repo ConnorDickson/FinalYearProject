@@ -1,6 +1,7 @@
 ﻿using System;
 using DataCentreWebServer.Helpers;
 using DataCentreWebServer.RequestHandlers;
+using DataCentreWebServer.MachineLearning;
 
 namespace DataCentreWebServer.IoC
 {
@@ -18,7 +19,7 @@ namespace DataCentreWebServer.IoC
 
         public static MachineLearningHandler ResolveMachineLearningHandler()
         {
-            return new MachineLearningHandler(ResolveMachineLearningHelper(), ResolveFileSystemHelper());
+            return new MachineLearningHandler(ResolveMachineLearningHelper(), ResolveMachineLearningFileHandler());
         }
 
         private static MachineLearningHelper ResolveMachineLearningHelper()
@@ -29,6 +30,11 @@ namespace DataCentreWebServer.IoC
         private static VoiceRecognitionHelper ResolveVoiceRecognitionHelper()
         {
             return new VoiceRecognitionHelper();
+        }
+        
+        private static MachineLearningFileHandler ResolveMachineLearningFileHandler()
+        {
+            return new MachineLearningFileHandler();
         }
 
         private static FileSystemHelper ResolveFileSystemHelper()

@@ -4,72 +4,70 @@ using DataCentreWebServer.Helpers;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using DataCentreWebServer.MachineLearning;
+using System;
 
 namespace DataCentreWebServer.RequestHandlers
 {
     public class MachineLearningHandler
     {
         private MachineLearningHelper _machineLearningHelper;
-        private FileSystemHelper _fileSystemHelper;
+        private MachineLearningFileHandler _machineLearningFileHandler;
 
-        public MachineLearningHandler(MachineLearningHelper machineLearningHelper, FileSystemHelper fileSystemHelper)
+        public MachineLearningHandler(MachineLearningHelper machineLearningHelper, MachineLearningFileHandler machineLearningFileHandler)
         {
             _machineLearningHelper = machineLearningHelper;
-            _fileSystemHelper = fileSystemHelper;
+            _machineLearningFileHandler = machineLearningFileHandler;
         }
 
         public async Task<HttpResponseMessage> ProcessRequest(HttpRequestMessage request)
         {
-            //Receive summary information from node
-            //Store summary info with node name
-            //Summarise all other data from all other nodes 
-            //Return summariesed data to requesting node (use compressedResults property)
-
-            var requestData = await request.Content.ReadAsStringAsync();
-
-            LoggerHelper.Log(requestData);
-
-            var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
-
-            //var prevResults = _fileSystemHelper.ReadPreviousMachineLearningAnswers();
-
-            //machineLearningRequest.PrevResults = prevResults;
-            //var numOfQueries = _machineLearningHelper.NumberOfQueries(machineLearningRequest);
-            //if (numOfQueries == 1)
-            //{
-            //    var machineLearningEvaluation = _machineLearningHelper.PerformEvaluation(machineLearningRequest, prevResults);
-            //    machineLearningRequest.Evaluation = machineLearningEvaluation;
-            //}
-            //else if (numOfQueries > 1)
-            //{
-            //    machineLearningRequest.Evaluation = "Too many queries";
-            //}
-            //else
-            //{
-            //    var answer = machineLearningRequest.Choice1 + "," + machineLearningRequest.Choice2 + "," + machineLearningRequest.Choice3 + "," + machineLearningRequest.Choice4;
-            //    _fileSystemHelper.WriteMachineLearningAnswerToDisk(answer);
-            //    machineLearningRequest.Evaluation = "Written answer to DC disk";
-            //}
-
-            var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
-
-            return new HttpResponseMessage()
+            try
             {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(jsonString)
-            };
+                //Receive summary information from node
+                var requestData = await request.Content.ReadAsStringAsync();
+
+                LoggerHelper.Log(requestData);
+
+                var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
+
+                //Store summary info with node name
+                _machineLearningFileHandler.StoreNodeResults(machineLearningRequest.hostName, machineLearningRequest.results);
+
+                //Summarise all other data from all other nodes 
+                var allResults = _machineLearningFileHandler.AllResultsExcept(machineLearningRequest.hostName);
+
+                //Return summariesed data to requesting node (use results property)
+                machineLearningRequest.results = allResults;
+                var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
+                
+                return new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(jsonString)
+                };
+            }
+            catch(Exception ex)
+            {
+                LoggerHelper.Log("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
+
+                return new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.InternalServerError
+                };
+            }
         }
 
         public HttpResponseMessage GenerateHttpResponse()
         {
-            var prevResults = _fileSystemHelper.ReadPreviousMachineLearningAnswers();
+            //var prevResults = _machineLearningFileHandler.AllResultsExcept();
 
-            var machineLearningEvaluation = _machineLearningHelper.PrintResults(prevResults);
+            ////Use machine learning helper to add all results of other nodes
+            //var machineLearningEvaluation = _machineLearningHelper.PrintResults(prevResults);
             
-            MachineLearningMessage machineLearningResponse = new MachineLearningMessage();
-            //machineLearningResponse.PrevResults = prevResults;
-            //machineLearningResponse.Evaluation = machineLearningEvaluation;
 
+
+
+            MachineLearningMessage machineLearningResponse = new MachineLearningMessage();
             var jsonString = JsonConvert.SerializeObject(machineLearningResponse);
             var response = new HttpResponseMessage();
             response.StatusCode = HttpStatusCode.OK;

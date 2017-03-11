@@ -11,8 +11,14 @@
         <h1>Machine Learning Application</h1>
         <button class="button" onclick="NavigateHome()">Home</button>
         <br><br>
+        <div>
+            <p class="InfoBox" >Please enter your username:        
+                    <input id="UserID" class="TextInputShort" type="text">
+                    <button class="button" onclick="Login()">Login</button>
+            </p>
+        </div>
         <!--What's the chance I like X given my tastes are a, b , c, d-->
-        <table id="RecognitionButtons" class="MachineLearningTable">
+        <table id="RecognitionButtons" class="MachineLearningTable hidden">
              <tr>
                 <td>
                     <div id="Choice1" genre="TFFFFF">
@@ -55,5 +61,7 @@
         <br>
         <br>
         <p class="InfoBox" id="recommendations"></p>
+                <p class="InfoBox" id="demo"></p>
+
     </body>
 </html>

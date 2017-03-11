@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace DataCentreWebServer.Helpers
 {
@@ -39,39 +35,6 @@ namespace DataCentreWebServer.Helpers
             }
 
             return true;
-        }
-
-        public bool WriteMachineLearningAnswerToDisk(string currentChoice)
-        {
-            var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
-            var filePath = rootPath + "\\MachineLearning\\CurrentResults.txt";
-
-            if (!File.Exists(filePath))
-            {
-                using (File.Create(filePath))
-                {
-
-                }
-            }
-
-            File.AppendAllText(filePath, currentChoice + Environment.NewLine);
-
-            return true;
-        }
-
-        internal List<string> ReadPreviousMachineLearningAnswers()
-        {
-            var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
-            var filePath = rootPath + "\\MachineLearning\\CurrentResults.txt";
-
-            if (!File.Exists(filePath))
-            {
-                return null;
-            }
-
-            var lines = File.ReadAllLines(filePath);
-            
-            return lines.ToList();
         }
 
         internal bool DeleteFile(string filePath)

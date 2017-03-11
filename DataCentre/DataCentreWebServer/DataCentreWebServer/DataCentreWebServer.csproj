@@ -113,6 +113,7 @@
     <Compile Include="Helpers\VoiceRecognitionHelper.cs" />
     <Compile Include="Helpers\InMemoryMultipartFormDataStreamProvider.cs" />
     <Compile Include="IoC\Container.cs" />
+    <Compile Include="MachineLearning\MachineLearningFileHandler.cs" />
     <Compile Include="MachineLearning\MachineLearningMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestHandlers\MachineLearningHandler.cs" />
