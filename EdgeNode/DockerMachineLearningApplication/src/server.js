@@ -36,7 +36,7 @@ var createdServer = http.createServer(function (req, res) {
 
     var requestedUrl = req.url;
 
-    console.log("Requested URL: " + requestedUrl);
+    //console.log("Requested URL: " + requestedUrl);
  
     if(typeof requestedUrl == 'undefined') 
     {
@@ -84,8 +84,6 @@ function ProcessRequest(res, jsonEvaluation)
 {
     var answer = jsonEvaluation.UserID + ":" + jsonEvaluation.Choice1 + "," + jsonEvaluation.Choice2 + "," + jsonEvaluation.Choice3 + "," + jsonEvaluation.Choice4 + "," + jsonEvaluation.Choice5 + "," + jsonEvaluation.Choice6 + '\r\n';
 
-    console.log("Received " + answer);
-
     var preProcessedData;
 
     fs.appendFileSync(machineLearningLocalResultsFilePath, answer);
@@ -107,8 +105,6 @@ function PreProcessData(jsonEvaluation)
     //The way that a prediction needs to be made is to remove items and see which produces the highest prob
     //See picture and notes from meeting with Cassio
 
-    console.log("Pre processing data");
-
     fs.readFile(machineLearningLocalResultsFilePath, (err, data) => {
         if(err) {
             throw err;
@@ -118,7 +114,6 @@ function PreProcessData(jsonEvaluation)
  
         if(typeof(allText) == "undefined") 
         {
-            console.log("allText: " + allText);
             return "allText is undefined";
         }
      
@@ -126,12 +121,9 @@ function PreProcessData(jsonEvaluation)
        
         if(typeof(allTextLines) == "undefined") 
         {
-            console.log("allTextLines: " + allTextLines);
             return "allTextLines is undefined";
         }  
        
-        console.log("Read: " + allTextLines.length + " lines");
-        
         //var result = SplitLinesIntoArray(allTextLines, jsonString);
         var result = EvaluateProbability(allTextLines, jsonEvaluation);
 
@@ -234,7 +226,6 @@ function PostResultsToDataCentreAndUpdateResults()
  
         if(typeof(allText) == "undefined") 
         {
-            console.log("allText: " + allText);
             return "allText is undefined";
         }
      
@@ -242,12 +233,9 @@ function PostResultsToDataCentreAndUpdateResults()
        
         if(typeof(allTextLines) == "undefined") 
         {
-            console.log("allTextLines: " + allTextLines);
             return "allTextLines is undefined";
         }  
        
-        console.log("Read: " + allTextLines.length + " lines");
-        
         var compressedResults = [];
 
         allTextLines.forEach(function(textLine) {
@@ -259,8 +247,6 @@ function PostResultsToDataCentreAndUpdateResults()
             //Strip out userdata
             var anonData = textLine.substring(textLine.lastIndexOf(":") + 1, textLine.length);
 
-            console.log("AnonData: " + anonData);
-           
             var updatedRecord = false;
 
             for(var i = 0; i < compressedResults.length; i++) {
@@ -287,8 +273,6 @@ function PostResultsToDataCentreAndUpdateResults()
 
         var jsonString = JSON.stringify(jsonObject);
 
-        console.log("Data to send to DC: \r\n" + jsonString);
-
         var requestOptions = {
             url: dataCentreURL,
             method: 'POST',
@@ -300,8 +284,22 @@ function PostResultsToDataCentreAndUpdateResults()
             if(error) {
                 console.error("There was an error requesting content from Data Center: " + error);
             } else {
-                console.log("Received info from Data Center: " + body);
-                setTimeout(PostResultsToDataCentreAndUpdateResults, 30000);
+                //Receive JSON body and write it to remote results
+                var returnedJson = JSON.parse(body);
+                
+                var completedString = "";
+
+                returnedJson.results.forEach(function(result) {
+                    completedString += result[0] + " " + result[1] + ";\r\n";
+                });
+
+                fs.writeFile(machineLearningRemoteResultsFilePath, completedString, (err) => {
+                    if(err) {
+                        console.log("Error with writing to remote file: " + err);
+                    } else {
+                        setTimeout(PostResultsToDataCentreAndUpdateResults, 30000);
+                    }
+                });
             }
         });   
     });
@@ -309,11 +307,6 @@ function PostResultsToDataCentreAndUpdateResults()
 
 //This will send updated data about what is stored on disk to the data centre every 30 seconds
 PostResultsToDataCentreAndUpdateResults();
-
-//function DataRecord(Combination, Count) {
-//    this.Combination = Combination;
-//    this.Count = Count;
-//}
 
 function SplitLinesIntoArray(allTextLines, jsonString) 
 {

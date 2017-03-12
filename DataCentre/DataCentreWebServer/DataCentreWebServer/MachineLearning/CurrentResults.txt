@@ -1,3 +1,10 @@
 dfac90f46307:F,T,F,F,F,F 8;F,F,T,F,F,F 8;F,F,F,T,F,F 9;F,F,F,F,T,F 5;
 dc9184b79b50:F,T,F,F,F,F 6;F,F,T,F,F,F 6;F,F,F,T,F,F 5;
 cae9eede30df:F,T,F,F,F,F 6;F,F,T,F,F,F 7;F,F,F,T,F,F 4;
+b186aebe1240:F,T,F,F,F,F 2;F,F,T,F,F,F 2;F,F,F,T,F,F 4;
+465110f8cf8f:F,T,F,F,F,F 2;F,F,T,F,F,F 2;F,F,F,T,F,F 4;
+6f4474bda506:F,T,F,F,F,F 2;F,F,T,F,F,F 2;F,F,F,T,F,F 4;
+284a8a9fa748:F,T,F,F,F,F 2;F,F,T,F,F,F 2;F,F,F,T,F,F 4;
+88ee01aff2e5:F,T,F,F,F,F 2;F,F,T,F,F,F 2;F,F,F,T,F,F 4;
+083642d6532d:F,T,F,F,F,F 2;F,F,T,F,F,F 2;F,F,F,T,F,F 4;
+2938178fc73f:F,T,F,F,F,F 2;F,F,T,F,F,F 2;F,F,F,T,F,F 4;

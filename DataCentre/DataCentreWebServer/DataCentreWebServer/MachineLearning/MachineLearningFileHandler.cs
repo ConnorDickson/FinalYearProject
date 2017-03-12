@@ -97,17 +97,22 @@ namespace DataCentreWebServer.MachineLearning
                         }
 
                         //If the choice has already been recorded in the list
-                        var choice = result.Substring(0, result.LastIndexOf(' '));
-                        var count = result.Substring(result.LastIndexOf(' '), result.Length - result.LastIndexOf(' '));
+                        var rawChoice = result.Substring(0, result.LastIndexOf(' '));
+                        var rawCount = result.Substring(result.LastIndexOf(' '), result.Length - result.LastIndexOf(' '));
 
-                        if (totalResults.FirstOrDefault(x => x[0].Equals(choice)) != null)
+                        if (totalResults.FirstOrDefault(x => x[0].Equals(rawChoice)) != null)
                         {
-                            //Split this up to make it more robust
-                            totalResults.FirstOrDefault(x => x[0].Equals(choice))[1] = (int.Parse(totalResults.FirstOrDefault(x => x[0].Equals(choice))[1]) + int.Parse(count)).ToString();
+                            var existingRawValue = totalResults.FirstOrDefault(x => x[0].Equals(rawChoice))[1];
+                            var existingIntValue = int.Parse(existingRawValue);
+                            var countInt = int.Parse(rawCount);
+                            var newCount = (existingIntValue + countInt).ToString();
+
+                            //We know this won't be null because of the if statement above
+                            totalResults.FirstOrDefault(x => x[0].Equals(rawChoice))[1] = newCount;
                         }
                         else
                         {
-                            totalResults.Add(new string[2] { choice, count });
+                            totalResults.Add(new string[2] { rawChoice, rawCount });
                         }
                     }                    
                 }
