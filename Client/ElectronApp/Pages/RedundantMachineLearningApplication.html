@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Client</title>
+        <link rel="stylesheet" type="text/css" href="../CSS/root.css">
+    </head>
+    <body>
+        <script src="../JS/Common.js"></script>
+        <script src="../JS/MachineLearning.js"></script>
+        <h1>Machine Learning Application</h1>
+        <button class="button" onclick="NavigateHome()">Home</button>
+        <br><br>
+        <div>
+            <p class="InfoBox" >Please enter your username:        
+                    <input id="UserID" class="TextInputShort" type="text">
+                    <button class="button" onclick="Login()">Login</button>
+            </p>
+        </div>
+        <!--What's the chance I like X given my tastes are a, b , c, d-->
+        <table id="RecognitionButtons" class="MachineLearningTable hidden">
+             <tr>
+                <td>
+                    <div id="Choice1" genre="TFFFFF">
+                        <h2>Animation</h2>
+                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
+                    </div>
+                </td>
+                <td>
+                    <div id="Choice2" genre="FTFFFF">
+                        <h2>Action</h2>
+                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
+                    </div>                
+                 </td>                
+                 <td>
+                    <div id="Choice3" genre="FFTFFF">
+                        <h2>Thriller</h2>
+                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
+                    </div>                
+                 </td>
+                 <td>
+                    <div id="Choice4" genre="FFFTFF">
+                        <h2>Comedy</h2>
+                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
+                    </div>                
+                 </td>
+                <td>
+                    <div id="Choice5" genre="FFFFTF">
+                        <h2>Adventure</h2>
+                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
+                    </div>                
+                 </td>
+                 <td>
+                    <div id="Choice6" genre="FFFFFT">
+                        <h2>Drama</h2>
+                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
+                    </div>                
+                 </td>
+            </tr>
+        </table>
+        <br>
+        <br>
+        <p class="InfoBox" id="recommendations"></p>
+                <p class="InfoBox" id="demo"></p>
+
+    </body>
+</html>
