@@ -17,47 +17,7 @@
                     <button class="button" onclick="Login()">Login</button>
             </p>
         </div>
-        <!--What's the chance I like X given my tastes are a, b , c, d-->
-        <table id="RecognitionButtons" class="MachineLearningTable hidden">
-             <tr>
-                <td>
-                    <div id="Choice1" genre="TFFFFF">
-                        <h2>Animation</h2>
-                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
-                    </div>
-                </td>
-                <td>
-                    <div id="Choice2" genre="FTFFFF">
-                        <h2>Action</h2>
-                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
-                    </div>                
-                 </td>                
-                 <td>
-                    <div id="Choice3" genre="FFTFFF">
-                        <h2>Thriller</h2>
-                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
-                    </div>                
-                 </td>
-                 <td>
-                    <div id="Choice4" genre="FFFTFF">
-                        <h2>Comedy</h2>
-                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
-                    </div>                
-                 </td>
-                <td>
-                    <div id="Choice5" genre="FFFFTF">
-                        <h2>Adventure</h2>
-                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
-                    </div>                
-                 </td>
-                 <td>
-                    <div id="Choice6" genre="FFFFFT">
-                        <h2>Drama</h2>
-                        <button class="button" onclick="EvaluateButtonClick()">Watch Movie</button>
-                    </div>                
-                 </td>
-            </tr>
-        </table>
+        <button id="RecommendationButton" class="button hidden" onclick="EvaluateButtonClick()">Get Recommendation</button>
         <br>
         <br>
         <p class="InfoBox" id="recommendations"></p>

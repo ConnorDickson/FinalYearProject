@@ -7,18 +7,18 @@ namespace DataCentreWebServer.Controllers
 {
     public class MachineLearningController : ApiController
     {
-        public async Task<HttpResponseMessage> ProcessInfo()
+        public HttpResponseMessage ProcessInfo()
         {
             var machineLearningHandler = Container.ResolveMachineLearningHandler();
 
-            return await machineLearningHandler.ProcessRequest(Request);
+            return machineLearningHandler.ReturnMovies(Request);
         }
 
-        public HttpResponseMessage GetResults()
+        public async Task<HttpResponseMessage> StoreResult()
         {
             var machineLearningHandler = Container.ResolveMachineLearningHandler();
 
-            return machineLearningHandler.GenerateHttpResponse();
+            return await machineLearningHandler.StoreUserResult(Request);
         }
     }
 }

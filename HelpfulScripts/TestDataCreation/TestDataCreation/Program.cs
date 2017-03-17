@@ -5,36 +5,66 @@ namespace TestDataCreation
 {
     class Program
     {
+        static char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
+        static Random rng = new Random();
+        static string filePath = Directory.GetCurrentDirectory().Trim('/') + "/TestData.txt";
+
         static void Main(string[] args)
         {
-            var numberOfLines = 0;
+            //Create test movie vectors
 
-            if (args.Length > 0)
+            for (int i = 0; i < 1000000; i++)
             {
-                int.TryParse(args[0], out numberOfLines);
-            }
+                //Method for randomising each variable
+                string movieName = alphabet[rng.Next(25)].ToString() + alphabet[rng.Next(25)] + alphabet[rng.Next(25)] + alphabet[rng.Next(25)] + alphabet[rng.Next(25)] + alphabet[rng.Next(25)] + alphabet[rng.Next(25)] + alphabet[rng.Next(25)];
+                var movieYear = RandomYearOfCreation();
+                var percentageHorror = RandomPercentage();
+                var percentageComedy = RandomPercentage();
+                var percentageAction = RandomPercentage();
+                var percentageAdventure = RandomPercentage();
+                var percentageFantasy = RandomPercentage();
+                var percentageRomance = RandomPercentage();
+                var containsViolence = RandomBoolean();
+                var containsSexualScenes = RandomBoolean();
+                var containsDrugUse = RandomBoolean();
+                var containsFlashingImages = RandomBoolean();
 
-            if(numberOfLines == 0)
-            {
-                numberOfLines = 1000;
-            }
+                //Method to write entire movie to disk
+                string movieInfo = movieName + " " +
+                                movieYear.ToString() + " " +
+                                percentageHorror + " " +
+                                percentageComedy + " " +
+                                percentageAction + " " +
+                                percentageAdventure + " " +
+                                percentageFantasy + " " +
+                                percentageRomance + " " +
+                                containsViolence + " " +
+                                containsSexualScenes + " " +
+                                containsDrugUse + " " +
+                                containsFlashingImages;
 
-            CreateData(numberOfLines);
+                WriteDataToDisk(movieInfo);
+            }
         }
 
-        private static void CreateData(int numberOfLines)
+        private static void WriteDataToDisk(string movieInfo)
         {
-            File.Create(Directory.GetCurrentDirectory().Trim('/') + "/TestData.txt");
-            //need 4 true and falses in this format "True,True,False,False" with a line break
-            
-            for(int i = 0; i < numberOfLines; i++)
-            {
-                var rand = new Random();
-                var result = rand.Next(2) <= 1 ? true : false;
-                Console.WriteLine(result);
-            }
+            File.AppendAllText(filePath, movieInfo + Environment.NewLine);
+        }
 
-            Console.ReadKey();
+        private static int RandomYearOfCreation()
+        {
+            return rng.Next(1960, 2017);
+        }
+
+        private static int RandomPercentage()
+        {
+            return rng.Next(100);
+        }
+
+        private static bool RandomBoolean()
+        {
+            return rng.Next(2) == 0;
         }
     }
 }

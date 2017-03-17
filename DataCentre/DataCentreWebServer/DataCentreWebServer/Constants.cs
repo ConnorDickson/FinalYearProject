@@ -10,7 +10,7 @@
         public static class MachineLearning
         {
             public static string Query = "Query";
-            public static string MachineLearningFile = "\\MachineLearning\\CurrentResults.txt";
+            public static string MachineLearningFile = "\\MachineLearning\\MovieData.txt";
         }
     }
 }

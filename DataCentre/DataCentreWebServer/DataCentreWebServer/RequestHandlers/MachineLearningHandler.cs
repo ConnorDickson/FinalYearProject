@@ -19,32 +19,30 @@ namespace DataCentreWebServer.RequestHandlers
             _machineLearningFileHandler = machineLearningFileHandler;
         }
 
-        public async Task<HttpResponseMessage> ProcessRequest(HttpRequestMessage request)
+        public HttpResponseMessage ReturnMovies(HttpRequestMessage request)
         {
             try
             {
-                //Receive summary information from node
-                var requestData = await request.Content.ReadAsStringAsync();
+                //Read movies from disk
+                var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
+                //Create subset of movies
+                var linesToReturn = _machineLearningHelper.Kmetoid(lines);
 
-                var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
+                //Return subset to Edge
+                var machineLearningMessage = new MachineLearningMessage()
+                {
+                    results = linesToReturn
+                };
 
-                //Store summary info with node name
-                _machineLearningFileHandler.StoreNodeResults(machineLearningRequest.hostName, machineLearningRequest.results);
+                var jsonString = JsonConvert.SerializeObject(machineLearningMessage);
 
-                //Summarise all other data from all other nodes 
-                var allResults = _machineLearningFileHandler.AllResultsExcept(machineLearningRequest.hostName);
-
-                //Return summariesed data to requesting node (use results property)
-                machineLearningRequest.results = allResults;
-                var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
-                
                 return new HttpResponseMessage()
                 {
                     StatusCode = HttpStatusCode.OK,
                     Content = new StringContent(jsonString)
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 LoggerHelper.Log("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
 
@@ -55,18 +53,16 @@ namespace DataCentreWebServer.RequestHandlers
             }
         }
 
-        public HttpResponseMessage GenerateHttpResponse()
+        internal async Task<HttpResponseMessage> StoreUserResult(HttpRequestMessage request)
         {
-            //var prevResults = _machineLearningFileHandler.AllResultsExcept();
+            var requestData = await request.Content.ReadAsStringAsync();
+            var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
 
-            ////Use machine learning helper to add all results of other nodes
-            //var machineLearningEvaluation = _machineLearningHelper.PrintResults(prevResults);
+
+            bool storedResult = _machineLearningFileHandler.StoreUserResult(machineLearningRequest);
+
             
-
-
-
-            MachineLearningMessage machineLearningResponse = new MachineLearningMessage();
-            var jsonString = JsonConvert.SerializeObject(machineLearningResponse);
+            var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
             var response = new HttpResponseMessage();
             response.StatusCode = HttpStatusCode.OK;
             response.Content = new StringContent(jsonString);

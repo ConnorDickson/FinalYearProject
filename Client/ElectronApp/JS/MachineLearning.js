@@ -4,15 +4,15 @@ const totalChoices = 4;
 
 var userID = "";
 
+//After a user logs in they need to get their own vectors (or do they make them up randomly as "Movies Watched"?)
+//Use the Javascript save locally method
 function Login() {    
     userID = document.getElementById('UserID').value;
 
-    //UserID Can't have a : in it
-    
     if(userID != "") {
         event.srcElement.parentElement.parentElement.className = "hidden";
         
-        document.getElementById('RecognitionButtons').className = "MachineLearningTable";
+        document.getElementById('RecommendationButton').className = "button";
         
         var client = http.createClient(3004, "edgepi01");
 
@@ -54,6 +54,7 @@ function Login() {
     }
 }
 
+//This now needs to compact and average vectors to get a reccommendation
 function EvaluateButtonClick() 
 {    
     var selectedChoice = event.srcElement.parentElement.children[0].innerHTML;

@@ -84,6 +84,7 @@
   <ItemGroup>
     <Content Include="Global.asax" />
     <Content Include="MachineLearning\CurrentResults.txt" />
+    <Content Include="MachineLearning\MovieData.txt" />
     <Content Include="Pocketsphinx\pocketsphinx.dll" />
     <Content Include="Pocketsphinx\pocketsphinx_batch.exe" />
     <Content Include="Pocketsphinx\pocketsphinx_continuous.exe" />
