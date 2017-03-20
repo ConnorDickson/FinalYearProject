@@ -7,7 +7,7 @@ namespace DataCentreWebServer.Controllers
 {
     public class MachineLearningController : ApiController
     {
-        public HttpResponseMessage ProcessInfo()
+        public HttpResponseMessage GetMovies()
         {
             var machineLearningHandler = Container.ResolveMachineLearningHandler();
 

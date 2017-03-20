@@ -1,16 +1,19 @@
 ﻿using DataCentreWebServer.Helpers;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Web;
-using System.Linq;
 
 namespace DataCentreWebServer.MachineLearning
 {
     public class MachineLearningFileHandler
     {
-        private static ReaderWriterLockSlim _readWriteLock = new ReaderWriterLockSlim();
+        ReaderWriterLockSlim _readWriteLock;
+
+        public MachineLearningFileHandler()
+        {
+            _readWriteLock = new ReaderWriterLockSlim();
+        }
 
         public string[] GetMovieLinesFromDisk()
         {

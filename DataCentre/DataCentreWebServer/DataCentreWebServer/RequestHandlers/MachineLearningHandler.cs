@@ -26,8 +26,8 @@ namespace DataCentreWebServer.RequestHandlers
                 //Read movies from disk
                 var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
                 //Create subset of movies
-                var linesToReturn = _machineLearningHelper.Kmetoid(lines);
-
+                var linesToReturn = _machineLearningHelper.KMedoids(lines);
+                
                 //Return subset to Edge
                 var machineLearningMessage = new MachineLearningMessage()
                 {

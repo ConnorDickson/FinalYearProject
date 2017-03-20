@@ -24,7 +24,7 @@ namespace DataCentreWebServer.IoC
 
         private static MachineLearningHelper ResolveMachineLearningHelper()
         {
-            return new MachineLearningHelper();
+            return new MachineLearningHelper(ResolveMovieParser());
         }
 
         private static VoiceRecognitionHelper ResolveVoiceRecognitionHelper()
@@ -40,6 +40,11 @@ namespace DataCentreWebServer.IoC
         private static FileSystemHelper ResolveFileSystemHelper()
         {
             return new FileSystemHelper();
+        }
+
+        private static MovieParser ResolveMovieParser()
+        {
+            return new MovieParser();
         }
     }
 }

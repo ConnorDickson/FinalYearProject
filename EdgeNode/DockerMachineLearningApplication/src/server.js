@@ -8,7 +8,7 @@ var fs = require('fs');
 var externalPort = process.env.port || 3005;
 var internalPort = 3502;
 var movieDataFilePath = "../MLResults/MovieVectors.txt";
-var dataCentreURL = "http://connor-pc:3000/api/MachineLearning/ProcessInfo";
+var dataCentreMoviesURL = "http://connor-pc:3000/api/MachineLearning/GetMovies";
 
 console.log("Starting...");
 
@@ -79,11 +79,23 @@ console.log("Started Node.js server");
 
 function ProcessRequest(res, jsonEvaluation) 
 {
+    //With this one we need to send the data to the server too
     var predictionData = ProduceRecommendation(jsonEvaluation);
 
     jsonEvaluation.Recommendation = predictionData;
 
     var preProcessedString = JSON.stringify(jsonEvaluation);
+
+    res.end(preProcessedString);
+};
+
+function ProcessRecommendationRequest(res, jsonObject)
+{
+    //This will have to take into account the username
+
+    jsonObject.Recommendation = ProduceRecommendation(jsonObject);
+ 
+    var preProcessedString = JSON.stringify(jsonObject);
 
     res.end(preProcessedString);
 };
@@ -113,23 +125,11 @@ function ProduceRecommendation(jsonEvaluation)
         console.log("Working out a recommendation for: " + jsonEvaluation.UserID);
 
         var userLines = jsonEvaluation.UserVector;
-
-        
+      
 
         return ; 
     });
 }
-
-function ProcessRecommendationRequest(res, jsonObject)
-{
-    //This will have to take into account the username
-
-    jsonObject.Recommendation = ProduceRecommendation(jsonObject);
- 
-    var preProcessedString = JSON.stringify(jsonObject);
-
-    res.end(preProcessedString);
-};
 
 function SendUserViewToDataCentre(jsonObject) 
 {
@@ -161,3 +161,29 @@ function SendUserViewToDataCentre(jsonObject)
         }
     });   
 }
+
+function GetMoviesFromDataCentre() 
+{
+    request.get(dataCentreMoviesURL, function(error,response,body) {
+        if(error) {
+            console.error("There was an error requesting content from Data Center: " + error);
+        } else {
+           //Receive JSON body and write it to remote results
+            var returnedJson = JSON.parse(body);
+
+            var completedString = "";
+
+            returnedJson.results.forEach(function(result) {
+                completedString += result.MovieTitle + result.Year + result.PercentageHorror + result.ContainsViolence+ ";\r\n";
+            });
+
+            fs.writeFile(movieDataFilePath, completedString, (err) => {
+                if(err) {
+                    console.log("Error with writing to remote file: " + err);
+                } 
+            });
+        }
+    });   
+}
+
+GetMoviesFromDataCentre()
