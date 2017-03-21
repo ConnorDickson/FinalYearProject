@@ -16,6 +16,7 @@ namespace TestDataCreation
             for (int i = 0; i < 1000000; i++)
             {
                 //Method for randomising each variable
+                int movieID = i;
                 string movieName = alphabet[rng.Next(25)].ToString() + alphabet[rng.Next(25)] + alphabet[rng.Next(25)] + alphabet[rng.Next(25)] + alphabet[rng.Next(25)] + alphabet[rng.Next(25)] + alphabet[rng.Next(25)] + alphabet[rng.Next(25)];
                 var movieYear = RandomYearOfCreation();
                 var percentageHorror = RandomPercentage();
@@ -30,7 +31,8 @@ namespace TestDataCreation
                 var containsFlashingImages = RandomBoolean();
 
                 //Method to write entire movie to disk
-                string movieInfo = movieName + " " +
+                string movieInfo = movieID + " " +
+                                movieName + " " +
                                 movieYear.ToString() + " " +
                                 percentageHorror + " " +
                                 percentageComedy + " " +

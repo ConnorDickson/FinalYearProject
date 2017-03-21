@@ -20,7 +20,12 @@ namespace DataCentreWebServer.Helpers
             return result;
         }
 
-        internal Movie[] KMedoids(string[] lines)
+        public Movie[] ParseLines(string[] lines)
+        {
+            return _movieParser.ParseMovies(lines);
+        }
+
+        public Movie[] KMedoids(string[] lines)
         {
             var movies = _movieParser.ParseMovies(lines);
 
@@ -30,9 +35,23 @@ namespace DataCentreWebServer.Helpers
                 //k - evaluation to send a big variation of movies to Edge (maybe 1000?)
             }
 
-            movies = movies.Take(4).ToArray();
+            movies = movies.Take(10000).ToArray();
 
             return movies;
+        }
+
+        internal Movie ChooseRandomMovie(string[] lines)
+        {
+            Random rng = new Random();
+
+            int movieNumber = rng.Next(Constants.MachineLearning.MaxNumMovies);
+            var movies = _movieParser.ParseMovies(lines);
+            if(movies.Length > movieNumber)
+            {
+                return movies[movieNumber];
+            }
+
+            return null;
         }
     }
 }

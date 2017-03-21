@@ -61,6 +61,8 @@ var createdServer = http.createServer(function (req, res) {
         var jsonObject = JSON.parse(reqBody);
 
         if(requestedUrl != 'GetRecommendations') {
+            //Either a request to watch a random movie
+            // or a request to watch a movie that was recommended
             ProcessRequest(res, jsonObject);
         } else {
             ProcessRecommendationRequest(res, jsonObject);
@@ -80,6 +82,7 @@ console.log("Started Node.js server");
 function ProcessRequest(res, jsonEvaluation) 
 {
     //With this one we need to send the data to the server too
+    //This request will have a movie they are watching (from a recommendation)
     var predictionData = ProduceRecommendation(jsonEvaluation);
 
     jsonEvaluation.Recommendation = predictionData;
@@ -149,7 +152,7 @@ function SendUserViewToDataCentre(jsonObject)
             
             var completedString = "";
 
-            returnedJson.results.forEach(function(result) {
+            returnedJson.Results.forEach(function(result) {
                 completedString += result[0] + " " + result[1] + ";\r\n";
             });
 
@@ -173,8 +176,8 @@ function GetMoviesFromDataCentre()
 
             var completedString = "";
 
-            returnedJson.results.forEach(function(result) {
-                completedString += result.MovieTitle + result.Year + result.PercentageHorror + result.ContainsViolence+ ";\r\n";
+            returnedJson.Results.forEach(function(result) {
+                completedString += result.Title + result.Year + result.PercentageHorror + result.ContainsViolence+ ";\r\n";
             });
 
             fs.writeFile(movieDataFilePath, completedString, (err) => {

@@ -2,7 +2,8 @@
 {
     public class MachineLearningMessage
     {
-        public Movie[] results;
-        public string hostName;
+        public string UserID;
+        public Movie[] Results;
+        public string Recommendation;
     }
 }

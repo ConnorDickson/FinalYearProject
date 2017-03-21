@@ -8,6 +8,7 @@ var recorder;
 var currentlyRecording = false;
 var localStopwatch;
 var remoteStopwatch;
+var filePath = "../../Downloads/output.wav";
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
@@ -74,7 +75,7 @@ function ExecuteRemoteVoiceRecognition() {
     cpu.cpuStart();
     SetRemoteResultsAsProcessing();
     
-    var data = fs.readFileSync("../../Downloads/output.wav"),
+    var data = fs.readFileSync(filePath),
         client,
         request;
     
@@ -116,6 +117,7 @@ function SetLocalResultsAsProcessing() {
     document.getElementById('localSysProcessor').innerHTML = "Processing...";
     document.getElementById('localSysMemory').innerHTML = "Processing...";
     document.getElementById('localResultsParagraph').innerHTML = "Processing...";
+    document.getElementById('localRecordingFileSize').innerHTML = "Processing...";
 }
 
 function SetRemoteResultsAsProcessing() {
@@ -123,16 +125,20 @@ function SetRemoteResultsAsProcessing() {
     document.getElementById('edgeNodeProcessor').innerHTML =  "Processing...";
     document.getElementById('remoteSysMemory').innerHTML = "Processing...";
     document.getElementById('remoteResultsParagraph').innerHTML = "Processing...";
+    document.getElementById('remoteRecordingFileSize').innerHTML = "Processing...";
 }
 
 function SetLocalResultsAsFinished(response) {
     var load = cpu.cpuEnd();
     localStopwatch.stop();
     var freeMemory = cpu.freeMemory();
-    
+
     document.getElementById('localResultsParagraph').innerHTML = "You said: \"" + response.trim() + "\"";
     document.getElementById('localSysMemory').innerHTML = freeMemory + "GB RAM Free.";
-    document.getElementById('localSysProcessor').innerHTML = load.percent + "% CPU Usage.";
+    document.getElementById('localSysProcessor').innerHTML = load.percent + "% CPU Usage.";    
+        
+    var stats = fs.statSync(filePath);
+    document.getElementById('localRecordingFileSize').innerHTML = "File Size:  " + stats.size;
 }
 
 function SetRemoteResultsAsFinished(responseData) {
@@ -145,6 +151,9 @@ function SetRemoteResultsAsFinished(responseData) {
     document.getElementById('remoteSysMemory').innerHTML = freeMemory + "GB Local RAM Free.";
     document.getElementById('remoteSysProcessor').innerHTML = load.percent + "% Local CPU Usage.";
     document.getElementById('edgeNodeProcessor').innerHTML =  jsonResult.CPUInfo + "% Edge Node CPU Usage";
+    
+    var stats = fs.statSync(filePath);
+    document.getElementById('remoteRecordingFileSize').innerHTML = "File Size:  " + stats.size;
 }
 
 window.onload = function() {

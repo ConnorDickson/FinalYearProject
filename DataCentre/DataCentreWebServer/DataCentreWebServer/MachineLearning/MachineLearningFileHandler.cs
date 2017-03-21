@@ -1,5 +1,6 @@
 ﻿using DataCentreWebServer.Helpers;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Web;
@@ -8,21 +9,16 @@ namespace DataCentreWebServer.MachineLearning
 {
     public class MachineLearningFileHandler
     {
-        ReaderWriterLockSlim _readWriteLock;
+        //This would ideally all be done with a database rather than storing it in a file on disk.
 
-        public MachineLearningFileHandler()
-        {
-            _readWriteLock = new ReaderWriterLockSlim();
-        }
+        ReaderWriterLockSlim _readerWriterLock = new ReaderWriterLockSlim();
 
         public string[] GetMovieLinesFromDisk()
         {
-            _readWriteLock.EnterReadLock();
-
             try
             {
                 var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
-                var filePath = rootPath + Constants.MachineLearning.MachineLearningFile;
+                var filePath = rootPath + Constants.MachineLearning.MovieDataFile;
                 var lines = File.ReadAllLines(filePath);
                 return lines;
             }
@@ -30,46 +26,118 @@ namespace DataCentreWebServer.MachineLearning
             {
                 LoggerHelper.Log(ex.Message + "\n" + ex.StackTrace);
             }
-            finally
-            {
-                _readWriteLock.ExitReadLock();
-            }
 
             return null;
         }
 
-        internal bool StoreUserResult(MachineLearningMessage machineLearningRequest)
+        public string[] GetUserMovies(string userID)
         {
-            _readWriteLock.EnterWriteLock();
+            _readerWriterLock.EnterReadLock();
 
             try
             {
                 var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
                 //Store result into the users results (currentResults.txt)
-                var filePath = rootPath + Constants.MachineLearning.MachineLearningFile;
+                var filePath = rootPath + Constants.MachineLearning.UserDataFile;
 
                 if (!File.Exists(filePath))
                 {
                     using (File.Create(filePath)) { }
                 }
 
+                //1 entry per user with a long list of ID's for each movie they have watched
+                var lines = File.ReadAllLines(filePath);
 
+                foreach (var line in lines)
+                {
+                    if (!line.StartsWith(userID))
+                    {
+                        continue;
+                    }
 
-                //if (lineUpdated)
-                //{
-                //    File.WriteAllLines(filePath, lines);
-                //}
-                //else
-                //{
-                //    File.AppendAllText(filePath, completedLine + Environment.NewLine);
-                //}
+                    //Need to get list of all movie ID's and get vectors
+                    var movieIDLine = line.Substring(line.LastIndexOf(userID));
+                    var allUserMovieIDs = movieIDLine.Split(' ');
+
+                    var allMovieLines = GetMovieLinesFromDisk();
+
+                    var completedUserMovies = new List<string>();
+
+                    foreach (var movieLine in allMovieLines)
+                    {
+                        foreach (var userMovieID in allUserMovieIDs)
+                        {
+                            if (movieLine.StartsWith(userMovieID))
+                            {
+                                completedUserMovies.Add(movieLine);
+                            }
+                        }
+                    }
+
+                    return completedUserMovies.ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerHelper.Log("An exception occurred while getting user movies: " + ex.Message + ex.Message);
             }
             finally
             {
-                _readWriteLock.ExitWriteLock();
+                _readerWriterLock.ExitReadLock();
             }
 
-            return false;
+            return null;
+        }
+
+        public void StoreUserResult(Movie movie, string userID)
+        {
+            _readerWriterLock.EnterWriteLock();
+
+            try
+            {
+                var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
+                //Store result into the users results (currentResults.txt)
+                var filePath = rootPath + Constants.MachineLearning.UserDataFile;
+
+                if (!File.Exists(filePath))
+                {
+                    using (File.Create(filePath)) { }
+                }
+
+                //1 entry per user with a long list of ID's for each movie they have watched
+                var lines = File.ReadAllLines(filePath);
+                bool lineUpdated = false;
+                using (var writer = new StreamWriter(filePath))
+                {
+                    for (int currentLine = 0; currentLine < lines.Length; currentLine++)
+                    {
+                        var line = lines[currentLine];
+
+                        if (line.StartsWith(userID))
+                        {
+                            writer.WriteLine(line + " " + movie.ID);
+                            lineUpdated = true;
+                        }
+                        else
+                        {
+                            writer.WriteLine(line);
+                        }
+                    }
+                }
+                
+                if(!lineUpdated)
+                {
+                    File.AppendAllText(filePath, userID + " " + movie.ID);
+                }
+            }
+            catch(Exception ex)
+            {
+                LoggerHelper.Log("An exception occurred while storing user results: " + ex.Message + ex.Message);
+            }
+            finally
+            {
+                _readerWriterLock.ExitWriteLock();
+            }
         }
     }
 }

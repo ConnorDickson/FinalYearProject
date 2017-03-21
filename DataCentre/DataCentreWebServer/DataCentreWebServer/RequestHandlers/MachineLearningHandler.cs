@@ -19,19 +19,60 @@ namespace DataCentreWebServer.RequestHandlers
             _machineLearningFileHandler = machineLearningFileHandler;
         }
 
-        public HttpResponseMessage ReturnMovies(HttpRequestMessage request)
+        public async Task<HttpResponseMessage> ReturnPreviousMovies(HttpRequestMessage request)
         {
             try
             {
-                //Read movies from disk
+                var requestData = await request.Content.ReadAsStringAsync();
+                var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
+
+                var userMovieLines = _machineLearningFileHandler.GetUserMovies(machineLearningRequest.UserID);
+                var userMovies = _machineLearningHelper.ParseLines(userMovieLines);
+
+                machineLearningRequest.Results = userMovies;
+
+                var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
+                var response = new HttpResponseMessage();
+                response.StatusCode = HttpStatusCode.OK;
+                response.Content = new StringContent(jsonString);
+                return response;
+            }
+            catch(Exception ex)
+            {
+                LoggerHelper.LegacyLog("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
+
+                return new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        internal async Task<HttpResponseMessage> WatchRandomMovie(HttpRequestMessage request)
+        {
+            try
+            {
+                LoggerHelper.LegacyLog("Random Movie Request");
+                LoggerHelper.Log("Random Movie Request");
+
+                var requestData = await request.Content.ReadAsStringAsync();
+                var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
+
                 var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
-                //Create subset of movies
-                var linesToReturn = _machineLearningHelper.KMedoids(lines);
                 
-                //Return subset to Edge
+                //Should return array of 1
+                var randomMovie = _machineLearningHelper.ChooseRandomMovie(lines);
+
+                _machineLearningFileHandler.StoreUserResult(randomMovie, machineLearningRequest.UserID);
+                
+                var linesToReturn = new Movie[]
+                {
+                    randomMovie
+                };
+
                 var machineLearningMessage = new MachineLearningMessage()
                 {
-                    results = linesToReturn
+                    Results = linesToReturn
                 };
 
                 var jsonString = JsonConvert.SerializeObject(machineLearningMessage);
@@ -44,7 +85,7 @@ namespace DataCentreWebServer.RequestHandlers
             }
             catch (Exception ex)
             {
-                LoggerHelper.Log("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
+                LoggerHelper.LegacyLog("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
 
                 return new HttpResponseMessage()
                 {
@@ -53,20 +94,66 @@ namespace DataCentreWebServer.RequestHandlers
             }
         }
 
-        internal async Task<HttpResponseMessage> StoreUserResult(HttpRequestMessage request)
+        public HttpResponseMessage ReturnMovies(HttpRequestMessage request)
         {
-            var requestData = await request.Content.ReadAsStringAsync();
-            var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
+            try
+            {
+                //Read movies from disk
+                var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
+                //Create subset of movies
+                var linesToReturn = _machineLearningHelper.KMedoids(lines);
+                
+                //Return subset to Edge
+                var machineLearningMessage = new MachineLearningMessage()
+                {
+                    Results = linesToReturn
+                };
 
+                var jsonString = JsonConvert.SerializeObject(machineLearningMessage);
 
-            bool storedResult = _machineLearningFileHandler.StoreUserResult(machineLearningRequest);
+                return new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(jsonString)
+                };
+            }
+            catch (Exception ex)
+            {
+                LoggerHelper.LegacyLog("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
 
-            
-            var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
-            var response = new HttpResponseMessage();
-            response.StatusCode = HttpStatusCode.OK;
-            response.Content = new StringContent(jsonString);
-            return response;
+                return new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        public async Task<HttpResponseMessage> StoreUserResult(HttpRequestMessage request)
+        {
+            try
+            {
+                var requestData = await request.Content.ReadAsStringAsync();
+                var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
+
+                _machineLearningFileHandler.StoreUserResult(machineLearningRequest.Results[0], machineLearningRequest.UserID);
+
+                var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
+
+                return new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(jsonString)
+                };
+            }
+            catch(Exception ex)
+            {
+                LoggerHelper.LegacyLog("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
+
+                return new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.InternalServerError
+                };
+            }
         }
     }
 }

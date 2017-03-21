@@ -17,7 +17,11 @@
                     <button class="button" onclick="Login()">Login</button>
             </p>
         </div>
-        <button id="RecommendationButton" class="button hidden" onclick="EvaluateButtonClick()">Get Recommendation</button>
+        <div id="GUIForLoggedInUsers" class="hidden">
+            <button id="WatchMovieButton" class="button" onclick="WatchRandomMovie()">Watch Random Movie</button>
+            <button id="WatchMovieButton" class="button" onclick="WatchRecommendedMovie()">Watch Recommended Movie</button>
+            <button id="RecommendationButton" class="button" onclick="EvaluateButtonClick()">Get Recommendation</button>
+        </div>
         <br>
         <br>
         <p class="InfoBox" id="recommendations"></p>
