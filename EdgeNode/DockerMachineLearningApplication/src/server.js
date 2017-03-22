@@ -8,7 +8,8 @@ var fs = require('fs');
 var externalPort = process.env.port || 3005;
 var internalPort = 3502;
 var movieDataFilePath = "../MLResults/MovieVectors.txt";
-var dataCentreMoviesURL = "http://connor-pc:3000/api/MachineLearning/GetMovies";
+var dataCentreGetMoviesURL = "http://connor-pc:3000/api/MachineLearning/GetMovies";
+var dataCentreWatchRandomMovieURL = "http://connor-pc:3000/api/MachineLearning/WatchRandomMovie";
 
 console.log("Starting...");
 
@@ -60,12 +61,17 @@ var createdServer = http.createServer(function (req, res) {
     req.on('end', function() {
         var jsonObject = JSON.parse(reqBody);
 
-        if(requestedUrl != 'GetRecommendations') {
+        if(requestedUrl == 'GetRecommendations') { 
+            console.log("Recommendation request");
+            ProcessRecommendationRequest(res, jsonObject);
+        } else if(requestedUrl == 'WatchRandomMovie') {
+            console.log("Watch Random Movie request");
+            WatchRandomMovie(res, jsonObject);
+        } else {
             //Either a request to watch a random movie
             // or a request to watch a movie that was recommended
+            console.log("Process Request");
             ProcessRequest(res, jsonObject);
-        } else {
-            ProcessRecommendationRequest(res, jsonObject);
         }
     });
 });
@@ -78,6 +84,29 @@ createdServer.on('error', function(err) {
 createdServer.listen(internalPort);
  
 console.log("Started Node.js server");
+
+function WatchRandomMovie(res, jsonObject) 
+{
+    console.log("Watch random movie request");
+    
+    var jsonData = JSON.stringify(jsonObject);
+
+    var requestOptions = {
+        url: dataCentreWatchRandomMovieURL,
+        method: 'POST',
+        form: jsonData
+    };
+
+    request.post(requestOptions, function(error, response, body) {
+        console.log("Response: " + response.statusCode);
+        if(error) {
+            console.error("There was an error requesting content from Data Center: " + error);
+        } else {
+            console.log("Received body from random movie request: " + body);
+            res.end(body);    
+        }
+    });  
+}
 
 function ProcessRequest(res, jsonEvaluation) 
 {
@@ -137,13 +166,12 @@ function ProduceRecommendation(jsonEvaluation)
 function SendUserViewToDataCentre(jsonObject) 
 {
     var requestOptions = {
-        url: dataCentreURL,
+        url: dataCentreSendViewDataURL,
         method: 'POST',
-        encoding: null,
         form: jsonString
     };
 
-    request.post(requestOptions, function(error,response,body) {
+    request.post(requestOptions, function(error, response, body) {
         if(error) {
             console.error("There was an error requesting content from Data Center: " + error);
         } else {
@@ -167,7 +195,7 @@ function SendUserViewToDataCentre(jsonObject)
 
 function GetMoviesFromDataCentre() 
 {
-    request.get(dataCentreMoviesURL, function(error,response,body) {
+    request.get(dataCentreGetMoviesURL, function(error,response,body) {
         if(error) {
             console.error("There was an error requesting content from Data Center: " + error);
         } else {

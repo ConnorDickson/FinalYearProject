@@ -27,7 +27,12 @@ namespace DataCentreWebServer.RequestHandlers
                 var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
 
                 var userMovieLines = _machineLearningFileHandler.GetUserMovies(machineLearningRequest.UserID);
-                var userMovies = _machineLearningHelper.ParseLines(userMovieLines);
+
+                Movie[] userMovies = null;
+                if (userMovieLines != null)
+                {
+                    userMovies = _machineLearningHelper.ParseLines(userMovieLines);
+                }
 
                 machineLearningRequest.Results = userMovies;
 

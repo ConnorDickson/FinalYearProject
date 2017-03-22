@@ -4,6 +4,7 @@ const totalChoices = 4;
 
 var userID = "";
 var edgeNode = "edgepi01";
+//var edgeNode = "192.168.1.185";
 var dataCentre = "connor-pc";
 var localStorageDataName = "prevResults";
 
@@ -30,7 +31,7 @@ function GetPreviousMovies(callback) {
     jsonObject.UserID = userID;
     var jsonData = JSON.stringify(jsonObject);
 
-    var request = client.request('POST', '/GetPreviousMovies', {
+    var request = client.request('POST', '/api/MachineLearning/GetPreviousMovies', {
         'Host': dataCentre,
         'Port': 3000,
         'User-Agent': 'Node.JS',
@@ -55,8 +56,16 @@ function GetPreviousMovies(callback) {
         });
 
         response.on('end', function () {
-            var jsonData = JSON.parse(responseData);
-            localStorage.setItem(localStorageDataName, jsonData.Results);
+            if(responseData != "") {
+                var jsonData = JSON.parse(responseData);
+
+                if(jsonData == null || jsonData == 'undefined' || jsonData.Results == 'undefined' || jsonData.Results == null || jsonData.Results == "null" || jsonData.Results.count == 0) {
+                    localStorage.setItem(localStorageDataName + userID, null);
+                } else {
+                    localStorage.setItem(localStorageDataName + userID, responseData);
+                }
+            }
+            
             callback();
         });
     });
@@ -106,7 +115,15 @@ function GetRecommendation() {
 function AveragePreviousResults() 
 {
     //Get the previous results we have stored
-    var prevResults = localStorage.getItem(localStorageDataName);
+    var prevResultsString = localStorage.getItem(localStorageDataName + userID);
+    var prevResultsJSON = JSON.parse(prevResultsString);
+    
+    if(prevResultsJSON == 'undefined' || prevResultsJSON == null || prevResultsJSON == "null" || prevResultsJSON.Results.count == 0) {
+        return null;
+    }
+    
+    var prevResults = prevResultsJSON.Results;
+    
     //Add up the total of each category for all our results
     var totalYear = [];
     var totalPercentageHorror = [];
@@ -149,20 +166,22 @@ function WatchRandomMovie() {
     //Should I also display average vector of currently watched movies in the UI? 
     //This means that when I return a reccommendation I can see how close it was?
     //Should it actually travel through the edge node instead of talking directly to the DC so that a reccommendation can be produced/updated?
-    var client = http.createClient(3000, dataCentre);
+    var client = http.createClient(3004, edgeNode);
     
     var jsonObject = {};
     jsonObject.UserID = userID;
     var jsonData = JSON.stringify(jsonObject);
     
-    var request = client.request('POST', '/api/MachineLearning/WatchRandomMovie', {
-        'Host': dataCentre,
-        'Port': 3000,
+    var request = client.request('POST', '/WatchRandomMovie', {
+        'Host': edgeNode,
+        'Port': 3004,
         'User-Agent': 'Node.JS',
         'Content-Type': 'application/octet-stream',
         'Content-Length': jsonData.length
     });
 
+    request.write(jsonData);
+    
     request.end();
 
     request.on('error', function (err) {
@@ -178,9 +197,19 @@ function WatchRandomMovie() {
         });
 
         response.on('end', function () {
-            var jsonData = JSON.parse(responseData);
-            var prevResults = localStorage.getItem(localStorageDataName);
-            prevResults.push(jsonData.Results[0]);
+            var receivedJSONData = JSON.parse(responseData);
+            var prevResultsString = localStorage.getItem(localStorageDataName + userID);
+            var result = "";
+            
+            if(prevResultsString == 'undefined' || prevResultsString == null || prevResultsString == "null") {
+                result = responseData;
+            } else {
+                var localResultsJSON = JSON.parse(prevResultsString);
+                localResultsJSON.Results.push(receivedJSONData.Results[0]);
+                result = JSON.stringify(localResultsJSON);
+            }
+            
+            localStorage.setItem(localStorageDataName + userID, result);
         });
     });
 }
