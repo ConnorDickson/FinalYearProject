@@ -127,37 +127,101 @@ function AveragePreviousResults()
     //Add up the total of each category for all our results
     var totalYear = [];
     var totalPercentageHorror = [];
-    var totalContainsViolence = []
-    
+    var totalPercentageComedy = [];
+    var totalPercentageAction = [];
+    var totalPercentageAdventure = [];
+    var totalPercentageFantasy = [];
+    var totalPercentageRomance = [];
+    var totalContainsViolence = [];
+    var totalContainsSexualScenes = [];
+    var totalContainsDrugUse = [];
+    var totalContainsFlashingImages = [];
+
     prevResults.forEach(function(prevResult) {
         totalYear.push(prevResult.Year);
         totalPercentageHorror.push(prevResult.PercentageHorror);
+        totalPercentageComedy.push(prevResult.PercentageComedy);
+        totalPercentageAction.push(prevResult.PercentageAction);
+        totalPercentageAdventure.push(prevResult.PercentageAdventure);
+        totalPercentageFantasy.push(prevResult.PercentageFantasy);
+        totalPercentageRomance.push(prevResult.PercentageRomance);
         totalContainsViolence.push(prevResult.ContainsViolence);
+        totalContainsSexualScenes.push(prevResult.ContainsSexualScenes);
+        totalContainsDrugUse.push(prevResult.ContainsDrugUse);
+        totalContainsFlashingImages.push(prevResult.ContainsFlashingImages);
     });
     
     var totalYearCount = 0;
     var totalPercentageHorrorCount = 0.0;
+    var totalPercentageComedyCount = 0.0;
+    var totalPercentageActionCount = 0.0;
+    var totalPercentageAdventureCount = 0.0;
+    var totalPercentageFantasyCount = 0.0;
+    var totalPercentageRomanceCount = 0.0;
     var totalContainsViolenceTrueCount = 0;
-
+    var totalContainsSexualScenesTrueCount = 0;
+    var totalContainsDrugUseTrueCount = 0;
+    var totalContainsFlashingImagesTrueCount = 0;    
+    
     for(var i = 0; i < prevResults.length; i++) {
-        totalYear += totalYear[i];
+        //This is not adding ints. Just concantinating strings
+        totalYearCount += totalYear[i];
         totalPercentageHorrorCount += totalPercentageHorror[i];
+        totalPercentageComedyCount += totalPercentageComedy[i];
+        totalPercentageActionCount += totalPercentageAction[i];
+        totalPercentageAdventureCount += totalPercentageAdventure[i];
+        totalPercentageFantasyCount += totalPercentageFantasy[i];
+        totalPercentageRomanceCount += totalPercentageRomance[i];
         if(totalContainsViolence[i] == true) {
             totalContainsViolenceTrueCount++;
         }
+        if(totalContainsSexualScenes[i] == true) {
+            totalContainsSexualScenesTrueCount++;
+        }
+        if(totalContainsDrugUse[i] == true) {
+            totalContainsDrugUseTrueCount++;
+        }
+        if(totalContainsFlashingImages[i] == true) {
+            totalContainsFlashingImagesTrueCount++;
+        }
     }
     
-    var averageYear = totalYear / totalYear.length;
-    var averagePercentageHorror = totalPercentageHorrorCount / totalPercentageHorror.length;    
+    var averageYear = totalYearCount / totalYear.length;
+    var averagePercentageHorror = totalPercentageHorrorCount / totalPercentageHorror.length;
+    var averagePercentageComedy = totalPercentageComedyCount / totalPercentageComedy.length;    
+    var averagePercentageAction = totalPercentageActionCount / totalPercentageAction.length;    
+    var averagePercentageAdventure = totalPercentageAdventureCount / totalPercentageAdventure.length;    
+    var averagePercentageFantasy = totalPercentageFantasyCount / totalPercentageFantasy.length;    
+    var averagePercentageRomance = totalPercentageRomanceCount / totalPercentageRomance.length;    
     var averageContainsViolence = false;
     if(totalContainsViolenceTrueCount > (totalContainsViolence.length/2)) {
         averageContainsViolence = true;
+    }
+    var averageContainsSexualScenes = false;
+    if(totalContainsSexualScenesTrueCount > (totalContainsSexualScenes.length/2)) {
+        averageContainsSexualScenes = true;
+    }
+    var averageContainsDrugUse = false;
+    if(totalContainsDrugUseTrueCount > (totalContainsDrugUse.length/2)) {
+        averageContainsDrugUse = true;
+    }
+    var averageContainsFlashingImages = false;
+    if(totalContainsFlashingImagesTrueCount > (totalContainsFlashingImages.length/2)) {
+        averageContainsFlashingImages = true;
     }
     
     var averagePreviousResult = {};
     averagePreviousResult.Year = averageYear;
     averagePreviousResult.PercentageHorror = averagePercentageHorror;
+    averagePreviousResult.PercentageComedy = averagePercentageComedy;
+    averagePreviousResult.PercentageAction = averagePercentageAction;
+    averagePreviousResult.PercentageAdventure = averagePercentageAdventure;
+    averagePreviousResult.PercentageFantasy = averagePercentageFantasy;
+    averagePreviousResult.PercentageRomance = averagePercentageRomance;
     averagePreviousResult.ContainsViolence = averageContainsViolence;
+    averagePreviousResult.ContainsSexualScenes = averageContainsSexualScenes;
+    averagePreviousResult.ContainsDrugUse = averageContainsDrugUse;
+    averagePreviousResult.ContainsFlashingImages = averageContainsFlashingImages;
     
     return averagePreviousResult;
 }
