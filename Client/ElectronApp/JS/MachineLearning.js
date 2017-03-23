@@ -1,12 +1,10 @@
 const http = require('http');
 
-const totalChoices = 4;
-
 var userID = "";
 var edgeNode = "edgepi01";
-//var edgeNode = "192.168.1.185";
 var dataCentre = "connor-pc";
 var localStorageDataName = "prevResults";
+var recommendedMovie = {};
 
 //After a user logs in they need to get their own vectors (or do they make them up randomly as "Movies Watched"?)
 //Use the Javascript save locally method
@@ -18,13 +16,13 @@ function Login() {
         
         document.getElementById('GUIForLoggedInUsers').className = "";
         
-        GetPreviousMovies(GetRecommendation);
+        GetPreviousMovies();
     } else {
         document.getElementById('recommendations').innerHTML = "Please enter a username."
     }
 }
 
-function GetPreviousMovies(callback) {
+function GetPreviousMovies() {
     var client = http.createClient(3000, dataCentre);
 
     var jsonObject = {};
@@ -66,7 +64,7 @@ function GetPreviousMovies(callback) {
                 }
             }
             
-            callback();
+            GetRecommendation()
         });
     });
 }
@@ -106,8 +104,118 @@ function GetRecommendation() {
         });
 
         response.on('end', function () {
-            var jsonData = JSON.parse(responseData);
-            document.getElementById('recommendations').innerHTML = "Initial Recommendation: " + jsonData.Recommendation;
+            var receivedJsonData = JSON.parse(responseData);
+            recommendedMovie = receivedJsonData;
+            document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(receivedJsonData.Recommendation);
+        });
+    });
+}
+
+function WatchRandomMovie() {
+    var client = http.createClient(3004, edgeNode);
+    
+    var jsonObject = {};
+    jsonObject.UserID = userID;
+    var jsonData = JSON.stringify(jsonObject);
+    
+    var request = client.request('POST', '/WatchRandomMovie', {
+        'Host': edgeNode,
+        'Port': 3004,
+        'User-Agent': 'Node.JS',
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': jsonData.length
+    });
+
+    request.write(jsonData);
+    
+    request.end();
+
+    request.on('error', function (err) {
+        console.log(err);
+    });
+
+    request.on('response', function (response) {
+        var responseData = "";
+        response.setEncoding('utf8');
+
+        response.on('data', function (chunk) {
+            responseData += chunk;
+        });
+
+        response.on('end', function () {
+            var receivedJSONData = JSON.parse(responseData);
+            var prevResultsString = localStorage.getItem(localStorageDataName + userID);
+            var result = "";
+            
+            if(prevResultsString == 'undefined' || prevResultsString == null || prevResultsString == "null") {
+                result = responseData;
+            } else {
+                var localResultsJSON = JSON.parse(prevResultsString);
+                localResultsJSON.Results.push(receivedJSONData.Results[0]);
+                result = JSON.stringify(localResultsJSON);
+            }
+            document.getElementById('MovieWatched').innerHTML = "Random Movie Watched: <br>" + FormatMovieString(receivedJSONData.Results[0]);
+            AveragePreviousResults();
+            GetRecommendation();
+            localStorage.setItem(localStorageDataName + userID, result);
+        });
+    });
+}
+
+function WatchRecommendedMovie() {
+    
+    if(recommendedMovie == 'undefined' || recommendedMovie == null || recommendedMovie == "null") {
+        document.getElementById('recommendations').innerHTML = "Please use a valid recommended movie";
+        return;
+    }
+    
+    var client = http.createClient(3004, edgeNode);
+    
+    var jsonObject = {};
+    jsonObject.UserID = userID;
+    jsonObject.RequestedMovieID = recommendedMovie.Recommendation.ID;
+    var jsonData = JSON.stringify(jsonObject);
+    
+    var request = client.request('POST', '/WatchMovie', {
+        'Host': edgeNode,
+        'Port': 3004,
+        'User-Agent': 'Node.JS',
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': jsonData.length
+    });
+
+    request.write(jsonData);
+    
+    request.end();
+
+    request.on('error', function (err) {
+        console.log(err);
+    });
+
+    request.on('response', function (response) {
+        var responseData = "";
+        response.setEncoding('utf8');
+
+        response.on('data', function (chunk) {
+            responseData += chunk;
+        });
+
+        response.on('end', function () {
+            var receivedJSONData = JSON.parse(responseData);
+            var prevResultsString = localStorage.getItem(localStorageDataName + userID);
+            var result = "";
+            
+            if(prevResultsString == 'undefined' || prevResultsString == null || prevResultsString == "null") {
+                result = responseData;
+            } else {
+                var localResultsJSON = JSON.parse(prevResultsString);
+                localResultsJSON.Results.push(receivedJSONData.Results[0]);
+                result = JSON.stringify(localResultsJSON);
+            }
+            document.getElementById('MovieWatched').innerHTML = "Movie Watched: <br>" + FormatMovieString(receivedJSONData.Results[0]);
+            AveragePreviousResults();
+            GetRecommendation();
+            localStorage.setItem(localStorageDataName + userID, result);
         });
     });
 }
@@ -211,6 +319,7 @@ function AveragePreviousResults()
     }
     
     var averagePreviousResult = {};
+    averagePreviousResult.Title = "";
     averagePreviousResult.Year = averageYear;
     averagePreviousResult.PercentageHorror = averagePercentageHorror;
     averagePreviousResult.PercentageComedy = averagePercentageComedy;
@@ -222,121 +331,20 @@ function AveragePreviousResults()
     averagePreviousResult.ContainsSexualScenes = averageContainsSexualScenes;
     averagePreviousResult.ContainsDrugUse = averageContainsDrugUse;
     averagePreviousResult.ContainsFlashingImages = averageContainsFlashingImages;
-    
+    document.getElementById('prevResults').innerHTML = "Your Average Results: <br>" + FormatMovieString(averagePreviousResult);
     return averagePreviousResult;
 }
 
-function WatchRandomMovie() {
-    //Should I also display average vector of currently watched movies in the UI? 
-    //This means that when I return a reccommendation I can see how close it was?
-    //Should it actually travel through the edge node instead of talking directly to the DC so that a reccommendation can be produced/updated?
-    var client = http.createClient(3004, edgeNode);
-    
-    var jsonObject = {};
-    jsonObject.UserID = userID;
-    var jsonData = JSON.stringify(jsonObject);
-    
-    var request = client.request('POST', '/WatchRandomMovie', {
-        'Host': edgeNode,
-        'Port': 3004,
-        'User-Agent': 'Node.JS',
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': jsonData.length
-    });
-
-    request.write(jsonData);
-    
-    request.end();
-
-    request.on('error', function (err) {
-        console.log(err);
-    });
-
-    request.on('response', function (response) {
-        var responseData = "";
-        response.setEncoding('utf8');
-
-        response.on('data', function (chunk) {
-            responseData += chunk;
-        });
-
-        response.on('end', function () {
-            var receivedJSONData = JSON.parse(responseData);
-            var prevResultsString = localStorage.getItem(localStorageDataName + userID);
-            var result = "";
-            
-            if(prevResultsString == 'undefined' || prevResultsString == null || prevResultsString == "null") {
-                result = responseData;
-            } else {
-                var localResultsJSON = JSON.parse(prevResultsString);
-                localResultsJSON.Results.push(receivedJSONData.Results[0]);
-                result = JSON.stringify(localResultsJSON);
-            }
-            
-            localStorage.setItem(localStorageDataName + userID, result);
-        });
-    });
-}
-
-function WatchRecommendedMovie() {
-    alert("Not Implemented");
-    //We should have all the movie information here. Could we just send the ID of the movie we want to watch?
-}
-
-//This now needs to compact and average vectors to get a reccommendation
-function EvaluateButtonClick() 
-{    
-    var selectedChoice = event.srcElement.parentElement.children[0].innerHTML;
-
-    var genre = event.srcElement.parentElement.getAttribute('genre');
-    
-    var choiceNum = event.srcElement.parentElement.id;
-        
-    SendResults(genre);
-}
-
-function SendResults(genre) {    
-    var client = http.createClient(3004, edgeNode);
-    
-    var genreArray = genre.split('');
-    var resultsJson = {};
-    resultsJson.Choice1 = genreArray[0];
-    resultsJson.Choice2 = genreArray[1];
-    resultsJson.Choice3 = genreArray[2];
-    resultsJson.Choice4 = genreArray[3];
-    resultsJson.Choice5 = genreArray[4];
-    resultsJson.Choice6 = genreArray[5];
-    resultsJson.UserID = userID;
-    
-    var requestData = JSON.stringify(resultsJson);
-    
-    var request = client.request('POST', '', {
-        'Host': edgeNode,
-        'Port': 3004,
-        'User-Agent': 'Node.JS',
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': requestData.length
-    });
-
-    request.write(requestData);
-    
-    request.end();
-
-    request.on('error', function (err) {
-        console.log(err);
-    });
-
-    request.on('response', function (response) {
-        var responseData = "";
-        response.setEncoding('utf8');
-
-        response.on('data', function (chunk) {
-            responseData += chunk;
-        });
-
-        response.on('end', function () {
-            var jsonData = JSON.parse(responseData);
-            document.getElementById('recommendations').innerHTML = "PreProcessedData: " + jsonData.PreProcessedData + "<br><br>" + "Evaluation: " + jsonData.Evaluation;
-        });
-    });
+function FormatMovieString(movie) {
+        return "Title: " + movie.Title + "<br>" +
+        "Horror: " + movie.PercentageHorror + "<br>" +
+        "Comedy: " + movie.PercentageComedy + "<br>" +
+        "Action: " + movie.PercentageAction + "<br>" +
+        "Adventure: " + movie.PercentageAdventure + "<br>" +
+        "Fantasy: " + movie.PercentageFantasy + "<br>" +
+        "Romance: " + movie.PercentageRomance + "<br>" +
+        "Contains Violence: " + movie.ContainsViolence + "<br>" +
+        "Contains Sexual Scenes: " + movie.ContainsSexualScenes + "<br>" +
+        "Contains Drug Use: " + movie.ContainsDrugUse + "<br>" +
+        "Contains Flashing Images: " + movie.ContainsFlashingImages;
 }

@@ -44,7 +44,7 @@ namespace DataCentreWebServer.RequestHandlers
             }
             catch(Exception ex)
             {
-                LoggerHelper.LegacyLog("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
+                LoggerHelper.Log("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
 
                 return new HttpResponseMessage()
                 {
@@ -53,12 +53,58 @@ namespace DataCentreWebServer.RequestHandlers
             }
         }
 
-        internal async Task<HttpResponseMessage> WatchRandomMovie(HttpRequestMessage request)
+        public async Task<HttpResponseMessage> WatchMovie(HttpRequestMessage request)
         {
             try
             {
-                LoggerHelper.LegacyLog("Random Movie Request");
-                LoggerHelper.Log("Random Movie Request");
+                LoggerHelper.Log("Watch Movie");
+
+                var requestData = await request.Content.ReadAsStringAsync();
+                var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
+
+                LoggerHelper.Log(machineLearningRequest.RequestedMovieID);
+
+                var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
+
+                //Should return array of 1
+                var movie = _machineLearningHelper.GetMovie(lines, machineLearningRequest.RequestedMovieID);
+
+                _machineLearningFileHandler.StoreUserResult(movie, machineLearningRequest.UserID);
+
+                var linesToReturn = new Movie[]
+                {
+                    movie
+                };
+
+                var machineLearningMessage = new MachineLearningMessage()
+                {
+                    Results = linesToReturn
+                };
+
+                var jsonString = JsonConvert.SerializeObject(machineLearningMessage);
+
+                return new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(jsonString)
+                };
+            }
+            catch (Exception ex)
+            {
+                LoggerHelper.Log("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
+
+                return new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.InternalServerError
+                };
+            }
+        }
+
+        public async Task<HttpResponseMessage> WatchRandomMovie(HttpRequestMessage request)
+        {
+            try
+            {
+                LoggerHelper.Log("Watch Random Movie");
 
                 var requestData = await request.Content.ReadAsStringAsync();
                 var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
@@ -90,7 +136,7 @@ namespace DataCentreWebServer.RequestHandlers
             }
             catch (Exception ex)
             {
-                LoggerHelper.LegacyLog("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
+                LoggerHelper.Log("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
 
                 return new HttpResponseMessage()
                 {
@@ -124,7 +170,7 @@ namespace DataCentreWebServer.RequestHandlers
             }
             catch (Exception ex)
             {
-                LoggerHelper.LegacyLog("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
+                LoggerHelper.Log("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
 
                 return new HttpResponseMessage()
                 {
@@ -152,7 +198,7 @@ namespace DataCentreWebServer.RequestHandlers
             }
             catch(Exception ex)
             {
-                LoggerHelper.LegacyLog("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
+                LoggerHelper.Log("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
 
                 return new HttpResponseMessage()
                 {

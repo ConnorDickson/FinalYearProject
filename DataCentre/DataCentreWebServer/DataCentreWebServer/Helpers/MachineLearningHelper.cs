@@ -40,7 +40,7 @@ namespace DataCentreWebServer.Helpers
             return movies;
         }
 
-        internal Movie ChooseRandomMovie(string[] lines)
+        public Movie ChooseRandomMovie(string[] lines)
         {
             Random rng = new Random();
 
@@ -49,6 +49,27 @@ namespace DataCentreWebServer.Helpers
             if(movies.Length > movieNumber)
             {
                 return movies[movieNumber];
+            }
+
+            return null;
+        }
+
+        public Movie GetMovie(string[] lines, string requestedMovieID)
+        {
+            int movieID;
+
+            if (!int.TryParse(requestedMovieID, out movieID))
+            {
+                return null;
+            }
+
+            var movies = _movieParser.ParseMovies(lines);
+            foreach(var movie in movies)
+            {
+                if(movie.ID == movieID)
+                {
+                    return movie;
+                }
             }
 
             return null;

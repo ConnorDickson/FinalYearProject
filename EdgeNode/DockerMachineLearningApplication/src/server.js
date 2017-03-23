@@ -10,6 +10,7 @@ var internalPort = 3502;
 var movieDataFilePath = "../MLResults/MovieVectors.txt";
 var dataCentreGetMoviesURL = "http://connor-pc:3000/api/MachineLearning/GetMovies";
 var dataCentreWatchRandomMovieURL = "http://connor-pc:3000/api/MachineLearning/WatchRandomMovie";
+var dataCentreWatchMovieURL = "http://connor-pc:3000/api/MachineLearning/WatchMovie";
 
 console.log("Starting...");
 
@@ -62,11 +63,14 @@ var createdServer = http.createServer(function (req, res) {
         var jsonObject = JSON.parse(reqBody);
 
         if(requestedUrl == 'GetRecommendations') { 
-            console.log("Recommendation request");
-            ProcessRecommendationRequest(res, jsonObject);
+            console.log("Recommendation Request");
+            ProduceRecommendationAndEndRequest(jsonObject, res);
         } else if(requestedUrl == 'WatchRandomMovie') {
-            console.log("Watch Random Movie request");
+            console.log("Watch Random Movie Request");
             WatchRandomMovie(res, jsonObject);
+        } else if (requestedUrl == 'WatchMovie') {
+            console.log("Watch Movie Request");
+            WatchMovie(res, jsonObject);
         } else {
             //Either a request to watch a random movie
             // or a request to watch a movie that was recommended
@@ -87,8 +91,6 @@ console.log("Started Node.js server");
 
 function WatchRandomMovie(res, jsonObject) 
 {
-    console.log("Watch random movie request");
-    
     var jsonData = JSON.stringify(jsonObject);
 
     var requestOptions = {
@@ -98,44 +100,48 @@ function WatchRandomMovie(res, jsonObject)
     };
 
     request.post(requestOptions, function(error, response, body) {
-        console.log("Response: " + response.statusCode);
         if(error) {
             console.error("There was an error requesting content from Data Center: " + error);
         } else {
-            console.log("Received body from random movie request: " + body);
-            res.end(body);    
+            res.end(body);
         }
     });  
+}
+
+function WatchMovie(res, jsonObject) 
+{
+    var jsonData = JSON.stringify(jsonObject);
+
+    var requestOptions = {
+        url: dataCentreWatchMovieURL,
+        method: 'POST',
+        form: jsonData
+    };
+
+    request.post(requestOptions, function(error, response, body) {
+        console.log("Watch Movie Status Code: " + response.statusCode);
+        if(error) {
+            console.error("There was an error requesting content from Data Center: " + error);
+        } else {
+            res.end(body);
+        }
+    });    
 }
 
 function ProcessRequest(res, jsonEvaluation) 
 {
     //With this one we need to send the data to the server too
     //This request will have a movie they are watching (from a recommendation)
-    var predictionData = ProduceRecommendation(jsonEvaluation);
-
-    jsonEvaluation.Recommendation = predictionData;
-
-    var preProcessedString = JSON.stringify(jsonEvaluation);
-
-    res.end(preProcessedString);
+    ProduceRecommendationAndEndRequest(jsonEvaluation, res);
 };
 
-function ProcessRecommendationRequest(res, jsonObject)
+function ProduceRecommendationAndEndRequest(jsonObject, res) 
 {
-    //This will have to take into account the username
+    console.log("Handling recommendation");
 
-    jsonObject.Recommendation = ProduceRecommendation(jsonObject);
- 
-    var preProcessedString = JSON.stringify(jsonObject);
-
-    res.end(preProcessedString);
-};
-
-function ProduceRecommendation(jsonEvaluation) 
-{
     fs.readFile(movieDataFilePath, (localErr, movieData) => {
         if(localErr) {
+            console.log("Local Error: " + localErr);
             throw localErr;
         }
         
@@ -143,24 +149,32 @@ function ProduceRecommendation(jsonEvaluation)
      
         if(typeof(allMovieText) == "undefined") 
         {
-            return "allLocalText is undefined";
+            console.log("allMovieText is undefined");
+            return "allMovieText is undefined";
         }
      
         var allMovieTextLines = allMovieText.split(/\r\n|\n/);
        
-        if(typeof(allLocalTextLines) == "undefined") 
+        if(typeof(allMovieTextLines) == "undefined") 
         {
-            return "allLocalTextLines is undefined";
+            console.log("allMovieTextLines is undefined");
+            return "allMovieTextLines is undefined";
         }
 
         //Go through all lines and see what the user requested
-        console.log("Working out a recommendation for: " + jsonEvaluation.UserID);
+        console.log("Working out a recommendation for: " + jsonObject.UserID);
+        
+        //---------------------------------------------------
+        // Need to produce an actual prediction
 
-        var userLines = jsonEvaluation.UserVector;
-      
-
-        return ; 
+        var movieTextLine = allMovieTextLines[0];
+        var movieJSONObject = JSON.parse(movieTextLine);
+        jsonObject.Recommendation = movieJSONObject;
+        var jsonString = JSON.stringify(jsonObject);
+        res.end(jsonString);
     });
+
+    console.log("Finished async recommendation");
 }
 
 function SendUserViewToDataCentre(jsonObject) 
@@ -205,13 +219,16 @@ function GetMoviesFromDataCentre()
             var completedString = "";
 
             returnedJson.Results.forEach(function(result) {
-                completedString += result.Title + result.Year + result.PercentageHorror + result.ContainsViolence+ ";\r\n";
+                //completedString += result.Title + result.Year + result.PercentageHorror + result.ContainsViolence+ ";\r\n";
+                completedString += JSON.stringify(result) + "\r\n";
             });
 
             fs.writeFile(movieDataFilePath, completedString, (err) => {
                 if(err) {
                     console.log("Error with writing to remote file: " + err);
-                } 
+                } else {
+                    console.log("Finished writing subset of movies to disk");
+                }
             });
         }
     });   

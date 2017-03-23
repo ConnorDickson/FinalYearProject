@@ -29,13 +29,19 @@ namespace DataCentreWebServer.Controllers
 
             return await machineLearningHandler.StoreUserResult(Request);
         }
-
-        //[HttpPost]
+        
         public async Task<HttpResponseMessage> WatchRandomMovie()
         {
             var machineLearningHandler = Container.ResolveMachineLearningHandler();
 
             return await machineLearningHandler.WatchRandomMovie(Request);
+        }
+
+        public async Task<HttpResponseMessage> WatchMovie()
+        {
+            var machineLearningHandler = Container.ResolveMachineLearningHandler();
+
+            return await machineLearningHandler.WatchMovie(Request);
         }
     }
 }
