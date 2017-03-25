@@ -23,6 +23,9 @@ function Login() {
 }
 
 function GetPreviousMovies() {
+    document.getElementById('recommendations').innerHTML = GetProcessingString();
+    document.getElementById('prevResults').innerHTML = GetProcessingString();
+    
     var client = http.createClient(3000, dataCentre);
 
     var jsonObject = {};
@@ -105,78 +108,45 @@ function GetRecommendation() {
 
         response.on('end', function () {
             var receivedJsonData = JSON.parse(responseData);
-            recommendedMovie = receivedJsonData;
+            recommendedMovie = receivedJsonData.Recommendation;
             document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(receivedJsonData.Recommendation);
         });
     });
 }
 
 function WatchRandomMovie() {
-    var client = http.createClient(3004, edgeNode);
+    document.getElementById('movieWatched').innerHTML = GetProcessingString();
+    document.getElementById('recommendations').innerHTML = GetProcessingString();
+    document.getElementById('prevResults').innerHTML = GetProcessingString();
     
     var jsonObject = {};
     jsonObject.UserID = userID;
-    var jsonData = JSON.stringify(jsonObject);
     
-    var request = client.request('POST', '/WatchRandomMovie', {
-        'Host': edgeNode,
-        'Port': 3004,
-        'User-Agent': 'Node.JS',
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': jsonData.length
-    });
-
-    request.write(jsonData);
-    
-    request.end();
-
-    request.on('error', function (err) {
-        console.log(err);
-    });
-
-    request.on('response', function (response) {
-        var responseData = "";
-        response.setEncoding('utf8');
-
-        response.on('data', function (chunk) {
-            responseData += chunk;
-        });
-
-        response.on('end', function () {
-            var receivedJSONData = JSON.parse(responseData);
-            var prevResultsString = localStorage.getItem(localStorageDataName + userID);
-            var result = "";
-            
-            if(prevResultsString == 'undefined' || prevResultsString == null || prevResultsString == "null") {
-                result = responseData;
-            } else {
-                var localResultsJSON = JSON.parse(prevResultsString);
-                localResultsJSON.Results.push(receivedJSONData.Results[0]);
-                result = JSON.stringify(localResultsJSON);
-            }
-            document.getElementById('MovieWatched').innerHTML = "Random Movie Watched: <br>" + FormatMovieString(receivedJSONData.Results[0]);
-            AveragePreviousResults();
-            GetRecommendation();
-            localStorage.setItem(localStorageDataName + userID, result);
-        });
+    PostToEdgeNode('/WatchRandomMovie', jsonObject, function(responseData) {
+        StoreResultsAndUpdateUI(responseData);
     });
 }
 
 function WatchRecommendedMovie() {
-    
-    if(recommendedMovie == 'undefined' || recommendedMovie == null || recommendedMovie == "null") {
-        document.getElementById('recommendations').innerHTML = "Please use a valid recommended movie";
-        return;
-    }
-    
-    var client = http.createClient(3004, edgeNode);
-    
+    document.getElementById('movieWatched').innerHTML = GetProcessingString();
+    document.getElementById('recommendations').innerHTML = GetProcessingString();
+    document.getElementById('prevResults').innerHTML = GetProcessingString();
+
     var jsonObject = {};
     jsonObject.UserID = userID;
-    jsonObject.RequestedMovieID = recommendedMovie.Recommendation.ID;
+    jsonObject.RequestedMovieID = recommendedMovie.ID;
+    
+    PostToEdgeNode('/WatchMovie', jsonObject, function(responseData) {
+        StoreResultsAndUpdateUI(responseData);
+    });
+}
+
+function PostToEdgeNode(url, jsonObject, callback) {
+    var client = http.createClient(3004, edgeNode);
+    
     var jsonData = JSON.stringify(jsonObject);
     
-    var request = client.request('POST', '/WatchMovie', {
+    var request = client.request('POST', url, {
         'Host': edgeNode,
         'Port': 3004,
         'User-Agent': 'Node.JS',
@@ -201,23 +171,29 @@ function WatchRecommendedMovie() {
         });
 
         response.on('end', function () {
-            var receivedJSONData = JSON.parse(responseData);
-            var prevResultsString = localStorage.getItem(localStorageDataName + userID);
-            var result = "";
-            
-            if(prevResultsString == 'undefined' || prevResultsString == null || prevResultsString == "null") {
-                result = responseData;
-            } else {
-                var localResultsJSON = JSON.parse(prevResultsString);
-                localResultsJSON.Results.push(receivedJSONData.Results[0]);
-                result = JSON.stringify(localResultsJSON);
-            }
-            document.getElementById('MovieWatched').innerHTML = "Movie Watched: <br>" + FormatMovieString(receivedJSONData.Results[0]);
-            AveragePreviousResults();
-            GetRecommendation();
-            localStorage.setItem(localStorageDataName + userID, result);
+            callback(responseData);
         });
     });
+}
+
+function StoreResultsAndUpdateUI(responseData) {
+    var receivedJSONData = JSON.parse(responseData);
+    var prevResultsString = localStorage.getItem(localStorageDataName + userID);
+    var result = "";
+
+    if(prevResultsString == 'undefined' || prevResultsString == null || prevResultsString == "null") {
+        result = responseData;
+    } else {
+        var localResultsJSON = JSON.parse(prevResultsString);
+        localResultsJSON.Results.push(receivedJSONData.Results[0]);
+        result = JSON.stringify(localResultsJSON);
+    }
+    
+    document.getElementById('movieWatched').innerHTML = "Movie Watched: <br>" + FormatMovieString(receivedJSONData.Results[0]);
+    document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(receivedJSONData.Recommendation);
+    recommendedMovie = receivedJSONData.Recommendation;
+    localStorage.setItem(localStorageDataName + userID, result);
+    AveragePreviousResults();
 }
 
 function AveragePreviousResults() 
@@ -227,6 +203,7 @@ function AveragePreviousResults()
     var prevResultsJSON = JSON.parse(prevResultsString);
     
     if(prevResultsJSON == 'undefined' || prevResultsJSON == null || prevResultsJSON == "null" || prevResultsJSON.Results.count == 0) {
+        document.getElementById('prevResults').innerHTML = "Please watch a movie to get an evaluation";
         return null;
     }
     
@@ -331,7 +308,7 @@ function AveragePreviousResults()
     averagePreviousResult.ContainsSexualScenes = averageContainsSexualScenes;
     averagePreviousResult.ContainsDrugUse = averageContainsDrugUse;
     averagePreviousResult.ContainsFlashingImages = averageContainsFlashingImages;
-    document.getElementById('prevResults').innerHTML = "Your Average Results: <br>" + FormatMovieString(averagePreviousResult);
+    document.getElementById('prevResults').innerHTML = "Your Average of " + totalYear.length + " Results: <br>" + FormatMovieString(averagePreviousResult);
     return averagePreviousResult;
 }
 
@@ -347,4 +324,18 @@ function FormatMovieString(movie) {
         "Contains Sexual Scenes: " + movie.ContainsSexualScenes + "<br>" +
         "Contains Drug Use: " + movie.ContainsDrugUse + "<br>" +
         "Contains Flashing Images: " + movie.ContainsFlashingImages;
+}
+
+function GetProcessingString() {
+        return "Title: Processing...<br>" +
+        "Horror: Processing...<br>" +
+        "Comedy: Processing...<br>" +
+        "Action: Processing...<br>" +
+        "Adventure: Processing...<br>" +
+        "Fantasy: Processing...<br>" +
+        "Romance: Processing...<br>" +
+        "Contains Violence: Processing...<br>" +
+        "Contains Sexual Scenes: Processing...<br>" +
+        "Contains Drug Use: Processing...<br>" +
+        "Contains Flashing Images: Processing...";
 }

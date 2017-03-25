@@ -178,33 +178,5 @@ namespace DataCentreWebServer.RequestHandlers
                 };
             }
         }
-
-        public async Task<HttpResponseMessage> StoreUserResult(HttpRequestMessage request)
-        {
-            try
-            {
-                var requestData = await request.Content.ReadAsStringAsync();
-                var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
-
-                _machineLearningFileHandler.StoreUserResult(machineLearningRequest.Results[0], machineLearningRequest.UserID);
-
-                var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
-
-                return new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(jsonString)
-                };
-            }
-            catch(Exception ex)
-            {
-                LoggerHelper.Log("An Exception occurred: " + ex.Message + "\n" + ex.StackTrace);
-
-                return new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.InternalServerError
-                };
-            }
-        }
     }
 }

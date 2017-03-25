@@ -22,13 +22,6 @@ namespace DataCentreWebServer.Controllers
 
             return await machineLearningHandler.ReturnPreviousMovies(Request);
         }
-
-        public async Task<HttpResponseMessage> StoreResult()
-        {
-            var machineLearningHandler = Container.ResolveMachineLearningHandler();
-
-            return await machineLearningHandler.StoreUserResult(Request);
-        }
         
         public async Task<HttpResponseMessage> WatchRandomMovie()
         {

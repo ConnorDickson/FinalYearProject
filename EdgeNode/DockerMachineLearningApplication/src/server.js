@@ -67,15 +67,10 @@ var createdServer = http.createServer(function (req, res) {
             ProduceRecommendationAndEndRequest(jsonObject, res);
         } else if(requestedUrl == 'WatchRandomMovie') {
             console.log("Watch Random Movie Request");
-            WatchRandomMovie(res, jsonObject);
+            SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCentreWatchRandomMovieURL);
         } else if (requestedUrl == 'WatchMovie') {
             console.log("Watch Movie Request");
-            WatchMovie(res, jsonObject);
-        } else {
-            //Either a request to watch a random movie
-            // or a request to watch a movie that was recommended
-            console.log("Process Request");
-            ProcessRequest(res, jsonObject);
+            SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCentreWatchMovieURL);
         }
     });
 });
@@ -89,31 +84,11 @@ createdServer.listen(internalPort);
  
 console.log("Started Node.js server");
 
-function WatchRandomMovie(res, jsonObject) 
-{
+function SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCentreURL) {
     var jsonData = JSON.stringify(jsonObject);
 
     var requestOptions = {
-        url: dataCentreWatchRandomMovieURL,
-        method: 'POST',
-        form: jsonData
-    };
-
-    request.post(requestOptions, function(error, response, body) {
-        if(error) {
-            console.error("There was an error requesting content from Data Center: " + error);
-        } else {
-            res.end(body);
-        }
-    });  
-}
-
-function WatchMovie(res, jsonObject) 
-{
-    var jsonData = JSON.stringify(jsonObject);
-
-    var requestOptions = {
-        url: dataCentreWatchMovieURL,
+        url: dataCentreURL,
         method: 'POST',
         form: jsonData
     };
@@ -123,17 +98,11 @@ function WatchMovie(res, jsonObject)
         if(error) {
             console.error("There was an error requesting content from Data Center: " + error);
         } else {
-            res.end(body);
+            var jsonObject = JSON.parse(body); 
+            ProduceRecommendationAndEndRequest(jsonObject, res);
         }
-    });    
+    });   
 }
-
-function ProcessRequest(res, jsonEvaluation) 
-{
-    //With this one we need to send the data to the server too
-    //This request will have a movie they are watching (from a recommendation)
-    ProduceRecommendationAndEndRequest(jsonEvaluation, res);
-};
 
 function ProduceRecommendationAndEndRequest(jsonObject, res) 
 {
@@ -167,7 +136,8 @@ function ProduceRecommendationAndEndRequest(jsonObject, res)
         //---------------------------------------------------
         // Need to produce an actual prediction
 
-        var movieTextLine = allMovieTextLines[0];
+        var randomNumber = Math.floor(Math.random() * 10000);
+        var movieTextLine = allMovieTextLines[randomNumber];
         var movieJSONObject = JSON.parse(movieTextLine);
         jsonObject.Recommendation = movieJSONObject;
         var jsonString = JSON.stringify(jsonObject);
