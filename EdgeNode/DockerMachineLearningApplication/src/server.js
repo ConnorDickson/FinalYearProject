@@ -66,10 +66,9 @@ var createdServer = http.createServer(function (req, res) {
             console.log("Recommendation Request");
             ProduceRecommendationAndEndRequest(jsonObject, res);
         } else if(requestedUrl == 'WatchRandomMovie') {
-            console.log("Watch Random Movie Request");
             SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCentreWatchRandomMovieURL);
         } else if (requestedUrl == 'WatchMovie') {
-            console.log("Watch Movie Request");
+            console.log(reqBody);
             SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCentreWatchMovieURL);
         }
     });
@@ -135,16 +134,28 @@ function ProduceRecommendationAndEndRequest(jsonObject, res)
         
         //---------------------------------------------------
         // Need to produce an actual prediction
+        
+        console.log("Average Results: " + jsonObject.AverageResults);
 
-        var randomNumber = Math.floor(Math.random() * 10000);
-        var movieTextLine = allMovieTextLines[randomNumber];
-        var movieJSONObject = JSON.parse(movieTextLine);
-        jsonObject.Recommendation = movieJSONObject;
+        if(jsonObject.AverageResults == null || typeof(jsonObject.AverageResults) == 'undefined' || jsonObject.AverageResults == "null") {
+            console.log("Average Results was undefined");
+        } else {
+            var movieJSONObject = KNearestNeighbour(allMovieTextLines, jsonObject.AverageResults);
+            jsonObject.Recommendation = movieJSONObject;
+        }
+        
         var jsonString = JSON.stringify(jsonObject);
         res.end(jsonString);
     });
+}
 
-    console.log("Finished async recommendation");
+function KNearestNeighbour(allMovieTextLines, movie) {
+    console.log("Average Year for NN evaluation: " + movie.Year);
+    var randomNumber = Math.floor(Math.random() * 10000);
+    var movieTextLine = allMovieTextLines[randomNumber];
+    var movieJSONObject = JSON.parse(movieTextLine);
+
+    return movieJSONObject;
 }
 
 function SendUserViewToDataCentre(jsonObject) 

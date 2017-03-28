@@ -35,7 +35,6 @@ namespace DataCentreWebServer.RequestHandlers
                 }
 
                 machineLearningRequest.Results = userMovies;
-
                 var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
                 var response = new HttpResponseMessage();
                 response.StatusCode = HttpStatusCode.OK;
@@ -57,12 +56,8 @@ namespace DataCentreWebServer.RequestHandlers
         {
             try
             {
-                LoggerHelper.Log("Watch Movie");
-
                 var requestData = await request.Content.ReadAsStringAsync();
                 var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
-
-                LoggerHelper.Log(machineLearningRequest.RequestedMovieID);
 
                 var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
 
@@ -76,12 +71,9 @@ namespace DataCentreWebServer.RequestHandlers
                     movie
                 };
 
-                var machineLearningMessage = new MachineLearningMessage()
-                {
-                    Results = linesToReturn
-                };
-
-                var jsonString = JsonConvert.SerializeObject(machineLearningMessage);
+                machineLearningRequest.Results = linesToReturn;
+                
+                var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
 
                 return new HttpResponseMessage()
                 {
@@ -104,8 +96,6 @@ namespace DataCentreWebServer.RequestHandlers
         {
             try
             {
-                LoggerHelper.Log("Watch Random Movie");
-
                 var requestData = await request.Content.ReadAsStringAsync();
                 var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
 
@@ -121,12 +111,9 @@ namespace DataCentreWebServer.RequestHandlers
                     randomMovie
                 };
 
-                var machineLearningMessage = new MachineLearningMessage()
-                {
-                    Results = linesToReturn
-                };
-
-                var jsonString = JsonConvert.SerializeObject(machineLearningMessage);
+                machineLearningRequest.Results = linesToReturn;
+                
+                var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
 
                 return new HttpResponseMessage()
                 {

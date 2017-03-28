@@ -6,5 +6,6 @@
         public Movie[] Results;
         public string Recommendation;
         public string RequestedMovieID;
+        public AverageMovie AverageResults;
     }
 }

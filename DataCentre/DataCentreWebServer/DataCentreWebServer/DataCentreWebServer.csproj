@@ -114,6 +114,7 @@
     <Compile Include="Helpers\VoiceRecognitionHelper.cs" />
     <Compile Include="Helpers\InMemoryMultipartFormDataStreamProvider.cs" />
     <Compile Include="IoC\Container.cs" />
+    <Compile Include="MachineLearning\AverageMovie.cs" />
     <Compile Include="MachineLearning\MovieParser.cs" />
     <Compile Include="MachineLearning\MachineLearningFileHandler.cs" />
     <Compile Include="MachineLearning\MachineLearningMessage.cs" />

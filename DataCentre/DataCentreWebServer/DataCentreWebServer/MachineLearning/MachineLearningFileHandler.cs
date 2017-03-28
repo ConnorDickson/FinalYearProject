@@ -50,30 +50,33 @@ namespace DataCentreWebServer.MachineLearning
 
                 foreach (var line in lines)
                 {
+                    //ToDo - make this more robust
                     if (!line.StartsWith(userID))
                     {
                         continue;
                     }
-
                     //Need to get list of all movie ID's and get vectors
-                    var movieIDLine = line.Substring(line.LastIndexOf(userID));
-                    var allUserMovieIDs = movieIDLine.Split(' ');
+                    var movieIDLine = line.Substring(userID.Length);
 
+                    var allUserMovieIDs = movieIDLine.Split(' ');
+                    
                     var allMovieLines = GetMovieLinesFromDisk();
 
                     var completedUserMovies = new List<string>();
-
+                    
                     foreach (var movieLine in allMovieLines)
                     {
+                        var movieID = movieLine.Split(' ')[0];
+                        
                         foreach (var userMovieID in allUserMovieIDs)
                         {
-                            if (movieLine.StartsWith(userMovieID))
+                            if (movieID == userMovieID)
                             {
                                 completedUserMovies.Add(movieLine);
                             }
                         }
                     }
-
+                    
                     return completedUserMovies.ToArray();
                 }
             }

@@ -1,14 +1,17 @@
 const http = require('http');
 
 var userID = "";
-var edgeNode = "edgepi01";
+var edgeNode = "192.168.1.185";
+//var edgeNode = "edgepi01";
 var dataCentre = "connor-pc";
-var localStorageDataName = "prevResults";
+var previousResults = {};
 var recommendedMovie = {};
 
 //After a user logs in they need to get their own vectors (or do they make them up randomly as "Movies Watched"?)
 //Use the Javascript save locally method
-function Login() {    
+function Login() {
+    previousResults = null;
+    
     userID = document.getElementById('UserID').value;
 
     if(userID != "") {
@@ -60,10 +63,10 @@ function GetPreviousMovies() {
             if(responseData != "") {
                 var jsonData = JSON.parse(responseData);
 
-                if(jsonData == null || jsonData == 'undefined' || jsonData.Results == 'undefined' || jsonData.Results == null || jsonData.Results == "null" || jsonData.Results.count == 0) {
-                    localStorage.setItem(localStorageDataName + userID, null);
+                if(jsonData == null || jsonData == 'undefined' || jsonData.Results == 'undefined' || jsonData.Results == null || jsonData.Results == "null" || jsonData.Results.length == 0) {
+                    previousResults = null;
                 } else {
-                    localStorage.setItem(localStorageDataName + userID, responseData);
+                    previousResults = jsonData;
                 }
             }
             
@@ -73,44 +76,20 @@ function GetPreviousMovies() {
 }
 
 function GetRecommendation() {
-    var averagePreviousResults = AveragePreviousResults();
-    
-    var client = http.createClient(3004, edgeNode);
-
     var jsonObject = {};
-    jsonObject.UserID = userID;
-    jsonObject.Results = averagePreviousResults;
-    var jsonData = JSON.stringify(jsonObject);
+    
+    PostToEdgeNode('/GetRecommendations', jsonObject, function(responseData) {
+        var receivedJSONData = JSON.parse(responseData);
+        
+        recommendedMovie = receivedJSONData.Recommendation;
+    
+        if(recommendedMovie != null && typeof(recommendedMovie) != 'undefined') {
+            document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(recommendedMovie);
+        } else {
+            document.getElementById('recommendations').innerHTML = "Recommendation: <br>Could not get a recommendation";
+        }
 
-    var request = client.request('POST', '/GetRecommendations', {
-        'Host': edgeNode,
-        'Port': 3004,
-        'User-Agent': 'Node.JS',
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': jsonData.length
-    });
-
-    request.write(jsonData);
-
-    request.end();
-
-    request.on('error', function (err) {
-        console.log(err);
-    });
-
-    request.on('response', function (response) {
-        var responseData = "";
-        response.setEncoding('utf8');
-
-        response.on('data', function (chunk) {
-            responseData += chunk;
-        });
-
-        response.on('end', function () {
-            var receivedJsonData = JSON.parse(responseData);
-            recommendedMovie = receivedJsonData.Recommendation;
-            document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(receivedJsonData.Recommendation);
-        });
+        AveragePreviousResults();
     });
 }
 
@@ -120,7 +99,6 @@ function WatchRandomMovie() {
     document.getElementById('prevResults').innerHTML = GetProcessingString();
     
     var jsonObject = {};
-    jsonObject.UserID = userID;
     
     PostToEdgeNode('/WatchRandomMovie', jsonObject, function(responseData) {
         StoreResultsAndUpdateUI(responseData);
@@ -133,7 +111,6 @@ function WatchRecommendedMovie() {
     document.getElementById('prevResults').innerHTML = GetProcessingString();
 
     var jsonObject = {};
-    jsonObject.UserID = userID;
     jsonObject.RequestedMovieID = recommendedMovie.ID;
     
     PostToEdgeNode('/WatchMovie', jsonObject, function(responseData) {
@@ -142,9 +119,14 @@ function WatchRecommendedMovie() {
 }
 
 function PostToEdgeNode(url, jsonObject, callback) {
+    jsonObject.UserID = userID;
+    jsonObject.AverageResults = AveragePreviousResults();
+        
     var client = http.createClient(3004, edgeNode);
     
     var jsonData = JSON.stringify(jsonObject);
+    
+    console.log("Posting to  " + url + ": " + jsonData);
     
     var request = client.request('POST', url, {
         'Host': edgeNode,
@@ -178,36 +160,34 @@ function PostToEdgeNode(url, jsonObject, callback) {
 
 function StoreResultsAndUpdateUI(responseData) {
     var receivedJSONData = JSON.parse(responseData);
-    var prevResultsString = localStorage.getItem(localStorageDataName + userID);
-    var result = "";
 
-    if(prevResultsString == 'undefined' || prevResultsString == null || prevResultsString == "null") {
-        result = responseData;
+    if(previousResults == 'undefined' || previousResults == null || previousResults == "null") {
+        previousResults = receivedJSONData;
     } else {
-        var localResultsJSON = JSON.parse(prevResultsString);
-        localResultsJSON.Results.push(receivedJSONData.Results[0]);
-        result = JSON.stringify(localResultsJSON);
+        previousResults.Results.push(receivedJSONData.Results[0]);
     }
-    
+
     document.getElementById('movieWatched').innerHTML = "Movie Watched: <br>" + FormatMovieString(receivedJSONData.Results[0]);
-    document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(receivedJSONData.Recommendation);
+    
     recommendedMovie = receivedJSONData.Recommendation;
-    localStorage.setItem(localStorageDataName + userID, result);
+    
+    if(recommendedMovie != null && typeof(recommendedMovie) != 'undefined') {
+        document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(recommendedMovie);
+    } else {
+        document.getElementById('recommendations').innerHTML = "Recommendation: <br>Could not get a recommendation";
+    }
+        
     AveragePreviousResults();
 }
 
 function AveragePreviousResults() 
-{
-    //Get the previous results we have stored
-    var prevResultsString = localStorage.getItem(localStorageDataName + userID);
-    var prevResultsJSON = JSON.parse(prevResultsString);
-    
-    if(prevResultsJSON == 'undefined' || prevResultsJSON == null || prevResultsJSON == "null" || prevResultsJSON.Results.count == 0) {
-        document.getElementById('prevResults').innerHTML = "Please watch a movie to get an evaluation";
+{    
+    if(previousResults == 'undefined' || previousResults == null || previousResults == "null" || previousResults.Results.length == 0) {
+        document.getElementById('prevResults').innerHTML = "Your Average of 0 Results: <br>Please watch a movie to get an evaluation";
         return null;
     }
     
-    var prevResults = prevResultsJSON.Results;
+    var prevResults = previousResults.Results;
     
     //Add up the total of each category for all our results
     var totalYear = [];
