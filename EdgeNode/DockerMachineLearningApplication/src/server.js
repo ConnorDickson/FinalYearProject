@@ -4,6 +4,8 @@ var http = require('http');
 var request = require('request');
 var httpProxy = require('http-proxy');
 var fs = require('fs');
+var Node = require('./Node.js').Node;
+var NodeList = require('./NodeList.js').NodeList;
 
 var externalPort = process.env.port || 3005;
 var internalPort = 3502;
@@ -215,4 +217,73 @@ function GetMoviesFromDataCentre()
     });   
 }
 
-GetMoviesFromDataCentre()
+GetMoviesFromDataCentre();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//https://www.burakkanber.com/blog/machine-learning-in-js-k-nearest-neighbor-part-1/
+//http://jsfiddle.net/bkanber/hevFK/?utm_source=website&utm_medium=embed&utm_campaign=hevFK
+//This code is based on the website above, it had to be adapted for my system
+var nodes;
+
+var data = [
+    {rooms: 1, area: 350, type: 'apartment'},
+    {rooms: 2, area: 300, type: 'apartment'},
+    {rooms: 3, area: 300, type: 'apartment'},
+    {rooms: 4, area: 250, type: 'apartment'},
+    {rooms: 4, area: 500, type: 'apartment'},
+    {rooms: 4, area: 400, type: 'apartment'},
+    {rooms: 5, area: 450, type: 'apartment'},
+
+    {rooms: 7,  area: 850,  type: 'house'},
+    {rooms: 7,  area: 900,  type: 'house'},
+    {rooms: 7,  area: 1200, type: 'house'},
+    {rooms: 8,  area: 1500, type: 'house'},
+    {rooms: 9,  area: 1300, type: 'house'},
+    {rooms: 8,  area: 1240, type: 'house'},
+    {rooms: 10, area: 1700, type: 'house'},
+    {rooms: 9,  area: 1000, type: 'house'},
+
+    {rooms: 1, area: 800,  type: 'flat'},
+    {rooms: 3, area: 900,  type: 'flat'},
+    {rooms: 2, area: 700,  type: 'flat'},
+    {rooms: 1, area: 900,  type: 'flat'},
+    {rooms: 2, area: 1150, type: 'flat'},
+    {rooms: 1, area: 1000, type: 'flat'},
+    {rooms: 2, area: 1200, type: 'flat'},
+    {rooms: 1, area: 1300, type: 'flat'},
+];
+
+var run = function() {
+    //This 3 determins k nn
+    nodes = new NodeList(3);
+    
+    for (var i in data)
+    {
+        nodes.add( new Node(data[i]) );
+    }
+
+    var random_rooms = Math.round( Math.random() * 10 );
+    var random_area = Math.round( Math.random() * 2000 );
+    nodes.add( new Node({rooms: random_rooms, area: random_area, type: false}) );
+    nodes.determineUnknown();
+    nodes.printKNN();
+};
+
+run();

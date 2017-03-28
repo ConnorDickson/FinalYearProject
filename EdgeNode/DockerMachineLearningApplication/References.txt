@@ -1,1 +1,6 @@
 Once I reached this point I had already had quite a lot of experience with Nodejs so there were not as many references needed apart from JSON
+
+I used this;
+https://www.burakkanber.com/blog/machine-learning-in-js-k-nearest-neighbor-part-1/
+http://jsfiddle.net/bkanber/hevFK/?utm_source=website&utm_medium=embed&utm_campaign=hevFK
+as a basis for the Nearest Neighbor code. It needed to be altered for movies and to fit into a Nodejs envionment.
