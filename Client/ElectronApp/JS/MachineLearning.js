@@ -294,6 +294,7 @@ function AveragePreviousResults()
 
 function FormatMovieString(movie) {
         return "Title: " + movie.Title + "<br>" +
+        "Year: " + movie.Year + "<br>" + 
         "Horror: " + movie.PercentageHorror + "<br>" +
         "Comedy: " + movie.PercentageComedy + "<br>" +
         "Action: " + movie.PercentageAction + "<br>" +
@@ -308,6 +309,7 @@ function FormatMovieString(movie) {
 
 function GetProcessingString() {
         return "Title: Processing...<br>" +
+        "Year: Processing...<br>" + 
         "Horror: Processing...<br>" +
         "Comedy: Processing...<br>" +
         "Action: Processing...<br>" +

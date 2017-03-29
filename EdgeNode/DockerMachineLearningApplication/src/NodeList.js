@@ -20,7 +20,7 @@ NodeList.prototype.determineUnknown = function() {
     */
     for (var i in this.nodes)
     {
-        if ( ! this.nodes[i].type)
+       if (this.nodes[i].evaluate)
         {
             /*
             * If the node is an unknown type, clone the nodes list and then measure distances.
@@ -28,69 +28,137 @@ NodeList.prototype.determineUnknown = function() {
 
             /* Clone nodes */
             this.nodes[i].neighbors = [];
+
             for (var j in this.nodes)
             {
-                if ( ! this.nodes[j].type) {
+                if (this.nodes[j].evaluate) {
                     continue;
                 }
                 
-                this.nodes[i].neighbors.push( new Node(this.nodes[j]) );
+                this.nodes[i].neighbors.push(new Node(this.nodes[j]));
             }
 
             /* Measure distances */
-            this.nodes[i].measureDistances(this.areas, this.rooms);
+            this.nodes[i].measureDistances(null, this.Year, this.PercentageHorror, this.PercentageComedy, this.PercentageAction, this.PercentageAdventure, this.PercentageFantasy, this.PercentageRomance, null, null, null, null);
 
             /* Sort by distance */
             this.nodes[i].sortByDistance();
 
             /* Guess type */
-            console.log(this.nodes[i].guessType(this.k));
+            //console.log(this.nodes[i].evaluation(this.k));
         }
     }
 };
 
 NodeList.prototype.calculateRanges = function() {
-    this.areas = {min: 1000000, max: 0};
-    this.rooms = {min: 1000000, max: 0};
+    this.Year = {min: 1000000, max: 0};
+    this.PercentageHorror = {min: 1000000, max: 0};
+    this.PercentageComedy = {min: 1000000, max: 0};
+    this.PercentageAction = {min: 1000000, max: 0};
+    this.PercentageAdventure = {min: 1000000, max: 0};
+    this.PercentageFantasy = {min: 1000000, max: 0};
+    this.PercentageRomance = {min: 1000000, max: 0};
+
     for (var i in this.nodes)
     {
-        if (this.nodes[i].rooms < this.rooms.min)
+        //Year
+        if (this.nodes[i].Year < this.Year.min)
         {
-            this.rooms.min = this.nodes[i].rooms;
+            this.Year.min = this.nodes[i].Year;
         }
 
-        if (this.nodes[i].rooms > this.rooms.max)
+        if (this.nodes[i].Year > this.Year.max)
         {
-            this.rooms.max = this.nodes[i].rooms;
+            this.Year.max = this.nodes[i].Year;
         }
 
-        if (this.nodes[i].area < this.areas.min)
+        //PercentageHorror
+        if (this.nodes[i].PercentageHorror < this.PercentageHorror.min)
         {
-            this.areas.min = this.nodes[i].area;
+            this.PercentageHorror.min = this.nodes[i].PercentageHorror;
         }
 
-        if (this.nodes[i].area > this.areas.max)
+        if (this.nodes[i].PercentageHorror > this.PercentageHorror.max)
         {
-            this.areas.max = this.nodes[i].area;
+            this.PercentageHorror.max = this.nodes[i].PercentageHorror;
+        }
+
+        //Percentage Comedy
+        if (this.nodes[i].PercentageComedy < this.PercentageComedy.min)
+        {
+            this.PercentageComedy.min = this.nodes[i].PercentageComedy;
+        }
+
+        if (this.nodes[i].PercentageComedy > this.PercentageComedy.max)
+        {
+            this.PercentageComedy.max = this.nodes[i].PercentageComedy;
+        }   
+        
+        //Percentage Action
+        if (this.nodes[i].PercentageAction < this.PercentageAction.min)
+        {
+            this.PercentageAction.min = this.nodes[i].PercentageAction;
+        }
+
+        if (this.nodes[i].PercentageAction > this.PercentageAction.max)
+        {
+            this.PercentageAction.max = this.nodes[i].PercentageAction;
+        }
+        
+        //Percentage Adventure
+        if (this.nodes[i].PercentageAdventure < this.PercentageAdventure.min)
+        {
+            this.PercentageAdventure.min = this.nodes[i].PercentageAdventure;
+        }
+
+        if (this.nodes[i].PercentageAdventure > this.PercentageAdventure.max)
+        {
+            this.PercentageAdventure.max = this.nodes[i].PercentageAdventure;
+        }
+        
+        //Percentage Fantasy
+        if (this.nodes[i].PercentageFantasy < this.PercentageFantasy.min)
+        {
+            this.PercentageFantasy.min = this.nodes[i].PercentageFantasy;
+        }
+
+        if (this.nodes[i].PercentageFantasy > this.PercentageFantasy.max)
+        {
+            this.PercentageFantasy.max = this.nodes[i].PercentageFantasy;
+        }
+        
+        //Percentage Romance
+        if (this.nodes[i].PercentageRomance < this.PercentageRomance.min)
+        {
+            this.PercentageRomance.min = this.nodes[i].PercentageRomance;
+        }
+
+        if (this.nodes[i].PercentageRomance > this.PercentageRomance.max)
+        {
+            this.PercentageRomance.max = this.nodes[i].PercentageRomance;
         }
     }
 };
 
-
-NodeList.prototype.printKNN = function() {
+NodeList.prototype.getKNN = function() {
+    var nearestNeighbours = [];
+   
     for (var i in this.nodes)
     {
-        if (!this.nodes[i].type)
-        {
+        if (this.nodes[i].evaluate)
+        { 
             for(var j = 0; j < this.k; j ++) {
                 var nearestNode = this.nodes[i].neighbors[j];
-                console.log("NN " + j + ":\nRooms: " + nearestNode.rooms + "\nArea: " + nearestNode.area + "\nType: " + nearestNode.type);
+                
+                nearestNeighbours.push(nearestNode);
+                console.log("Pushed NN " + j + ":\nYear: " + nearestNode.Year + "\nPercent Horror: " + nearestNode.PercentageHorror + "\nContains Violence: " + nearestNode.ContainsViolence);
             }
         }
     }
+
+    return nearestNeighbours;
 };
 
 module.exports = {
     NodeList
 };
-
