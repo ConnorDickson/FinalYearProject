@@ -50,11 +50,13 @@ namespace DataCentreWebServer.MachineLearning
 
                 foreach (var line in lines)
                 {
-                    //ToDo - make this more robust
-                    if (!line.StartsWith(userID))
+                    var savedUserName = line.Substring(0, userID.Length).Trim();
+                    
+                    if (savedUserName.Trim() != userID)
                     {
                         continue;
                     }
+
                     //Need to get list of all movie ID's and get vectors
                     var movieIDLine = line.Substring(userID.Length);
 

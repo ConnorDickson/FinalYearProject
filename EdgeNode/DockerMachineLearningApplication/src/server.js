@@ -134,16 +134,35 @@ function ProduceRecommendationAndEndRequest(jsonObject, res)
         //Go through all lines and see what the user requested
         console.log("Working out a recommendation for: " + jsonObject.UserID);
         
-        //---------------------------------------------------
-        // Need to produce an actual prediction
-        
         console.log("Average Results: " + jsonObject.AverageResults);
 
         if(jsonObject.AverageResults == null || typeof(jsonObject.AverageResults) == 'undefined' || jsonObject.AverageResults == "null") {
             console.log("Average Results was undefined");
         } else {
-            var movieJSONObject = KNearestNeighbour(allMovieTextLines, jsonObject.AverageResults);
-            jsonObject.Recommendation = movieJSONObject;
+            var nearestNeighbour = KNearestNeighbour(allMovieTextLines, jsonObject.AverageResults);
+           // //If JSON object has a single result we want to make sure the movie we ware about to recommend isn't the one they just watched
+           // var movieToRecommend;
+           // if(typeof(jsonObject.Results) != 'undefined' && jsonObject.Results.length == 1) {
+           //     var watchedMovie = jsonObject.Results[0];
+           //     console.log("Current Result Count: " + jsonObject.Results.length);
+           //     //They have watched a movie
+
+           //     for(var i = 0; i < nearestNeighbours.length; i++) {
+           //         console.log("NN.ID: " + nearestNeighbours[i].ID);     
+           //     }
+
+           //     for(var i = 0; i < nearestNeighbours.length; i++) {
+           //         console.log("NN.ID: " + nearestNeighbours[i].ID + ". WatchedMovie.ID: " +  watchedMovie.ID);
+           //         if(nearestNeighbours[i].ID != watchedMovie.ID) {
+           //             console.log("Returning this movie.");
+           //             movieToRecommend = nearestNeighbours[i];
+           //             break;
+           //         }
+           //     }
+           // }
+
+           // jsonObject.Recommendation = movieToRecommend;
+            jsonObject.Recommendation = nearestNeighbour;
         }
         
         var jsonString = JSON.stringify(jsonObject);
@@ -167,21 +186,12 @@ function KNearestNeighbour(allMovieTextLines, movie)
         nodes.add( new Node(movieToAdd));
     }
 
-    //This will be the average result but the "Type" will become "Evaluate" and will be false/null/undefined for everyone else
     movie.evaluate = true;
     nodes.add(new Node(movie));
     nodes.determineUnknown();
-    var nearestNeighbours = nodes.getKNN();
+    var nearestNeighbours = nodes.getNN();
     
-    return nearestNeighbours[0];
-//////////////////////////////////////////////////////////////////////////////////
-
-    //console.log("Average Year for NN evaluation: " + movie.Year);
-    //var randomNumber = Math.floor(Math.random() * 10000);
-    //var movieTextLine = allMovieTextLines[randomNumber];
-    //var movieJSONObject = JSON.parse(movieTextLine);
-
-    //return movieJSONObject;
+    return nearestNeighbours;
 }
 
 function SendUserViewToDataCentre(jsonObject) 

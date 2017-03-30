@@ -39,13 +39,13 @@ NodeList.prototype.determineUnknown = function() {
             }
 
             /* Measure distances */
-            this.nodes[i].measureDistances(null, this.Year, this.PercentageHorror, this.PercentageComedy, this.PercentageAction, this.PercentageAdventure, this.PercentageFantasy, this.PercentageRomance, null, null, null, null);
+           this.nodes[i].measureDistances(null, this.Year, this.PercentageHorror, this.PercentageComedy, this.PercentageAction, this.PercentageAdventure, this.PercentageFantasy, this.PercentageRomance, null, null, null, null);
 
             /* Sort by distance */
             this.nodes[i].sortByDistance();
 
             /* Guess type */
-            //console.log(this.nodes[i].evaluation(this.k));
+            console.log("Guess Type: " + this.nodes[i].guessType(this.k));
         }
     }
 };
@@ -140,23 +140,37 @@ NodeList.prototype.calculateRanges = function() {
     }
 };
 
-NodeList.prototype.getKNN = function() {
-    var nearestNeighbours = [];
-   
-    for (var i in this.nodes)
-    {
-        if (this.nodes[i].evaluate)
-        { 
-            for(var j = 0; j < this.k; j ++) {
-                var nearestNode = this.nodes[i].neighbors[j];
-                
-                nearestNeighbours.push(nearestNode);
-                console.log("Pushed NN " + j + ":\nYear: " + nearestNode.Year + "\nPercent Horror: " + nearestNode.PercentageHorror + "\nContains Violence: " + nearestNode.ContainsViolence);
-            }
-        }
+NodeList.prototype.getNN = function() {
+  for(var i in this.nodes) {
+    if(this.nodes[i].evaluate) {
+        console.log("Neighbour count: " + this.nodes[i].neighbors.length);
+        console.log("getNN k - 1: " + JSON.stringify(this.nodes[i].neighbors[this.k - 1]));
+        console.log("getNN k: " + JSON.stringify(this.nodes[i].neighbors[this.k]));
+        console.log("getNN k + 1: " + JSON.stringify(this.nodes[i].neighbors[this.k + 1]));
+        return this.nodes[i].neighbors[this.k - 1];
     }
+  }
+  
+  //  var nearestNeighbours = [];
+  // 
+  //  for (var i in this.nodes)
+  //  {
+  //      if (this.nodes[i].evaluate)
+  //      {
+  //          for(var j = 0; j < 100; j++) {     
+  //              console.log("Neighbour " + j + " ID: " + this.nodes[i].neighbors[j].ID);
+  //          }
 
-    return nearestNeighbours;
+  //          for(var j = 0; j < this.k; j ++) {
+  //              console.log("Neighbour length: " + this.nodes[i].neighbors.length);
+  //              var nearestNode = this.nodes[i].neighbors[j];
+  //              
+  //              nearestNeighbours.push(nearestNode);
+  //          }
+  //      }
+  //  }
+
+  //  return nearestNeighbours;
 };
 
 module.exports = {

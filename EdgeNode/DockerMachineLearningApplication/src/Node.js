@@ -10,6 +10,8 @@ var Node = function(object) {
 
 Node.prototype.measureDistances = function(title_range_obj, year_range_obj, percent_horror_range_obj, percent_comedy_range_obj, percent_action_range_obj, percent_adventure_range_obj, percent_fantasy_range_obj, percent_romance_range_obj, contains_violence_range_obj, contains_sexual_scenes_range_obj, contains_drug_use_range_obj, contains_flashing_images_range_obj) {
 
+    console.log("Measure Distance");
+
     var year_range = year_range_obj.max - year_range_obj.min;
     var percent_horror_range = percent_horror_range_obj.max - percent_horror_range_obj.min;
     var percent_comedy_range = percent_comedy_range_obj.max - percent_comedy_range_obj.min;
@@ -56,39 +58,41 @@ Node.prototype.measureDistances = function(title_range_obj, year_range_obj, perc
 };
 
 Node.prototype.sortByDistance = function() {
+    console.log("Sort by distance");
+
     this.neighbors.sort(function (a, b) {
         return a.distance - b.distance;
     });
 };
 
-Node.prototype.evaluation = function(k) {
-    var evaluations = {};
+Node.prototype.guessType = function(k) {
+    var types = {};
 
     for (var i in this.neighbors.slice(0, k))
     {
         var neighbor = this.neighbors[i];
 
-        if (evaluations[neighbor.evaluation])
+        if (!types[neighbor.Year])
         {
-            evaluations[neighbor.evaluation] = 0;
+            types[neighbor.Year] = 0;
         }
 
-        evaluations[neighbor.evaluation] += 1;
+        types[neighbor.Year] += 1;
     }
 
-    var guess = {evaluation: true, count: 0};
-    for (var evaluation in evaluations)
+    var guess = {Year: false, count: 0};
+    for (var type in types)
     {
-        if (evaluations[evaluation] > guess.count)
+        if (types[type] > guess.count)
         {
-            guess.evaluation = evaluation;
-            guess.count = evaluations[evaluation];
+            guess.Year = type;
+            guess.count = types[type];
         }
     }
 
-    this.evaluation = evaluation;
+    this.guess = guess;
 
-    return evaluations;
+    return types;
 };
 
 module.exports = {
