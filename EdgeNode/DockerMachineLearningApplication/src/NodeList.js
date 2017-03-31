@@ -141,6 +141,8 @@ NodeList.prototype.calculateRanges = function() {
 };
 
 NodeList.prototype.getNN = function() {
+  //From the example I need to know what elements are within the radius
+  
   for(var i in this.nodes) {
     if(this.nodes[i].evaluate) {
         console.log("Neighbour count: " + this.nodes[i].neighbors.length);

@@ -29,6 +29,10 @@ namespace DataCentreWebServer.Helpers
         {
             var movies = _movieParser.ParseMovies(lines);
 
+            KMeans kmeans = new KMeans();
+
+            kmeans.kmeans(movies);
+
             foreach (var movie in movies)
             {
                 //Process vectors and perform nearst neighbour

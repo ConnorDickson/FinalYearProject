@@ -1,0 +1,3 @@
+I used ;
+https://visualstudiomagazine.com/Articles/2013/12/01/K-Means-Data-Clustering-Using-C.aspx?admgarea=features&Page=1
+As a basis for the KMeans clustering that I will use for sorting the movies.
