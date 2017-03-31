@@ -7,13 +7,13 @@ var dataCentre = "connor-pc";
 var previousResults = {};
 var recommendedMovie = {};
 
-//After a user logs in they need to get their own vectors (or do they make them up randomly as "Movies Watched"?)
-//Use the Javascript save locally method
+//called when the user clicks login
 function Login() {
     previousResults = null;
     
     userID = document.getElementById('UserID').value;
 
+    //Make the logged in user GUI visable
     if(userID != "") {
         event.srcElement.parentElement.parentElement.className = "hidden";
         
@@ -25,10 +25,12 @@ function Login() {
     }
 }
 
+//makes a call directly to the data center to obtain the previous movies watched for the logged in user
 function GetPreviousMovies() {
     document.getElementById('recommendations').innerHTML = GetProcessingString();
     document.getElementById('prevResults').innerHTML = GetProcessingString();
     
+    //post to the data centre with your UserID
     var client = http.createClient(3000, dataCentre);
 
     var jsonObject = {};
@@ -55,10 +57,12 @@ function GetPreviousMovies() {
         var responseData = "";
         response.setEncoding('utf8');
 
+        //receive response data
         response.on('data', function (chunk) {
             responseData += chunk;
         });
 
+        //store the previous movies watched
         response.on('end', function () {
             if(responseData != "") {
                 var jsonData = JSON.parse(responseData);
@@ -70,29 +74,34 @@ function GetPreviousMovies() {
                 }
             }
             
+            //if we got the previous movies we want to update the UI with a recommendation for these movies
             GetRecommendation()
         });
     });
 }
 
+//Get a recommendation from the edge nodes
 function GetRecommendation() {
     var jsonObject = {};
     
+    //Post to the edge node and execute code as part of a callback to update the UI
     PostToEdgeNode('/GetRecommendations', jsonObject, function(responseData) {
         var receivedJSONData = JSON.parse(responseData);
         
         recommendedMovie = receivedJSONData.Recommendation;
-    
+        
         if(recommendedMovie != null && typeof(recommendedMovie) != 'undefined') {
             document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(recommendedMovie);
         } else {
             document.getElementById('recommendations').innerHTML = "Recommendation: <br>Could not get a recommendation";
         }
 
+        //Average the users previously stored results
         AveragePreviousResults();
     });
 }
 
+//make a call to the edge node to watch a random movie and receive a recommendation
 function WatchRandomMovie() {
     document.getElementById('movieWatched').innerHTML = GetProcessingString();
     document.getElementById('recommendations').innerHTML = GetProcessingString();
@@ -100,24 +109,29 @@ function WatchRandomMovie() {
     
     var jsonObject = {};
     
+    //make the call and publish the results to the UI
     PostToEdgeNode('/WatchRandomMovie', jsonObject, function(responseData) {
         StoreResultsAndUpdateUI(responseData);
     });
 }
 
+//watch the movie that is currently being shown in the UI
 function WatchRecommendedMovie() {
     document.getElementById('movieWatched').innerHTML = GetProcessingString();
     document.getElementById('recommendations').innerHTML = GetProcessingString();
     document.getElementById('prevResults').innerHTML = GetProcessingString();
 
+    //store the recommended movie as part of the posted data
     var jsonObject = {};
     jsonObject.RequestedMovieID = recommendedMovie.ID;
     
+    //make the call and publish the results to the UI
     PostToEdgeNode('/WatchMovie', jsonObject, function(responseData) {
         StoreResultsAndUpdateUI(responseData);
     });
 }
 
+//post the data passed into the method to the URL passed in to the method and execute the callback with the response data
 function PostToEdgeNode(url, jsonObject, callback) {
     jsonObject.UserID = userID;
     jsonObject.AverageResults = AveragePreviousResults();
@@ -144,23 +158,29 @@ function PostToEdgeNode(url, jsonObject, callback) {
         console.log(err);
     });
 
+    //handle the response
     request.on('response', function (response) {
         var responseData = "";
         response.setEncoding('utf8');
 
+        //receive the response data
         response.on('data', function (chunk) {
             responseData += chunk;
         });
 
+        //execute the callback with the response data
         response.on('end', function () {
             callback(responseData);
         });
     });
 }
 
+//parse the response data and update the UI with the information it contains
 function StoreResultsAndUpdateUI(responseData) {
     var receivedJSONData = JSON.parse(responseData);
 
+    //add the watched movie to the current results
+    //this will later be used to display the new average
     if(previousResults == 'undefined' || previousResults == null || previousResults == "null") {
         previousResults = receivedJSONData;
     } else {
@@ -180,6 +200,7 @@ function StoreResultsAndUpdateUI(responseData) {
     AveragePreviousResults();
 }
 
+//take the recorded movies and average them, then display this in the UI
 function AveragePreviousResults() 
 {    
     if(previousResults == 'undefined' || previousResults == null || previousResults == "null" || previousResults.Results.length == 0) {
@@ -292,6 +313,7 @@ function AveragePreviousResults()
     return averagePreviousResult;
 }
 
+//Returned a nicely formatted string containing the movie data
 function FormatMovieString(movie) {
         return "Title: " + movie.Title + "<br>" +
         "Year: " + movie.Year + "<br>" + 
@@ -307,6 +329,7 @@ function FormatMovieString(movie) {
         "Contains Flashing Images: " + movie.ContainsFlashingImages;
 }
 
+//returns a string to indicate processing
 function GetProcessingString() {
         return "Title: Processing...<br>" +
         "Year: Processing...<br>" + 

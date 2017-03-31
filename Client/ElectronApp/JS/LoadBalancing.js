@@ -96,6 +96,7 @@ function ExecuteLoadBalanceRemoteVoiceRecognition() {
     });
 }
 
+//average the elements of an array
 function Average(elements) {
     var sum = 0.0;
     
@@ -106,6 +107,7 @@ function Average(elements) {
     return sum/elements.length;
 }
 
+//obtain and set the voice recognition results
 function SetVoiceRecognitionResults(responseData) {
     var load = cpu.cpuEnd();
     var freeMemory = cpu.freeMemory();

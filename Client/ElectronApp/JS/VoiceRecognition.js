@@ -10,13 +10,16 @@ var localStopwatch;
 var remoteStopwatch;
 var filePath = "../../Downloads/output.wav";
 
+//audio variables for handling audio in Electron
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
+//event handler for failed audio recording
 var onFail = function(e) {
     console.log('Rejected!', e);
 };
 
+//event handler for successful audio recording 
 var onSuccess = function(s) {
     var mediaStreamSource = context.createMediaStreamSource(s);
     recorder = new Recorder(mediaStreamSource);
@@ -25,6 +28,7 @@ var onSuccess = function(s) {
     document.getElementById("RecordingStatus").innerHTML = "Recording";
 }
 
+//start or stop recording
 function ToggleRecording() 
 {
     if(!currentlyRecording) {
@@ -38,6 +42,7 @@ function ToggleRecording()
     }
 }
 
+//start the recording
 function StartRecording() 
 {
     if (navigator.getUserMedia) {
@@ -47,6 +52,7 @@ function StartRecording()
     }
 }
 
+//stop and save the recording
 function StopRecording() 
 {
     recorder.stop();
@@ -57,10 +63,12 @@ function StopRecording()
     });
 }
 
+//receive data from the "main" thread (Node.js backend in Electron)
 ipc.on('receive-voice-translation', function(event,response) {
     SetLocalResultsAsFinished(response);
 });
 
+//make a call to the Node.js main thread that can spawn a new process and execute voice recognition
 function ExecuteVoiceRecognitionScript() {
     localStopwatch.reset();
     localStopwatch.start();
@@ -69,6 +77,7 @@ function ExecuteVoiceRecognitionScript() {
     ipc.send('execute-voicerecognition-script');
 }
 
+//Make a post request to the DataCentre that is proxied through the Edge Node
 function ExecuteRemoteVoiceRecognition() {
     remoteStopwatch.reset();
     remoteStopwatch.start();
@@ -99,6 +108,7 @@ function ExecuteRemoteVoiceRecognition() {
         console.log(err);
     });
 
+    //handle the response data
     request.on('response', function (response) {
         var responseData = "";
         response.setEncoding('utf8');
@@ -113,6 +123,7 @@ function ExecuteRemoteVoiceRecognition() {
     });
 }
 
+//update the left hand side of the table as processing
 function SetLocalResultsAsProcessing() {
     document.getElementById('localSysProcessor').innerHTML = "Processing...";
     document.getElementById('localSysMemory').innerHTML = "Processing...";
@@ -120,6 +131,7 @@ function SetLocalResultsAsProcessing() {
     document.getElementById('localRecordingFileSize').innerHTML = "Processing...";
 }
 
+//update the right hand side of the table as processing
 function SetRemoteResultsAsProcessing() {
     document.getElementById('remoteSysProcessor').innerHTML = "Processing...";
     document.getElementById('edgeNodeProcessor').innerHTML =  "Processing...";
@@ -128,6 +140,7 @@ function SetRemoteResultsAsProcessing() {
     document.getElementById('remoteRecordingFileSize').innerHTML = "Processing...";
 }
 
+//update the left hand side of the table as finished by recording metrics and displaying them in the UI
 function SetLocalResultsAsFinished(response) {
     var load = cpu.cpuEnd();
     localStopwatch.stop();
@@ -141,6 +154,7 @@ function SetLocalResultsAsFinished(response) {
     document.getElementById('localRecordingFileSize').innerHTML = "File Size:  " + stats.size;
 }
 
+//set the right hand side of the table as finished by recording metrics and displaying them in the UI
 function SetRemoteResultsAsFinished(responseData) {
     var load = cpu.cpuEnd();
     remoteStopwatch.stop();
@@ -156,6 +170,7 @@ function SetRemoteResultsAsFinished(responseData) {
     document.getElementById('remoteRecordingFileSize').innerHTML = "File Size:  " + stats.size;
 }
 
+//when the page loads we want to setup stopwatchs for the requests
 window.onload = function() {
     var localStopwatchElement = document.getElementById('localStopwatchResults');
     var remoteStopwatchElement = document.getElementById('remoteStopwatchResults');
