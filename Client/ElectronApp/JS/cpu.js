@@ -1,3 +1,6 @@
+//a custom node module that can be imported and is reuseable
+//records total CPU use
+
 const os = require('os');
 var start;
 
@@ -27,6 +30,7 @@ function cpuAverage() {
   return {idle: totalIdle / cpus.length,  total: totalTick / cpus.length};
 }
 
+//works out the average CPU use since recording started
 var cpuEnd = function() {
     var end = cpuAverage();
     
@@ -40,10 +44,12 @@ var cpuEnd = function() {
     return dif;
 }
 
+//records the starting measurement
 var cpuStart = function() {
     start = cpuAverage();    
 }
 
+//used to return the amount of free ram the system has (in GB)
 var freeMemory = function() 
 {
     var freeMemBytes = os.freemem();
@@ -54,6 +60,7 @@ var freeMemory = function()
     return freeMemGB.toFixed(2);
 }
 
+//Used to make methods accessable from the code importing the module
 module.exports = {
     cpuStart,
     cpuEnd,

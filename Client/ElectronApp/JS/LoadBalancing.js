@@ -5,11 +5,13 @@ var initialCountOfRequests;
 var localCPURecords = [];
 var remoteCPURecords = [];
 
+//Creates the stopwatch object
 window.onload = function() {
     var localStopwatchElement = document.getElementById('localStopwatchResults');
     localStopwatch = new Stopwatch(localStopwatchElement);    
 };
 
+//called from button to execute the load balance request
 function ExecuteVoiceRecognitionLoadBalance() {
     var numberOfRequests = parseInt(document.getElementById('NumberOfVoiceRecognitionRequests').value);
 
@@ -31,7 +33,8 @@ function ExecuteVoiceRecognitionLoadBalance() {
         
     requestsLeft = numberOfRequests;
     initialCountOfRequests = numberOfRequests;
-    
+
+    //used to spawn multiple concurrent requests
     if(numberOfRequests > 0) {
         while(numberOfRequests > 0) {
             setTimeout(ExecuteLoadBalanceRemoteVoiceRecognition, 0);            
@@ -40,7 +43,9 @@ function ExecuteVoiceRecognitionLoadBalance() {
     }
 }
 
+//executes a single request but called multiple times concurrently
 function ExecuteLoadBalanceRemoteVoiceRecognition() {
+    //read the file async so that other threads are not held up
     fs.readFile("../../Downloads/output.wav", (err, data) => {
         var urlToPostTo = 'http://connor-pc:3000/api/voicerecognition/PostVoiceRequest';
 
@@ -55,6 +60,7 @@ function ExecuteLoadBalanceRemoteVoiceRecognition() {
             'Preprocess-Request': document.getElementById('useEdgeNodeCheckbox').checked
         });
 
+        //post voice data to the server
         request.write(data);
         request.end();
 
@@ -66,10 +72,12 @@ function ExecuteLoadBalanceRemoteVoiceRecognition() {
             var responseData = "";
             response.setEncoding('utf8');
 
+            //read all data returned incase it extends beyond the buffer
             response.on('data', function (chunk) {
                 responseData += chunk;
             });
 
+            //once the request is finished update the UI
             response.on('end', function () {
                 requestsLeft--;
                 
