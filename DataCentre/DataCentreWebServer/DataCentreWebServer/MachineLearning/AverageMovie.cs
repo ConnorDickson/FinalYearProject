@@ -1,5 +1,6 @@
 ﻿namespace DataCentreWebServer.MachineLearning
 {
+    // an object used to handle the average results of the movie
     public class AverageMovie
     {
         public string Title;

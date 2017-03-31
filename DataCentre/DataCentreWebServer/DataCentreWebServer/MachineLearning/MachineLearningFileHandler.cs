@@ -7,12 +7,17 @@ using System.Web;
 
 namespace DataCentreWebServer.MachineLearning
 {
+    //this class handles all operations machine learning needs to perform with the file system
     public class MachineLearningFileHandler
     {
         //This would ideally all be done with a database rather than storing it in a file on disk.
 
         ReaderWriterLockSlim _readerWriterLock = new ReaderWriterLockSlim();
 
+        /// <summary>
+        /// Returns raw movie lines from the file on disk
+        /// </summary>
+        /// <returns></returns>
         public string[] GetMovieLinesFromDisk()
         {
             try
@@ -30,6 +35,11 @@ namespace DataCentreWebServer.MachineLearning
             return null;
         }
 
+        /// <summary>
+        /// Returns movies that the were watched by the user with the UserID passed into the method
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
         public string[] GetUserMovies(string userID)
         {
             _readerWriterLock.EnterReadLock();
@@ -52,20 +62,24 @@ namespace DataCentreWebServer.MachineLearning
                 {
                     var savedUserName = line.Substring(0, userID.Length).Trim();
                     
+                    // if this is not the users line continue
                     if (savedUserName.Trim() != userID)
                     {
                         continue;
                     }
 
-                    //Need to get list of all movie ID's and get vectors
+                    // need to get list of all movie ID's and get vectors
                     var movieIDLine = line.Substring(userID.Length);
 
+                    // get all the movies this user has watched
                     var allUserMovieIDs = movieIDLine.Split(' ');
                     
                     var allMovieLines = GetMovieLinesFromDisk();
 
                     var completedUserMovies = new List<string>();
                     
+                    // once we have all the movie ID's that the user watched we need to parse though 
+                    // all the movies to find the rest of the movie data so we can return a movie object
                     foreach (var movieLine in allMovieLines)
                     {
                         var movieID = movieLine.Split(' ')[0];
@@ -94,6 +108,11 @@ namespace DataCentreWebServer.MachineLearning
             return null;
         }
 
+        /// <summary>
+        /// Take the movie that the user watched and store the fact the user watched this movie
+        /// </summary>
+        /// <param name="movie"></param>
+        /// <param name="userID"></param>
         public void StoreUserResult(Movie movie, string userID)
         {
             _readerWriterLock.EnterWriteLock();

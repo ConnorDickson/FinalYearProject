@@ -1,10 +1,11 @@
-﻿using System;
-using DataCentreWebServer.Helpers;
+﻿using DataCentreWebServer.Helpers;
 using DataCentreWebServer.RequestHandlers;
 using DataCentreWebServer.MachineLearning;
 
 namespace DataCentreWebServer.IoC
 {
+    //this will be the inversion of control (IoC) container 
+    // its purpose is to create a concrete instance of the object
     public static class Container
     {
         public static PythonRequestHandler ResolvePythonRequestHandler()

@@ -1,7 +1,13 @@
 ﻿namespace DataCentreWebServer.MachineLearning
 {
+    //Parses movies
     public class MovieParser
     {
+        /// <summary>
+        /// Converts an array of raw movie strings to an equivilant array of Movie objects
+        /// </summary>
+        /// <param name="rawMovies"></param>
+        /// <returns></returns>
         public Movie[] ParseMovies(string[] rawMovies)
         {
             //1 QKMDVJDI 1961 37 37 24 31 3 64 False False True True

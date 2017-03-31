@@ -12,28 +12,38 @@ namespace DataCentreWebServer.RequestHandlers
     {
         private MachineLearningHelper _machineLearningHelper;
         private MachineLearningFileHandler _machineLearningFileHandler;
-
+        //Utalises dependancy injection
         public MachineLearningHandler(MachineLearningHelper machineLearningHelper, MachineLearningFileHandler machineLearningFileHandler)
         {
             _machineLearningHelper = machineLearningHelper;
             _machineLearningFileHandler = machineLearningFileHandler;
         }
 
+        /// <summary>
+        /// Uses the injected helpers to get the users previous movies.
+        /// Controls the logic for handling the request
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public async Task<HttpResponseMessage> ReturnPreviousMovies(HttpRequestMessage request)
         {
             try
             {
+                //get the message from the user
                 var requestData = await request.Content.ReadAsStringAsync();
                 var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
 
+                //get the raw movie line from disk that the user has watched
                 var userMovieLines = _machineLearningFileHandler.GetUserMovies(machineLearningRequest.UserID);
 
+                //try to parse this into an array of movie objects
                 Movie[] userMovies = null;
                 if (userMovieLines != null)
                 {
                     userMovies = _machineLearningHelper.ParseLines(userMovieLines);
                 }
 
+                //return this message to the user
                 machineLearningRequest.Results = userMovies;
                 var jsonString = JsonConvert.SerializeObject(machineLearningRequest);
                 var response = new HttpResponseMessage();
@@ -52,20 +62,29 @@ namespace DataCentreWebServer.RequestHandlers
             }
         }
 
+        /// <summary>
+        /// Watch the requested movie
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public async Task<HttpResponseMessage> WatchMovie(HttpRequestMessage request)
         {
             try
             {
+                // get the user message
                 var requestData = await request.Content.ReadAsStringAsync();
                 var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
 
+                // get all the lines on disk
                 var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
 
-                //Should return array of 1
+                // returns the movie
                 var movie = _machineLearningHelper.GetMovie(lines, machineLearningRequest.RequestedMovieID);
 
+                //save the fact they watched this movie
                 _machineLearningFileHandler.StoreUserResult(movie, machineLearningRequest.UserID);
 
+                //Return data to requesting user
                 var linesToReturn = new Movie[]
                 {
                     movie
@@ -92,20 +111,29 @@ namespace DataCentreWebServer.RequestHandlers
             }
         }
 
+        /// <summary>
+        /// Watch a movie at random
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public async Task<HttpResponseMessage> WatchRandomMovie(HttpRequestMessage request)
         {
             try
             {
+                // get requesting user data
                 var requestData = await request.Content.ReadAsStringAsync();
                 var machineLearningRequest = JsonConvert.DeserializeObject<MachineLearningMessage>(requestData);
 
+                // get all movies
                 var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
                 
-                //Should return array of 1
+                // watch a movie at random
                 var randomMovie = _machineLearningHelper.ChooseRandomMovie(lines);
 
+                // store the fact this movie was watched
                 _machineLearningFileHandler.StoreUserResult(randomMovie, machineLearningRequest.UserID);
                 
+                //return movie data to requesting user
                 var linesToReturn = new Movie[]
                 {
                     randomMovie
@@ -132,16 +160,22 @@ namespace DataCentreWebServer.RequestHandlers
             }
         }
 
+        /// <summary>
+        /// Returns a subset of the movies stored at the data centre to the Edge Node
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public HttpResponseMessage ReturnMovies(HttpRequestMessage request)
         {
             try
             {
-                //Read movies from disk
+                // read movies from disk
                 var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
-                //Create subset of movies
+                
+                // create subset of movies
                 var linesToReturn = _machineLearningHelper.KMedoids(lines);
                 
-                //Return subset to Edge
+                // return subset to Edge
                 var machineLearningMessage = new MachineLearningMessage()
                 {
                     Results = linesToReturn

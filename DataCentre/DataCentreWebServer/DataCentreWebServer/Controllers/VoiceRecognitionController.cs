@@ -7,6 +7,10 @@ namespace DataCentreWebServer.Controllers
 {
     public class VoiceRecognitionController : ApiController
     {
+        /// <summary>
+        /// Receive a voice request from a Client
+        /// </summary>
+        /// <returns></returns>
         public async Task<HttpResponseMessage> PostVoiceRequest()
         {
             var voiceRecognitionHandler = Container.ResolveVoiceRecognitionHandler();

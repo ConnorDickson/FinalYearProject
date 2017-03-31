@@ -5,26 +5,30 @@ using System.Linq;
 
 namespace DataCentreWebServer.Helpers
 {
+    // provides helper methods for machine learning requests
     public class MachineLearningHelper
     {
         MovieParser _movieParser;
+        /// <summary>
+        /// utalises dependancy injection
+        /// </summary>
+        /// <param name="movieParser"></param>
         public MachineLearningHelper (MovieParser movieParser)
         {
             _movieParser = movieParser;
         }
-
-        public string PerformEvaluation(MachineLearningMessage machineLearningRequest, List<string> prevResults)
-        {
-            var result = "";
-            
-            return result;
-        }
-
+        
         public Movie[] ParseLines(string[] lines)
         {
             return _movieParser.ParseMovies(lines);
         }
 
+        /// <summary>
+        /// performs an operation to get a subset of the movies on disk 
+        /// that is small enough to be sent to the edge
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns></returns>
         public Movie[] KMedoids(string[] lines)
         {
             var movies = _movieParser.ParseMovies(lines);
@@ -44,6 +48,11 @@ namespace DataCentreWebServer.Helpers
             return movies;
         }
 
+        /// <summary>
+        /// Returns a movie at random
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns></returns>
         public Movie ChooseRandomMovie(string[] lines)
         {
             Random rng = new Random();
@@ -58,6 +67,12 @@ namespace DataCentreWebServer.Helpers
             return null;
         }
 
+        /// <summary>
+        /// Gets the movie on disk with the specific ID if it exists
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <param name="requestedMovieID"></param>
+        /// <returns></returns>
         public Movie GetMovie(string[] lines, string requestedMovieID)
         {
             int movieID;

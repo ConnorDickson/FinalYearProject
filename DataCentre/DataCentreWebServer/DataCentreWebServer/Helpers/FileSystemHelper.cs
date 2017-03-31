@@ -4,10 +4,18 @@ using System.Threading.Tasks;
 
 namespace DataCentreWebServer.Helpers
 {
+    //used to deal with files on disk
     public class FileSystemHelper
     {
+        /// <summary>
+        /// store the data in the request to filepath provided
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public async Task<bool> WriteFileToDisk(HttpRequestMessage request, string filePath)
         {
+            // get files from request
             var provider = await request.Content.ReadAsMultipartAsync(new InMemoryMultipartFormDataStreamProvider());
 
             if(provider == null)
@@ -27,6 +35,7 @@ namespace DataCentreWebServer.Helpers
             var firstFile = files[0];
             var fileStream = await firstFile.ReadAsStreamAsync();
 
+            // read the request file and write to the local disk
             using (var fs = File.Create(filePath))
             {
                 var bytesInStream = new byte[fileStream.Length];
@@ -37,6 +46,11 @@ namespace DataCentreWebServer.Helpers
             return true;
         }
 
+        /// <summary>
+        /// Delete the file at the filePath if it exists
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         internal bool DeleteFile(string filePath)
         {
             try

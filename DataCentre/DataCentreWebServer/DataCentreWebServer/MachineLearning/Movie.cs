@@ -1,5 +1,6 @@
 ﻿namespace DataCentreWebServer.MachineLearning
 {
+    //This is the c# representation of the JSON movie we receive
     public class Movie
     {
         //1 QKMDVJDI 1961 37 37 24 31 3 64 False False True True

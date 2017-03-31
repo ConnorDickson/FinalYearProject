@@ -1,5 +1,6 @@
 ﻿namespace DataCentreWebServer.MachineLearning
 {
+    //This is the C# representation of the JSON object we recieve
     public class MachineLearningMessage
     {
         public string UserID;

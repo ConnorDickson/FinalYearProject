@@ -3,6 +3,7 @@ using System;
 
 namespace DataCentreWebServer.MachineLearning
 {
+    //this class will handle the kmean operation
     public class KMeans
     {
         //https://visualstudiomagazine.com/Articles/2013/12/01/K-Means-Data-Clustering-Using-C.aspx?admgarea=features&Page=1
