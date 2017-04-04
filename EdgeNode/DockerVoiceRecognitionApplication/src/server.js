@@ -147,7 +147,8 @@ function PreProcessVoiceRecognition(fileName, requestedUrl, res)
                 dataToReturn.VoiceRecognitionResponse = dataFromDataCentre.ProcessedString;
                 dataToReturn.DataCentreReceivedLength = dataFromDataCentre.ReceivedRequestLength;
                 dataToReturn.DataCentreSentLength = Buffer.byteLength(dataFromDataCentre.ProcessedString, 'utf8');
-
+                dataToReturn.DataCentreProcessor = dataFromDataCentre.ProcessorPercentage;
+                dataToReturn.DataCentreMemory = dataFromDataCentre.GBMemoryUse;
                 EndRequest(fileName, res, dataToReturn); 
             }
         });
@@ -177,6 +178,8 @@ function ExecuteRemoteVoiceRecognition(fileName, requestedUrl, ogResponse)
             dataToReturn.VoiceRecognitionResponse = dataFromDataCentre.ProcessedString;
             dataToReturn.DataCentreReceivedLength = dataFromDataCentre.ReceivedRequestLength;
             dataToReturn.DataCentreSentLength = Buffer.byteLength(dataFromDataCentre.ProcessedString, 'utf8');
+            dataToReturn.DataCentreProcessor = dataFromDataCentre.ProcessorPercentage;
+            dataToReturn.DataCentreMemory = dataFromDataCentre.GBMemoryUse;           
             EndRequest(fileName, ogResponse, dataToReturn);
         }
     });

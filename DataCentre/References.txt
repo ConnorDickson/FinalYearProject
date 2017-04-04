@@ -1,3 +1,7 @@
 I used ;
 https://visualstudiomagazine.com/Articles/2013/12/01/K-Means-Data-Clustering-Using-C.aspx?admgarea=features&Page=1
 As a basis for the KMeans clustering that I will use for sorting the movies.
+
+I used some code from;
+https://stevescodingblog.co.uk/real-time-system-resource-monitor-with-signalr-mvc-knockout-and-webapi/
+to measure the CPU use for the voice recognition requests

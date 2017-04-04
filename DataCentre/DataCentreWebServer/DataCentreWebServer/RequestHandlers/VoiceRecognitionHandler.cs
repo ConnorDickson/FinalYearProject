@@ -85,9 +85,13 @@ namespace DataCentreWebServer.RequestHandlers
                 //execute the voice recognition
                 var output = _voiceRecognitionHelper.ProcessVoice(pocketsphinxexe, pocketsphinxargs);
 
+                var localMetrics = CPUHelper.measureCPU();
+                
                 dynamic jsonObject = new JObject();
                 jsonObject.ReceivedRequestLength = requestLength;
                 jsonObject.ProcessedString = output.Trim();
+                jsonObject.ProcessorPercentage = localMetrics.Processor.ToString();
+                jsonObject.GBMemoryUse = (localMetrics.MemUsage / 1000000).ToString();
                 var jsonString = JsonConvert.SerializeObject(jsonObject);
                 var stringContent = new StringContent(jsonString);
 
@@ -121,9 +125,13 @@ namespace DataCentreWebServer.RequestHandlers
             var response = new HttpResponseMessage();
             var preprocessedString = await request.Content.ReadAsStringAsync();
 
+            var localMetrics = CPUHelper.measureCPU();
+
             dynamic jsonObject = new JObject();
             jsonObject.ReceivedRequestLength = requestLength;
             jsonObject.ProcessedString = preprocessedString.Trim();
+            jsonObject.ProcessorPercentage = localMetrics.Processor.ToString();
+            jsonObject.GBMemoryUse = (localMetrics.MemUsage / 1000000).ToString();
             var jsonString = JsonConvert.SerializeObject(jsonObject);
             var stringContent = new StringContent(jsonString);
 

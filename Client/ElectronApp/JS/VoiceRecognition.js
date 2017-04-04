@@ -180,6 +180,8 @@ function SetRemoteResultsAsProcessing() {
     document.getElementById('remoteRecordingFileSize').innerHTML = "Processing...";
     document.getElementById('remoteDataCentreReceivedDataLength').innerHTML = "Processing...";
     document.getElementById('remoteDataCentreSentDataLength').innerHTML = "Processing...";
+    document.getElementById('remoteDataCentreCPUUse').innerHTML = "Processing...";
+    document.getElementById('remoteDataCentreMemoryUse').innerHTML = "Processing...";
 }
 
 //update the left hand side of the table as finished by recording metrics and displaying them in the UI
@@ -207,8 +209,10 @@ function SetRemoteResultsAsFinished(responseData) {
     document.getElementById('remoteSysMemory').innerHTML = freeMemory + "GB Local RAM Free.";
     document.getElementById('remoteSysProcessor').innerHTML = load.percent + "% Local CPU Usage.";
     document.getElementById('edgeNodeProcessor').innerHTML =  jsonResult.CPUInfo + "% Edge Node CPU Usage";
-    document.getElementById('remoteDataCentreReceivedDataLength').innerHTML = "Data received at the data centre: " + jsonResult.DataCentreReceivedLength + " bytes";
-    document.getElementById('remoteDataCentreSentDataLength').innerHTML = "Data received from the data centre: " + jsonResult.DataCentreSentLength + " bytes";;
+    document.getElementById('remoteDataCentreReceivedDataLength').innerHTML = "Data received at the Data Centre: " + jsonResult.DataCentreReceivedLength + " bytes";
+    document.getElementById('remoteDataCentreSentDataLength').innerHTML = "Data received from the Data Centre: " + jsonResult.DataCentreSentLength + " bytes";;
+    document.getElementById('remoteDataCentreCPUUse').innerHTML = jsonResult.DataCentreProcessor + "% Data Centre CPU use";
+    document.getElementById('remoteDataCentreMemoryUse').innerHTML = jsonResult.DataCentreMemory + "GB Data Centre RAM Free";
     
     var stats = fs.statSync(filePath);
     document.getElementById('remoteRecordingFileSize').innerHTML = "File Size:  " + stats.size;
