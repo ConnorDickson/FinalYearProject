@@ -142,10 +142,12 @@ function PreProcessVoiceRecognition(fileName, requestedUrl, res)
                 console.log("Error with remote request: " + error);
             } else {
                 //console.log("Remote PC Body: " + body);
-                
+                var dataFromDataCentre = JSON.parse(body);
                 var dataToReturn = {};
-                dataToReturn.VoiceRecognitionResponse = body;
-    
+                dataToReturn.VoiceRecognitionResponse = dataFromDataCentre.ProcessedString;
+                dataToReturn.DataCentreReceivedLength = dataFromDataCentre.ReceivedRequestLength;
+                dataToReturn.DataCentreSentLength = Buffer.byteLength(dataFromDataCentre.ProcessedString, 'utf8');
+
                 EndRequest(fileName, res, dataToReturn); 
             }
         });
@@ -170,9 +172,11 @@ function ExecuteRemoteVoiceRecognition(fileName, requestedUrl, ogResponse)
             console.log("Error with remote request: " + error);
         } else {
             //console.log("Remote PC Body: " + body);
+            var dataFromDataCentre = JSON.parse(body);
             var dataToReturn = {};
-            dataToReturn.VoiceRecognitionResponse = body;
-    
+            dataToReturn.VoiceRecognitionResponse = dataFromDataCentre.ProcessedString;
+            dataToReturn.DataCentreReceivedLength = dataFromDataCentre.ReceivedRequestLength;
+            dataToReturn.DataCentreSentLength = Buffer.byteLength(dataFromDataCentre.ProcessedString, 'utf8');
             EndRequest(fileName, ogResponse, dataToReturn);
         }
     });

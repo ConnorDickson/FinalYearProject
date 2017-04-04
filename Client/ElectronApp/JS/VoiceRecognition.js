@@ -126,15 +126,13 @@ function ExecuteRemoteVoiceRecognition() {
     cpu.cpuStart();
     SetRemoteResultsAsProcessing();
     
-    var data = fs.readFileSync(filePath),
-        client,
-        request;
+    var data = fs.readFileSync(filePath);
     
     var urlToPostTo = 'http://connor-pc:3000/api/voicerecognition/PostVoiceRequest';
     
-    client = http.createClient(3002, "edgepi01");
+    var client = http.createClient(3002, "edgepi01");
     
-    request = client.request('POST', urlToPostTo, {
+    var request = client.request('POST', urlToPostTo, {
         'Host': 'edgepi01',
         'Port': 3002,
         'User-Agent': 'Node.JS',
@@ -180,6 +178,8 @@ function SetRemoteResultsAsProcessing() {
     document.getElementById('remoteSysMemory').innerHTML = "Processing...";
     document.getElementById('remoteResultsParagraph').innerHTML = "Processing...";
     document.getElementById('remoteRecordingFileSize').innerHTML = "Processing...";
+    document.getElementById('remoteDataCentreReceivedDataLength').innerHTML = "Processing...";
+    document.getElementById('remoteDataCentreSentDataLength').innerHTML = "Processing...";
 }
 
 //update the left hand side of the table as finished by recording metrics and displaying them in the UI
@@ -202,11 +202,13 @@ function SetRemoteResultsAsFinished(responseData) {
     remoteStopwatch.stop();
     var freeMemory = cpu.freeMemory();
     var jsonResult = JSON.parse(responseData);
-
+    
     document.getElementById('remoteResultsParagraph').innerHTML = "You said: \"" + jsonResult.VoiceRecognitionResponse.trim() + "\"";
     document.getElementById('remoteSysMemory').innerHTML = freeMemory + "GB Local RAM Free.";
     document.getElementById('remoteSysProcessor').innerHTML = load.percent + "% Local CPU Usage.";
     document.getElementById('edgeNodeProcessor').innerHTML =  jsonResult.CPUInfo + "% Edge Node CPU Usage";
+    document.getElementById('remoteDataCentreReceivedDataLength').innerHTML = "Data received at the data centre: " + jsonResult.DataCentreReceivedLength + " bytes";
+    document.getElementById('remoteDataCentreSentDataLength').innerHTML = "Data received from the data centre: " + jsonResult.DataCentreSentLength + " bytes";;
     
     var stats = fs.statSync(filePath);
     document.getElementById('remoteRecordingFileSize').innerHTML = "File Size:  " + stats.size;

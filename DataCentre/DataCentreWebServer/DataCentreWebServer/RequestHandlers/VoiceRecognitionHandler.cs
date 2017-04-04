@@ -1,4 +1,6 @@
 ﻿using DataCentreWebServer.Helpers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,13 +40,15 @@ namespace DataCentreWebServer.RequestHandlers
                 dataIsPreProcessed = true;
             }
 
+            var requestLength = request.Content.Headers.ContentLength;
+
             if(dataIsPreProcessed)
             {
-                return ReceivePreProcessedPostData(request);
+                return ReceivePreProcessedPostData(request, requestLength);
             }
             else
             {
-                return ReceivePostDataForProcessing(request);
+                return ReceivePostDataForProcessing(request, requestLength);
             }
         }
 
@@ -54,7 +58,7 @@ namespace DataCentreWebServer.RequestHandlers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        internal async Task<HttpResponseMessage> ReceivePostDataForProcessing(HttpRequestMessage request)
+        internal async Task<HttpResponseMessage> ReceivePostDataForProcessing(HttpRequestMessage request, long? requestLength)
         {
             var response = new HttpResponseMessage();
 
@@ -81,9 +85,14 @@ namespace DataCentreWebServer.RequestHandlers
                 //execute the voice recognition
                 var output = _voiceRecognitionHelper.ProcessVoice(pocketsphinxexe, pocketsphinxargs);
 
-                response.StatusCode = HttpStatusCode.OK;
+                dynamic jsonObject = new JObject();
+                jsonObject.ReceivedRequestLength = requestLength;
+                jsonObject.ProcessedString = output.Trim();
+                var jsonString = JsonConvert.SerializeObject(jsonObject);
+                var stringContent = new StringContent(jsonString);
 
-                response.Content = new StringContent(output.Trim());
+                response.StatusCode = HttpStatusCode.OK;
+                response.Content = stringContent;
 
                 //remove the file that was saved to disk
                 _fileSystemHelper.DeleteFile(filePath);
@@ -107,11 +116,18 @@ namespace DataCentreWebServer.RequestHandlers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        internal async Task<HttpResponseMessage> ReceivePreProcessedPostData(HttpRequestMessage request)
+        internal async Task<HttpResponseMessage> ReceivePreProcessedPostData(HttpRequestMessage request, long? requestLength)
         {
             var response = new HttpResponseMessage();
             var preprocessedString = await request.Content.ReadAsStringAsync();
-            response.Content = new StringContent(preprocessedString.Trim());
+
+            dynamic jsonObject = new JObject();
+            jsonObject.ReceivedRequestLength = requestLength;
+            jsonObject.ProcessedString = preprocessedString.Trim();
+            var jsonString = JsonConvert.SerializeObject(jsonObject);
+            var stringContent = new StringContent(jsonString);
+
+            response.Content = stringContent;
             response.StatusCode = HttpStatusCode.OK;
             return response;
         }
