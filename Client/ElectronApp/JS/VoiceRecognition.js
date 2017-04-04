@@ -10,9 +10,51 @@ var localStopwatch;
 var remoteStopwatch;
 var filePath = "../../Downloads/output.wav";
 
+//Use these values to record * 10 and then print total to the UI.
+var localTimeTakenTotalResults = [];
+var localMemoryTotalResults = [];
+var localProcessorTotalResults = [];
+var localfileSizeTotalResults = [];
+var remoteTimeTakenTotalResults = [];
+var remoteMemoryTotalResults = [];
+var remoteProcessorTotalResults = [];
+var remoteFileSizeTotalResults = [];
+
 //audio variables for handling audio in Electron
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+var localExecutionCounter = 0;
+var localExecuionsRequired = 10;
+function executeLocalExperiment() {
+    localStopwatch.reset();
+    localStopwatch.start();
+    SetLocalResultsAsProcessing();
+    cpu.cpuStart();    
+    ipc.send('execute-voicerecognition-script-experiment');
+}
+
+ipc.on('receive-voice-translation-experiment', function(event,response) {
+    var load = cpu.cpuEnd();
+    localStopwatch.stop();
+    var freeMemory = cpu.freeMemory();
+    
+    //time is in this format at the moment - timer.innerHTML = "Time: " + clock/1000 + " seconds."; 
+    localTimeTakenTotalResults.push(document.getElementById('localStopwatchResults'.innerHTML));
+    localMemoryTotalResults.push(freeMemory);
+    localProcessorTotalResults.push(load.percent);
+    
+    var stats = fs.statSync(filePath);
+    localfileSizeTotalResults.push(stats.size);
+
+    localExecutionCounter++;
+    
+    if(localExecutionCounter != localExecuionsRequired) {
+        executeLocalExperiment();
+    } else {
+        //print averaged results
+    }
+});
 
 //event handler for failed audio recording
 var onFail = function(e) {
@@ -145,7 +187,7 @@ function SetLocalResultsAsFinished(response) {
     var load = cpu.cpuEnd();
     localStopwatch.stop();
     var freeMemory = cpu.freeMemory();
-
+    
     document.getElementById('localResultsParagraph').innerHTML = "You said: \"" + response.trim() + "\"";
     document.getElementById('localSysMemory').innerHTML = freeMemory + "GB RAM Free.";
     document.getElementById('localSysProcessor').innerHTML = load.percent + "% CPU Usage.";    

@@ -72,6 +72,14 @@ ipc.on('open-information-dialog', function(event) {
 })
 
 ipc.on('execute-voicerecognition-script', function(event) {
+    executeVoiceRecognition(event, 'receive-voice-translation');
+});
+
+ipc.on('execute-voicerecognition-script-experiment', function(event) {
+    executeVoiceRecognition(event, 'receive-voice-translation-experiment');
+});
+
+function executeVoiceRecognition(event, eventName) {
 	var childProcessResponse = "";
     
     var ls = spawn('sh', ['./SH/ProcessVoiceFile.sh']);
@@ -87,6 +95,6 @@ ipc.on('execute-voicerecognition-script', function(event) {
 
     ls.on('exit', function (code) {
         //childProcessResponse += 'exit: ' + code;
-        event.sender.send('receive-voice-translation',childProcessResponse);
+        event.sender.send(eventName, childProcessResponse);
     });
-});
+}

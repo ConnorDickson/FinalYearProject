@@ -1,3 +1,4 @@
+//Import all the required modules
 var util = require('util');
 var os = require('os');
 var redis = require('redis');
@@ -8,29 +9,32 @@ var httpProxy = require('http-proxy');
 var spawn = require('child_process').spawn;
 var crypto = require('crypto');
 
+//Global setup variables
 var externalPort = process.env.port || 3001;
 var internalPort = 3500;
 var redisport = '6379';
-var redisHosts = ['192.168.1.185', 'EdgePi02', 'EdgePi03'];
+var redisHosts = ['192.168.1.185', '192.168.1.186', 'EdgePi03'];
 var redisClients = [];
 
 console.log("Starting...");
 
+//Create a proxy and link it to the internal server that is not made public
 var proxyServer = httpProxy.createProxyServer({
     target: 'http://localhost:' + internalPort,
     toProxy: true
 });
 
+//Setup proxy error event handler
 proxyServer.on('error', function(err) {
     console.error("ERROR WITH PROXY SERVER:\n" + err.stack);
 });
 
+//Listen on the external port that will be made public in the deployment script
 proxyServer.listen(externalPort);
 
+//Create the internal server
 var createdServer = http.createServer(function (req, res) {
     //Set error handlers
-    console.log("New Request\n");
-
     req.on('error', function(err) {
         console.error("REQUEST ERROR:\n" + err.stack);
     });
@@ -39,8 +43,10 @@ var createdServer = http.createServer(function (req, res) {
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
 
+    //Get the URL the user requested
     var requestedUrl = req.url;
  
+    //See if it is a valid URL and trim the starting slash if required
     if(typeof requestedUrl == 'undefined') 
     {
         console.error("Received undefined request");
@@ -55,6 +61,7 @@ var createdServer = http.createServer(function (req, res) {
         }
     }
 
+    //The user requested the cache to be cleared
     if(requestedUrl.includes("ClearCache"))
     {
         ClearCaches(requestedUrl, res);
@@ -63,16 +70,17 @@ var createdServer = http.createServer(function (req, res) {
     }
 });
 
+//Loop through all the connected caches and execute a remote request to clear it
 function ClearCaches(requestedUrl, res)
 {
-    //ToDo - Clear all caches
     console.log("Clear Cache Request: " + requestedUrl);
-    
+ 
     var count = 0;
     redisHosts.forEach(function(redisHost) {
         var command = spawn('redis-cli',['-h', redisHost, 'flushall']);
         var redisClearResponse = "";
-
+        
+        //read the data returned from standard out and standard error within linux
         command.stdout.on('data', function(data) {
             redisClearResponse += data;
         });
@@ -81,6 +89,7 @@ function ClearCaches(requestedUrl, res)
             redisClearResponse += "ERROR: " + data;
         });
 
+        //Once the command has finished for every cache return the response to the user
         command.on('exit', function(exitCode) {
             count++;
             redisClearResponse += "EXIT " + redisHost + ": " + exitCode + "\r\n"; 
@@ -97,15 +106,17 @@ function ClearCaches(requestedUrl, res)
     });
 }
 
-
+//The internal server should listen internally and only receive requests from the proxy server
 createdServer.listen(internalPort);
 
+//If the requested URL exists in redis return it and if it does not fetch, store and return it
 function GetOrSetRequestValueFromRedis(requestedUrl, res) 
 {
+    //Figure out which cache the data should be/is stored
     var md5Hash = MD5(requestedUrl);
     var md5Mod = MD5ToMod(md5Hash, redisHosts.length);
-    console.log("Going to try to get data from: " + md5Mod + " redisClient");
-
+ 
+    //Try to get the requested URL from the appropriate cache
     redisClients[md5Mod].get(requestedUrl, function(err,reply) {
         if(err) 
         {
@@ -115,27 +126,23 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
         {
             if(reply != null) 
             {
-                //console.log("Found " + requestedUrl + " value in redis");
+                //Value exists in Redis
                 console.log("Found URL in redis");
-                //redisResponse = reply.toString();
-                //res.writeHead(200, {'Content-Type':'text/html'});
-                //res.writeHead(200, {
-                  //  'Content-Type':reply.ContentType
-                //});
-                //JSON this request?
                 res.end(reply);
                 return;
             } else {
+                //This value does not exist, fetch, store and return
                 MakeAndStoreRequest(requestedUrl, res, md5Mod);
             }
         }
     });
 }
 
+//Fetch data and store it in redis
 function MakeAndStoreRequest(requestedUrl, res, md5Mod) 
 {
     //console.log("Going to make custom request to " + requestedUrl);
-    console.log("Going to make external request");
+    console.log("Executing external request");
     
     var requestOptions = {
         url: requestedUrl,
@@ -164,21 +171,20 @@ function MakeAndStoreRequest(requestedUrl, res, md5Mod)
             });
 
             res.end(body);
-            //console.log("Completed request and going to store " + requestedUrl + " in Redis");
-            //console.log("Completed request and going to store in Redis");
             redisClients[md5Mod].set(requestedUrl,body);
-            //redisclient.expire(requestedUrl,30);
         }
     }).on('error',function(err) {
         console.error("ERROR WITH CUSTOM REQUEST: " + err.stack);
     });
 }
 
+//Generates an MD5 hash from the URL
 function MD5(url) 
 {
     return crypto.createHash('md5').update(url, 'utf8').digest('hex');
 }
 
+//Returns a value between 0 and mod for the MD5 hash value
 function MD5ToMod(md5Value, mod) 
 {
     //convert hex to dec
@@ -191,6 +197,7 @@ console.log("Started Node.js server");
 
 console.log("Trying to connect to redis nodes;");
 
+//Connect to all of the redis hosts using NodeRedis so we have an active connection
 redisHosts.forEach(function(redisHost) {
     console.log("Connecting to " + redisHost);
 
@@ -207,6 +214,7 @@ redisHosts.forEach(function(redisHost) {
         console.error("REDIS ERROR:\n" + err.stack);
     });
 
+    //Add the client to the collection
     redisClients.push(redisClient);
 
     console.log("Added " + redisHost + " to clients. Total Count: " + redisClients.length);

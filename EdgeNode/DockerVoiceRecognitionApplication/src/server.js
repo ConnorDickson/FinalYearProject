@@ -1,3 +1,4 @@
+//Import required modules
 var util = require('util');
 var os = require('os');
 var http = require('http');
@@ -10,21 +11,26 @@ var request = require('request');
 
 console.log("Starting...");
 
+//Global variables required
 var externalPort = process.env.port || 3003;
 var internalPort = 3501;
 var serverLoadThreshold = 70;
 
+//Send requests to internal voice recognition server
 var proxyServer = httpProxy.createProxyServer({
     target: 'http://localhost:' + internalPort,
     toProxy: true
 });
 
+//Hook up the proxy event handler
 proxyServer.on('error', function(err) {
     console.error('ERROR WITH PROXY SERVER: ' + err.stack);
 });
 
+//Listen on the port that will be made available with the deployment script
 proxyServer.listen(externalPort);
 
+//Create the internal server
 var createdServer = http.createServer(function (req, res) {
     stressTestCpu.cpuStart();
     cpu.cpuStart();
@@ -60,18 +66,20 @@ var createdServer = http.createServer(function (req, res) {
     
     var body = [];
 
+    //Recieve all the POST data from the client
     req.on('data', function(chunk) {
         body.push(chunk);
     });
   
     req.on('end', function() {
         var postData = Buffer.concat(body);
-        
+        //Get all the data and store it on disk with 
+        // a unique name so that multiple people can make requests at once
         var fileName = "../SavedFile/output" + guid() + ".wav"; 
         fs.writeFile(fileName, postData, function() {
- 
             console.log("Wrote file to disk successfully");
-    
+            //Check if the user want's the request to be pre-processed and
+            // if the system is capable of handling it
             if(req.headers['preprocess-request'] == 'true' && !SystemUnderStress()) {
                 console.log('Preprocess request by performing voice recognition on edge node');
                 PreProcessVoiceRecognition(fileName, requestedUrl, res);
@@ -83,10 +91,12 @@ var createdServer = http.createServer(function (req, res) {
     }); 
 });
 
+//Recieve requests from the proxy
 createdServer.listen(internalPort);
 
 console.log("Started Node.js server");
 
+//Check if the CPU utalisation is above the allowed threshold
 function SystemUnderStress() 
 {
     var load = stressTestCpu.cpuEnd();
@@ -100,22 +110,23 @@ function SystemUnderStress()
     return result;
 }
 
+//Execute the voice recognition script
 function PreProcessVoiceRecognition(fileName, requestedUrl, res) 
 {
     var childProcessResponse = "";
 
     var command = spawn('sh', ['../SH/ProcessVoiceFile.sh', fileName]);
 
+    //Read data from linux standard output streams
     command.stdout.on('data', function(data) {
         childProcessResponse += data;
-	//console.log(data);
     });
 
     command.stderr.on('data', function(data) {
-        //console.log(data);
         //childProcessResponse += data;
     });
 
+    //Once the process has finished send the result to the Data Centre with the appropriate header
     command.on('exit', function(code) {
         var requestOptions = {
             url: requestedUrl,
@@ -141,6 +152,7 @@ function PreProcessVoiceRecognition(fileName, requestedUrl, res)
     });
 }
 
+//Send the voice recording to the data centre for processing and return the repsonse to the client
 function ExecuteRemoteVoiceRecognition(fileName, requestedUrl, ogResponse)
 {
     var myFormData = {
@@ -166,6 +178,7 @@ function ExecuteRemoteVoiceRecognition(fileName, requestedUrl, ogResponse)
     });
 }
 
+//Return machine metrics and the voice text as a JSON object
 function EndRequest(fileName, res, dataToReturn) 
 {
     var load = cpu.cpuEnd();
@@ -178,6 +191,7 @@ function EndRequest(fileName, res, dataToReturn)
     });
 }
 
+//Create a guid in JavaScript
 function guid() 
 {
     //http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript/2117523#2117523
