@@ -1,6 +1,6 @@
 var previousResults = [];
 var failedLoad = false;
-
+var clearCacheRequest = false;
 //setting up event handlers for when the webview element makes a request.
 //code executes when the page is first opened 
 onload = () => 
@@ -14,7 +14,7 @@ onload = () =>
     const loadstart = () => 
     {
         sendTime = (new Date()).getTime();
-        document.getElementById("requestResult").innerHTML = "Started Request";
+        console.log("Start Request: " + sendTime);
     }
     
     //end the timer (if the request didn't fail) and add this to the results array
@@ -26,8 +26,7 @@ onload = () =>
             receiveTime = (new Date()).getTime();
             var resultTime = ((receiveTime - sendTime)/1000).toFixed(2);
             previousResults.push(resultTime);
-            var totalTime = previousResults.reduce(add,0);
-            document.getElementById("requestResult").innerHTML = "Total Request Time: " + totalTime + " seconds";   
+            console.log("End Request and pushed " + resultTime);
         }
     }
     
@@ -44,14 +43,67 @@ onload = () =>
     webview.addEventListener('did-fail-load', failload);
 }
 
+function performExperiment() 
+{
+    //Execute Warmup
+    document.getElementById("requestResult").innerHTML = "Warmup Time: ";
+    var totalNumberOfRequests = 10;
+    var timeBetweenRequests = 20000;
+    
+    //Clear cache after X time and print to UI saying that's what is going to happen
+    for(var requestNumber = 0; requestNumber < totalNumberOfRequests; requestNumber++) {        
+        setTimeout(NavigateBrowser, (timeBetweenRequests * requestNumber));
+    }
+    
+    //Print the last result to the UI and clear the cache before the experiment
+    setTimeout(ClearCache, (timeBetweenRequests * totalNumberOfRequests));
+    
+    //Execute experiment
+    setTimeout(executeExperiment, (timeBetweenRequests * totalNumberOfRequests) + timeBetweenRequests);
+}
+
+function executeExperiment() {
+    document.getElementById("requestResult").innerHTML = "Total Request Time: ";
+    var totalNumberOfRequests = 10;
+    var timeBetweenRequests = 20000;
+    var timeToClearCache = 5000;
+    
+    //Clear cache after X time and print to UI saying that's what is going to happen
+    for(var requestNumber = 0; requestNumber < totalNumberOfRequests; requestNumber++) {
+        if((requestNumber % 2) == 0 && requestNumber != 0) {
+            setTimeout(ClearCache, ((timeBetweenRequests * requestNumber) - timeToClearCache));
+        }
+        
+        setTimeout(NavigateBrowser, (timeBetweenRequests * requestNumber));
+    }
+    
+    //Print the last result to the UI
+    setTimeout(ClearAndPrintResults, (timeBetweenRequests * totalNumberOfRequests) + timeBetweenRequests);
+}
+
 //used to help reduce the data in the previous results array
-function add(a,b) {
+function add(a,b) 
+{
     return parseFloat(a) + parseFloat(b);
 }
 
 //Called when the go button is pressed so a new request can be recorded
-function ClearResults() 
+function ClearAndPrintResults() 
 {
+    //If there are previous results (not the first execution);
+    if(previousResults.length > 0 && !clearCacheRequest) {
+        var totalTime = previousResults.reduce(add,0);
+        document.getElementById("requestResult").innerHTML = document.getElementById("requestResult").innerHTML + totalTime + " ";
+    }
+
+    //if ClearCache result don't print
+    //We know the timings of this 
+    if(clearCacheRequest) {
+        document.getElementById("requestResult").innerHTML = document.getElementById("requestResult").innerHTML + "(Cache Cleared) ";
+        clearCacheRequest = false;
+    }
+    
+    
     previousResults = [];
     failedLoad = false;
 }
@@ -65,7 +117,9 @@ function NavigateHome()
 //gets the URL the user entered and starts the request (utalising the event handlers above)
 function NavigateBrowser() 
 {
-    ClearResults();
+    console.log("New Request");
+    
+    ClearAndPrintResults();
 
     var url = "";
     
@@ -76,9 +130,11 @@ function NavigateBrowser()
 }
 
 //executes the clear cache request
-function ClearCache() {
-    ClearResults();
-    
+function ClearCache() 
+{
+    console.log("Clearing Cache");
+    ClearAndPrintResults();
+    clearCacheRequest = true;
     var url = "http://edgepi01:3000/ClearCache";
     
     var browser = document.getElementById("WebView");
