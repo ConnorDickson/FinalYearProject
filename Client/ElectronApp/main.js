@@ -56,21 +56,6 @@ app.on('activate', () => {
   }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
-
-ipc.on('open-information-dialog', function(event) {
-	const options = {
-		type: 'info',
-		title: 'Information',
-		message: "This is my test dialog that discribes communication between the server process and the client process, you like?",
-		buttons: ['Yes','No']
-	}
-	dialog.showMessageBox(options, function(index) {
-		event.sender.send('information-dialog-selection',index)
-	})
-})
-
 ipc.on('execute-voicerecognition-script', function(event) {
     executeVoiceRecognition(event, 'receive-voice-translation');
 });
