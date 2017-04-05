@@ -35,17 +35,17 @@ namespace DataCentreWebServer.Helpers
 
             KMeans kmeans = new KMeans();
 
-            kmeans.kmeans(movies);
+            return kmeans.kmeans(movies, 10000);
 
-            foreach (var movie in movies)
-            {
-                //Process vectors and perform nearst neighbour
-                //k - evaluation to send a big variation of movies to Edge (maybe 1000?)
-            }
+            //foreach (var movie in movies)
+            //{
+            //    //Process vectors and perform nearst neighbour
+            //    //k - evaluation to send a big variation of movies to Edge (maybe 1000?)
+            //}
 
-            movies = movies.Take(10000).ToArray();
+            //movies = movies.Take(10000).ToArray();
 
-            return movies;
+            //return movies;
         }
 
         /// <summary>

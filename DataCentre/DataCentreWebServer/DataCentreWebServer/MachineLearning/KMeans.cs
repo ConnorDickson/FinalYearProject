@@ -1,5 +1,7 @@
 ﻿using DataCentreWebServer.Helpers;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DataCentreWebServer.MachineLearning
 {
@@ -8,58 +10,44 @@ namespace DataCentreWebServer.MachineLearning
     {
         //https://visualstudiomagazine.com/Articles/2013/12/01/K-Means-Data-Clustering-Using-C.aspx?admgarea=features&Page=1
 
-        public void kmeans(Movie[] movies)
+        public Movie[] kmeans(Movie[] movies, int numberOfMoviesToReturn)
         {
-            double[][] rawData = new double[20][];
-            rawData[0] = new double[] { 65.0, 220.0 };
-            rawData[1] = new double[] { 73.0, 160.0 };
-            rawData[2] = new double[] { 59.0, 110.0 };
-            rawData[3] = new double[] { 61.0, 120.0 };
-            rawData[4] = new double[] { 75.0, 150.0 };
-            rawData[5] = new double[] { 67.0, 240.0 };
-            rawData[6] = new double[] { 68.0, 230.0 };
-            rawData[7] = new double[] { 70.0, 220.0 };
-            rawData[8] = new double[] { 62.0, 130.0 };
-            rawData[9] = new double[] { 66.0, 210.0 };
-            rawData[10] = new double[] { 77.0, 190.0 };
-            rawData[11] = new double[] { 75.0, 180.0 };
-            rawData[12] = new double[] { 74.0, 170.0 };
-            rawData[13] = new double[] { 70.0, 210.0 };
-            rawData[14] = new double[] { 61.0, 110.0 };
-            rawData[15] = new double[] { 58.0, 100.0 };
-            rawData[16] = new double[] { 66.0, 230.0 };
-            rawData[17] = new double[] { 59.0, 120.0 };
-            rawData[18] = new double[] { 68.0, 210.0 };
-            rawData[19] = new double[] { 61.0, 130.0 };
+            //1 QKMDVJDI 1961 37 37 24 31 3 64 False False True True
 
-            LoggerHelper.Log("Raw unclustered data:\n");
-            LoggerHelper.Log("    Height Weight");
-            LoggerHelper.Log("-------------------");
-            ShowData(rawData, 1, true, true);
+            //var tmpMovies = movies.Take(100).ToArray();
+            
+            //LoggerHelper.Log("Raw unclustered data:\n");
+            //LoggerHelper.Log("    ID Name Year %H %C %Ac %Ad %F %R CV CS CD CF");
+            //LoggerHelper.Log("-------------------");
+            //ShowData(movies, 1, true, true);
 
-            int numClusters = 3;
-            LoggerHelper.Log("\nSetting numClusters to " + numClusters);
+            int numClusters = 10;
+            //LoggerHelper.Log("\nSetting numClusters to " + numClusters);
 
-            int[] clustering = Cluster(rawData, numClusters); // this is it
+            int[] clustering = Cluster(movies, numClusters); // this is it
 
-            LoggerHelper.Log("\nK-means clustering complete\n");
+            return GetMovieSubsetFromClusters(movies, clustering, numClusters, numberOfMoviesToReturn);
 
-            LoggerHelper.Log("Final clustering in internal form:\n");
-            ShowVector(clustering, true);
+            //LoggerHelper.Log("\nK-means clustering complete\n");
 
-            LoggerHelper.Log("Raw data by cluster:\n");
-            ShowClustered(rawData, clustering, numClusters, 1);
+            //LoggerHelper.Log("Final clustering in internal form:\n");
+            //ShowVector(clustering, true);
 
-            LoggerHelper.Log("\nEnd k-means clustering demo\n");
+            //LoggerHelper.Log("Raw data by cluster:\n");
+            //ShowClustered(movies, clustering, numClusters, 1);
+
+            //LoggerHelper.Log("\nEnd k-means clustering demo\n");
         }
 
-        private int[] Cluster(double[][] rawData, int numClusters)
+        private int[] Cluster(Movie[] movies, int numClusters)
         {
             // k-means clustering
             // index of return is tuple ID, cell is cluster ID
             // ex: [2 1 0 0 2 2] means tuple 0 is cluster 2, tuple 1 is cluster 1, tuple 2 is cluster 0, tuple 3 is cluster 0, etc.
             // an alternative clustering DS to save space is to use the .NET BitArray class
-            double[][] data = Normalized(rawData); // so large values don't dominate
+
+            //Movie[] normalisedData = Normalized(movies); // so large values don't dominate
+            var normalisedData = movies;
 
             bool changed = true; // was there a change in at least one cluster assignment?
             bool success = true; // were all means able to be computed? (no zero-count clusters)
@@ -71,17 +59,22 @@ namespace DataCentreWebServer.MachineLearning
             //    update clustering
             //    update means
             // end loop
-            int[] clustering = InitClustering(data.Length, numClusters, 0); // semi-random initialization
-            double[][] means = Allocate(numClusters, data[0].Length); // small convenience
 
-            int maxCount = data.Length * 10; // sanity check
+            int[] clustering = InitClustering(normalisedData.Length, numClusters, 0); // semi-random initialization
+            //12 is the number of vectors in the movie object
+            Movie[] means = Allocate(numClusters); // small convenience
+
+            int maxCount = normalisedData.Length * 10; // sanity check
             int ct = 0;
-            while (changed == true && success == true && ct < maxCount)
+            while (changed && success && ct < maxCount)
             {
+                LoggerHelper.Log("Did one loop of clustering");
+
                 ++ct; // k-means typically converges very quickly
-                success = UpdateMeans(data, clustering, means); // compute new cluster means if possible. no effect if fail
-                changed = UpdateClustering(data, clustering, means); // (re)assign tuples to clusters. no effect if fail
+                success = UpdateMeans(normalisedData, clustering, means); // compute new cluster means if possible. no effect if fail
+                changed = UpdateClustering(normalisedData, clustering, means); // (re)assign tuples to clusters. no effect if fail
             }
+
             // consider adding means[][] as an out parameter - the final means could be computed
             // the final means are useful in some scenarios (e.g., discretization and RBF centroids)
             // and even though you can compute final means from final clustering, in some cases it
@@ -93,34 +86,86 @@ namespace DataCentreWebServer.MachineLearning
             return clustering;
         }
 
-        private double[][] Normalized(double[][] rawData)
+        private Movie[] Normalized(Movie[] movies)
         {
             // normalize raw data by computing (x - mean) / stddev
             // primary alternative is min-max:
             // v' = (v - min) / (max - min)
 
             // make a copy of input data
-            double[][] result = new double[rawData.Length][];
-            for (int i = 0; i < rawData.Length; ++i)
+            Movie[] movieCopy = new Movie[movies.Length];
+            Array.Copy(movies, movieCopy, movies.Length);
+            
+            double yearTotal = 0.0;
+            double percentageHorrorTotal = 0.0;
+            double percentageComedyTotal = 0.0;
+            double percentageActionTotal = 0.0;
+            double percentageAdventureTotal = 0.0;
+            double percentageFantasyTotal = 0.0;
+            double percentageRomanceTotal = 0.0;
+            double containsViolenceTotal = 0.0;
+            double containsSexualScenesTotal = 0.0;
+            double containsDrugUseTotal = 0.0;
+            double containsFlashingImagesTotal = 0.0;
+
+            for(int j = 0; j < movieCopy.Length; j++)
             {
-                result[i] = new double[rawData[i].Length];
-                Array.Copy(rawData[i], result[i], rawData[i].Length);
+                yearTotal += movieCopy[j].Year;
+                percentageHorrorTotal += movieCopy[j].PercentageHorror;
+                percentageComedyTotal += movieCopy[j].PercentageComedy;
+                percentageActionTotal += movieCopy[j].PercentageAction;
+                percentageAdventureTotal += movieCopy[j].PercentageAdventure;
+                percentageFantasyTotal += movieCopy[j].PercentageFantasy;
+                percentageRomanceTotal += movieCopy[j].PercentageRomance;
             }
 
-            for (int j = 0; j < result[0].Length; ++j) // each col
+            double yearMean = yearTotal / movieCopy.Length;
+            double percentageHorrorMean = percentageHorrorTotal / movieCopy.Length;
+            double percentageComedyMean = percentageComedyTotal / movieCopy.Length;
+            double percentageActionMean = percentageActionTotal / movieCopy.Length;
+            double percentageAdventureMean = percentageAdventureTotal / movieCopy.Length;
+            double percentageFantasyMean = percentageFantasyTotal / movieCopy.Length;
+            double percentageRomanceMean = percentageRomanceTotal / movieCopy.Length;
+
+            double yearSum = 0.0;
+            double percentageHorrorSum = 0.0;
+            double percentageComedySum = 0.0;
+            double percentageActionSum = 0.0;
+            double percentageAdventureSum = 0.0;
+            double percentageFantasySum = 0.0;
+            double percentageRomanceSum = 0.0;
+
+            for (int j = 0; j < movieCopy.Length; j++)
             {
-                double colSum = 0.0;
-                for (int i = 0; i < result.Length; ++i)
-                    colSum += result[i][j];
-                double mean = colSum / result.Length;
-                double sum = 0.0;
-                for (int i = 0; i < result.Length; ++i)
-                    sum += (result[i][j] - mean) * (result[i][j] - mean);
-                double sd = sum / result.Length;
-                for (int i = 0; i < result.Length; ++i)
-                    result[i][j] = (result[i][j] - mean) / sd;
+                yearSum += (movieCopy[j].Year - yearMean) * (movieCopy[j].Year - yearMean);
+                percentageHorrorSum += (movieCopy[j].PercentageHorror - percentageHorrorMean) * (movieCopy[j].PercentageHorror - percentageHorrorMean);
+                percentageComedySum += (movieCopy[j].PercentageComedy - percentageComedyMean) * (movieCopy[j].PercentageComedy - percentageComedyMean);
+                percentageActionSum += (movieCopy[j].PercentageAction - percentageActionMean) * (movieCopy[j].PercentageAction - percentageActionMean);
+                percentageAdventureSum += (movieCopy[j].PercentageAdventure - percentageAdventureMean) * (movieCopy[j].PercentageAdventure - percentageAdventureMean);
+                percentageFantasySum += (movieCopy[j].PercentageFantasy - percentageFantasyMean) * (movieCopy[j].PercentageFantasy - percentageFantasyMean);
+                percentageRomanceSum += (movieCopy[j].PercentageRomance - percentageRomanceMean) * (movieCopy[j].PercentageRomance - percentageRomanceMean);
             }
-            return result;
+
+            double yearSd = yearSum/ movieCopy.Length;
+            double percentageHorrorSd = percentageHorrorSum / movieCopy.Length;
+            double percentageComedySd = percentageComedySum / movieCopy.Length;
+            double percentageActionSd = percentageActionSum / movieCopy.Length;
+            double percentageAdventureSd = percentageAdventureSum / movieCopy.Length;
+            double percentageFantasySd = percentageFantasySum / movieCopy.Length;
+            double percentageRomanceSd = percentageRomanceSum / movieCopy.Length;
+
+            for (int j = 0; j < movieCopy.Length; j++)
+            {
+                movieCopy[j].Year = Convert.ToInt32((movieCopy[j].Year - yearMean) / yearSd);
+                movieCopy[j].PercentageHorror = (movieCopy[j].PercentageHorror - percentageHorrorMean) / percentageHorrorSd;
+                movieCopy[j].PercentageComedy = (movieCopy[j].PercentageComedy - percentageComedyMean) / percentageComedySd;
+                movieCopy[j].PercentageAction = (movieCopy[j].PercentageAction - percentageActionMean) / percentageActionSd;
+                movieCopy[j].PercentageAdventure = (movieCopy[j].PercentageAdventure - percentageAdventureMean) / percentageAdventureSd;
+                movieCopy[j].PercentageFantasy = (movieCopy[j].PercentageFantasy - percentageFantasyMean) / percentageFantasySd;
+                movieCopy[j].PercentageRomance = (movieCopy[j].PercentageRomance - percentageRomanceMean) / percentageRomanceSd;
+            }
+
+            return movieCopy;
         }
 
         private int[] InitClustering(int numTuples, int numClusters, int randomSeed)
@@ -139,16 +184,20 @@ namespace DataCentreWebServer.MachineLearning
             return clustering;
         }
 
-        private double[][] Allocate(int numClusters, int numColumns)
+        private Movie[] Allocate(int numClusters)
         {
             // convenience matrix allocator for Cluster()
-            double[][] result = new double[numClusters][];
-            for (int k = 0; k < numClusters; ++k)
-                result[k] = new double[numColumns];
+            Movie[] result = new Movie[numClusters];
+
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = new Movie();
+            }
+
             return result;
         }
 
-        private bool UpdateMeans(double[][] data, int[] clustering, double[][] means)
+        private bool UpdateMeans(Movie[] movies, int[] clustering, Movie[] means)
         {
             // returns false if there is a cluster that has no tuples assigned to it
             // parameter means[][] is really a ref parameter
@@ -158,35 +207,60 @@ namespace DataCentreWebServer.MachineLearning
             // both guarantee at least one tuple in each cluster (usually true)
             int numClusters = means.Length;
             int[] clusterCounts = new int[numClusters];
-            for (int i = 0; i < data.Length; ++i)
+            for (int i = 0; i < movies.Length; ++i)
             {
                 int cluster = clustering[i];
                 ++clusterCounts[cluster];
             }
 
             for (int k = 0; k < numClusters; ++k)
+            {
                 if (clusterCounts[k] == 0)
+                {
                     return false; // bad clustering. no change to means[][]
+                }
+            }
 
             // update, zero-out means so it can be used as scratch matrix 
             for (int k = 0; k < means.Length; ++k)
-                for (int j = 0; j < means[k].Length; ++j)
-                    means[k][j] = 0.0;
+            {
+                means[k].Year = 0;
+                means[k].PercentageHorror = 0.0;
+                means[k].PercentageComedy = 0.0;
+                means[k].PercentageAction = 0.0;
+                means[k].PercentageAdventure = 0.0;
+                means[k].PercentageFantasy = 0.0;
+                means[k].PercentageRomance = 0.0;
+            }
 
-            for (int i = 0; i < data.Length; ++i)
+            for (int i = 0; i < movies.Length; ++i)
             {
                 int cluster = clustering[i];
-                for (int j = 0; j < data[i].Length; ++j)
-                    means[cluster][j] += data[i][j]; // accumulate sum
+                //sum everything
+                means[cluster].Year += movies[i].Year;
+                means[cluster].PercentageHorror += movies[i].PercentageHorror;
+                means[cluster].PercentageComedy += movies[i].PercentageComedy;
+                means[cluster].PercentageAction += movies[i].PercentageAction;
+                means[cluster].PercentageAdventure += movies[i].PercentageAdventure;
+                means[cluster].PercentageFantasy += movies[i].PercentageFantasy;
+                means[cluster].PercentageRomance += movies[i].PercentageRomance;
             }
 
             for (int k = 0; k < means.Length; ++k)
-                for (int j = 0; j < means[k].Length; ++j)
-                    means[k][j] /= clusterCounts[k]; // danger of div by 0
+            {
+                means[k].Year /= clusterCounts[k];
+                means[k].PercentageHorror /= clusterCounts[k];
+                means[k].PercentageComedy /= clusterCounts[k];
+                means[k].PercentageAction /= clusterCounts[k];
+                means[k].PercentageAdventure /= clusterCounts[k];
+                means[k].PercentageFantasy /= clusterCounts[k];
+                means[k].PercentageRomance /= clusterCounts[k];
+            }
+
             return true;
         }
 
-        private bool UpdateClustering(double[][] data, int[] clustering, double[][] means)
+        private bool UpdateClustering(Movie[] movies, int[] clustering, Movie[] means)
         {
             // (re)assign each tuple to a cluster (closest mean)
             // returns false if no tuple assignments change OR
@@ -201,10 +275,12 @@ namespace DataCentreWebServer.MachineLearning
 
             double[] distances = new double[numClusters]; // distances from curr tuple to each mean
 
-            for (int i = 0; i < data.Length; ++i) // walk thru each tuple
+            for (int i = 0; i < movies.Length; ++i) // walk thru each tuple
             {
                 for (int k = 0; k < numClusters; ++k)
-                    distances[k] = Distance(data[i], means[k]); // compute distances from curr tuple to all k means
+                {
+                    distances[k] = Distance(movies[i], means[k]); // compute distances from curr tuple to all k means
+                }
 
                 int newClusterID = MinIndex(distances); // find closest mean ID
                 if (newClusterID != newClustering[i])
@@ -215,31 +291,45 @@ namespace DataCentreWebServer.MachineLearning
             }
 
             if (changed == false)
+            {
                 return false; // no change so bail and don't update clustering[][]
+            }
 
             // check proposed clustering[] cluster counts
             int[] clusterCounts = new int[numClusters];
-            for (int i = 0; i < data.Length; ++i)
+            for (int i = 0; i < movies.Length; ++i)
             {
                 int cluster = newClustering[i];
                 ++clusterCounts[cluster];
             }
 
             for (int k = 0; k < numClusters; ++k)
+            {
                 if (clusterCounts[k] == 0)
+                {
                     return false; // bad clustering. no change to clustering[][]
+                }
+            }
 
             Array.Copy(newClustering, clustering, newClustering.Length); // update
+
             return true; // good clustering and at least one change
         }
 
-        private double Distance(double[] tuple, double[] mean)
+        private double Distance(Movie tuple, Movie mean)
         {
             // Euclidean distance between two vectors for UpdateClustering()
             // consider alternatives such as Manhattan distance
             double sumSquaredDiffs = 0.0;
-            for (int j = 0; j < tuple.Length; ++j)
-                sumSquaredDiffs += Math.Pow((tuple[j] - mean[j]), 2);
+
+            sumSquaredDiffs += Math.Pow((tuple.Year - mean.Year), 2);
+            sumSquaredDiffs += Math.Pow((tuple.PercentageHorror - mean.PercentageHorror), 2);
+            sumSquaredDiffs += Math.Pow((tuple.PercentageComedy - mean.PercentageComedy), 2);
+            sumSquaredDiffs += Math.Pow((tuple.PercentageAction - mean.PercentageAction), 2);
+            sumSquaredDiffs += Math.Pow((tuple.PercentageAdventure - mean.PercentageAdventure), 2);
+            sumSquaredDiffs += Math.Pow((tuple.PercentageFantasy - mean.PercentageFantasy), 2);
+            sumSquaredDiffs += Math.Pow((tuple.PercentageRomance - mean.PercentageRomance), 2);
+            
             return Math.Sqrt(sumSquaredDiffs);
         }
 
@@ -260,9 +350,9 @@ namespace DataCentreWebServer.MachineLearning
             return indexOfMin;
         }
 
-        static void ShowData(double[][] data, int decimals, bool indices, bool newLine)
+        static void ShowData(Movie[] movies, int decimals, bool indices, bool newLine)
         {
-            for (int i = 0; i < data.Length; ++i)
+            for (int i = 0; i < movies.Length; ++i)
             {
                 var stringToWrite = string.Empty;
 
@@ -271,16 +361,22 @@ namespace DataCentreWebServer.MachineLearning
                     stringToWrite += i.ToString().PadLeft(3) + " ";
                 }
 
-                for (int j = 0; j < data[i].Length; ++j)
-                {
-                    if (data[i][j] >= 0.0)
-                    {
-                        stringToWrite += " ";
-                    }
+                var movie = movies[i];
 
-                    stringToWrite += data[i][j].ToString("F" + decimals) + " ";
-                }
-
+                stringToWrite += " " + movie.ID;
+                stringToWrite += " " + movie.Title;
+                stringToWrite += " " + movie.Year;
+                stringToWrite += " " + movie.PercentageHorror;
+                stringToWrite += " " + movie.PercentageComedy;
+                stringToWrite += " " + movie.PercentageAction;
+                stringToWrite += " " + movie.PercentageAdventure;
+                stringToWrite += " " + movie.PercentageFantasy;
+                stringToWrite += " " + movie.PercentageRomance;
+                stringToWrite += " " + movie.ContainsViolence;
+                stringToWrite += " " + movie.ContainsSexualScenes;
+                stringToWrite += " " + movie.ContainsDrugUse;
+                stringToWrite += " " + movie.ContainsFlashingImages;
+                
                 LoggerHelper.Log(stringToWrite);
             }
 
@@ -307,12 +403,54 @@ namespace DataCentreWebServer.MachineLearning
             }
         }
 
-        static void ShowClustered(double[][] data, int[] clustering, int numClusters, int decimals)
+        static Movie[] GetMovieSubsetFromClusters(Movie[] movies, int[] clustering, int numClusters, int numberOfMoviesToReturn)
+        {
+            int numberOfMoviesPerCluster = numberOfMoviesToReturn / numClusters;
+
+            List<Movie[]> moviesFromEachCluster = new List<Movie[]>();
+
+            for (int clusterName = 0; clusterName < numClusters; clusterName++)
+            {
+                moviesFromEachCluster.Add(new Movie[numberOfMoviesPerCluster]);
+            }
+
+            for (int k = 0; k < numClusters; ++k)
+            {
+                var arrayToPopulate = moviesFromEachCluster[k];
+
+                for (int i = 0; i < movies.Length; ++i)
+                {
+                    var stringToWrite = string.Empty;
+                    int clusterID = clustering[i];
+
+                    if (clusterID != k)
+                    {
+                        continue;
+                    }
+
+                    //Get fair quanity of movies from each cluster
+
+                    
+                }
+            }
+
+            Movie[] masterCollection = new Movie[numberOfMoviesToReturn];
+            int previousIndex = 0;
+            foreach(var movieCollection in moviesFromEachCluster)
+            {
+                movieCollection.CopyTo(masterCollection, previousIndex);
+                previousIndex += movieCollection.Length;
+            }
+
+            return masterCollection;
+        }
+
+        static void ShowClustered(Movie[] movies, int[] clustering, int numClusters, int decimals)
         {
             for (int k = 0; k < numClusters; ++k)
             {
                 LoggerHelper.Log("===================");
-                for (int i = 0; i < data.Length; ++i)
+                for (int i = 0; i < movies.Length; ++i)
                 {
                     var stringToWrite = string.Empty;
                     int clusterID = clustering[i];
@@ -324,16 +462,22 @@ namespace DataCentreWebServer.MachineLearning
 
                     stringToWrite += i.ToString().PadLeft(3) + " ";
 
-                    for (int j = 0; j < data[i].Length; ++j)
-                    {
-                        if (data[i][j] >= 0.0)
-                        {
-                            stringToWrite += " ";
-                        }
+                    var movie = movies[i];
 
-                        stringToWrite += data[i][j].ToString("F" + decimals) + " ";
-                    }
-
+                    stringToWrite += " " + movie.ID + " ";
+                    stringToWrite += " " + movie.Title + " ";
+                    stringToWrite += " " + movie.Year + " ";
+                    stringToWrite += " " + movie.PercentageHorror.ToString("F" + decimals) + " ";
+                    stringToWrite += " " + movie.PercentageComedy.ToString("F" + decimals) + " ";
+                    stringToWrite += " " + movie.PercentageAction.ToString("F" + decimals) + " ";
+                    stringToWrite += " " + movie.PercentageAdventure.ToString("F" + decimals) + " ";
+                    stringToWrite += " " + movie.PercentageFantasy.ToString("F" + decimals) + " ";
+                    stringToWrite += " " + movie.PercentageRomance.ToString("F" + decimals) + " ";
+                    stringToWrite += " " + movie.ContainsViolence + " ";
+                    stringToWrite += " " + movie.ContainsSexualScenes + " ";
+                    stringToWrite += " " + movie.ContainsDrugUse + " ";
+                    stringToWrite += " " + movie.ContainsFlashingImages + " ";
+                    
                     LoggerHelper.Log(stringToWrite);
                 }
 

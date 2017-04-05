@@ -7,12 +7,12 @@
         public int ID;
         public string Title;
         public int Year;
-        public float PercentageHorror;
-        public float PercentageComedy;
-        public float PercentageAction;
-        public float PercentageAdventure;
-        public float PercentageFantasy;
-        public float PercentageRomance;
+        public double PercentageHorror;
+        public double PercentageComedy;
+        public double PercentageAction;
+        public double PercentageAdventure;
+        public double PercentageFantasy;
+        public double PercentageRomance;
         public bool ContainsViolence;
         public bool ContainsSexualScenes;
         public bool ContainsDrugUse;
