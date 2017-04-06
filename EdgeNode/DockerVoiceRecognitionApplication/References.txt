@@ -11,3 +11,6 @@ mentions infile which I use for processing my recording
 I used a stopwatch from here;
 http://stackoverflow.com/questions/20318822/how-to-create-a-stopwatch-using-javascript
 and altered it quite a bit as the constant posting to the UI increased CPU use and muddled my CPU modules readings. So now the stopwatch starts and records a time then stops
+
+I used a guid method from here;
+//http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript/2117523#2117523

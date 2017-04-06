@@ -416,7 +416,12 @@ namespace DataCentreWebServer.MachineLearning
 
             for (int k = 0; k < numClusters; ++k)
             {
+                LoggerHelper.Log("===================");
+
                 var arrayToPopulate = moviesFromEachCluster[k];
+
+                int totalCountOfElementsInCluster = 0;
+                int currentCountOfElementsInArray = 0;
 
                 for (int i = 0; i < movies.Length; ++i)
                 {
@@ -428,10 +433,22 @@ namespace DataCentreWebServer.MachineLearning
                         continue;
                     }
 
-                    //Get fair quanity of movies from each cluster
+                    totalCountOfElementsInCluster++;
 
-                    
+                    //Get fair quanity of movies from each cluster
+                    //Should I store each cluster locally? and then have a different method for spawing a thread just to execute the KMeans and a method that returns an amount from each stored cluster?
+                    //It is not feasable for the edge to wait for this request to finish each time
+
+                    //This just returns the first set of elements from each cluster
+                    //As assumption that each cluster is at least numberOfMoviesPerCluster in size
+                    if (currentCountOfElementsInArray < arrayToPopulate.Length)
+                    {
+                        arrayToPopulate[currentCountOfElementsInArray] = movies[i];
+                        currentCountOfElementsInArray++;
+                    }
                 }
+
+                LoggerHelper.Log("Total Count of elements in cluster " + k + " = " + totalCountOfElementsInCluster);
             }
 
             Movie[] masterCollection = new Movie[numberOfMoviesToReturn];
