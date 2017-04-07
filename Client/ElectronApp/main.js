@@ -17,14 +17,14 @@ function createWindow ()
         fullscreen: true
     })
 
-    win.webContents.session.setProxy({
-        proxyRules:"edgepi01:3000"
-    }, function () {
-        // and load the index.html of the app. 
-        win.loadURL(`file://${__dirname}/index.html`)
-    });
+//    win.webContents.session.setProxy({
+//        proxyRules:"edgepi01:3000"
+//    }, function () {
+//        // and load the index.html of the app. 
+//        win.loadURL(`file://${__dirname}/index.html`)
+//    });
     
-//    win.loadURL(`file://${__dirname}/index.html`)
+    win.loadURL(`file://${__dirname}/index.html`)
 
     //If I need to debug I will use this
     //win.webContents.openDevTools()
