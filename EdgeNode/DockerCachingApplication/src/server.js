@@ -13,7 +13,7 @@ var crypto = require('crypto');
 var externalPort = process.env.port || 3001;
 var internalPort = 3500;
 var redisport = '6379';
-var redisHosts = ['192.168.1.185', '192.168.1.186', 'EdgePi03'];
+var redisHosts = ['192.168.1.185', '192.168.1.196', 'EdgePi03'];
 var redisClients = [];
 
 console.log("Starting...");
@@ -28,6 +28,15 @@ var proxyServer = httpProxy.createProxyServer({
 proxyServer.on('error', function(err) {
     console.error("ERROR WITH PROXY SERVER:\n" + err.stack);
 });
+
+//proxyServer.on('end', function(req, res, response) {
+//    var bytesIn = response.socket._bytesDispatched;
+//    var bytesOut = response.socket.bytesRead;
+//
+//    console.log('request to ' + req.url);
+//    console.log('request: ' + bytesIn + ' bytes.');
+//    console.log('response: ' + bytesOut + ' bytes.');
+//});
 
 //Listen on the external port that will be made public in the deployment script
 proxyServer.listen(externalPort);
@@ -73,8 +82,8 @@ var createdServer = http.createServer(function (req, res) {
 //Loop through all the connected caches and execute a remote request to clear it
 function ClearCaches(requestedUrl, res)
 {
-    console.log("Clear Cache Request: " + requestedUrl);
- 
+    console.log("Clear Cache Request: " + requestedUrl); 
+    
     var count = 0;
     redisHosts.forEach(function(redisHost) {
         var command = spawn('redis-cli',['-h', redisHost, 'flushall']);
@@ -142,7 +151,7 @@ function GetOrSetRequestValueFromRedis(requestedUrl, res)
 function MakeAndStoreRequest(requestedUrl, res, md5Mod) 
 {
     //console.log("Going to make custom request to " + requestedUrl);
-    console.log("Executing external request");
+    //console.log("Executing external request");
     
     var requestOptions = {
         url: requestedUrl,
@@ -150,7 +159,6 @@ function MakeAndStoreRequest(requestedUrl, res, md5Mod)
         encoding: null
     };
 
-    //Request.on data instead and save [] data?
     request(requestOptions, function(error,response,body) {
         if(error)
         {

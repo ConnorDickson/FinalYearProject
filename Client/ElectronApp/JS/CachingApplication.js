@@ -24,7 +24,7 @@ onload = () =>
         if(!failedLoad) 
         { 
             receiveTime = (new Date()).getTime();
-            var resultTime = ((receiveTime - sendTime)/1000).toFixed(2);
+            var resultTime = ((receiveTime - sendTime)/1000);
             previousResults.push(resultTime);
             console.log("End Request and pushed " + resultTime);
         }
@@ -63,9 +63,10 @@ function performExperiment()
 }
 
 function executeExperiment() {
-    document.getElementById("requestResult").innerHTML = "Total Request Time: ";
-    var totalNumberOfRequests = 10;
-    var timeBetweenRequests = 20000;
+    document.getElementById("requestResult").innerHTML = "Requests: ";
+    //10 cached and 10 new
+    var totalNumberOfRequests = 20;
+    var timeBetweenRequests = 25000;
     var timeToClearCache = 5000;
     
     //Clear cache after X time and print to UI saying that's what is going to happen
@@ -93,13 +94,13 @@ function ClearAndPrintResults()
     //If there are previous results (not the first execution);
     if(previousResults.length > 0 && !clearCacheRequest) {
         var totalTime = previousResults.reduce(add,0);
-        document.getElementById("requestResult").innerHTML = document.getElementById("requestResult").innerHTML + totalTime + " ";
+        document.getElementById("requestResult").innerHTML = document.getElementById("requestResult").innerHTML + totalTime.toFixed(2) + " ";
     }
 
     //if ClearCache result don't print
     //We know the timings of this 
     if(clearCacheRequest) {
-        document.getElementById("requestResult").innerHTML = document.getElementById("requestResult").innerHTML + "(Cache Cleared) ";
+        document.getElementById("requestResult").innerHTML = document.getElementById("requestResult").innerHTML + "(C) ";
         clearCacheRequest = false;
     }
     
