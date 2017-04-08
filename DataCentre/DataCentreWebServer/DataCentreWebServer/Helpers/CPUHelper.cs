@@ -7,27 +7,34 @@ namespace DataCentreWebServer.Helpers
     //https://stevescodingblog.co.uk/real-time-system-resource-monitor-with-signalr-mvc-knockout-and-webapi/
     public class CPUHelper
     {
-        static PerformanceCounter _cpuCounter, _memUsageCounter;
-        
-        public static MachineMetrics measureCPU()
+        private PerformanceCounter _cpuCounter, _memUsageCounter;
+
+        public CPUHelper()
+        {
+            DateTime lastPollTime = DateTime.MinValue;
+
+            _cpuCounter = new PerformanceCounter();
+            _cpuCounter.CategoryName = "Processor";
+            _cpuCounter.CounterName = "% Processor Time";
+            _cpuCounter.InstanceName = "_Total";
+            _memUsageCounter = new PerformanceCounter("Memory", "Available KBytes");
+            double cpuTime;
+            ulong memUsage, totalMemory; // Get the stuff we need to send 
+
+            //This has to be measured twice to get the CPU use
+            GetMetrics(out cpuTime, out memUsage, out totalMemory); // Send the data
+        }
+
+        public MachineMetrics measureCPU()
         {
             try
             {
-                DateTime lastPollTime = DateTime.MinValue;
-
-                _cpuCounter = new PerformanceCounter();
-                _cpuCounter.CategoryName = "Processor";
-                _cpuCounter.CounterName = "% Processor Time";
-                _cpuCounter.InstanceName = "_Total";
-                _memUsageCounter = new PerformanceCounter("Memory", "Available KBytes");
-                
                 double cpuTime;
                 ulong memUsage, totalMemory; // Get the stuff we need to send 
 
                 //This has to be measured twice to get the CPU use
-                GetMetrics(out cpuTime, out memUsage, out totalMemory); // Send the data 
-                //GetMetrics(out cpuTime, out memUsage, out totalMemory); // Send the data 
-
+                GetMetrics(out cpuTime, out memUsage, out totalMemory); // Send the data
+               
                 return new MachineMetrics
                 {
                     MachineName = Environment.MachineName,
@@ -43,9 +50,9 @@ namespace DataCentreWebServer.Helpers
             }
         }
 
-        static void GetMetrics(out double processorTime, out ulong memUsage, out ulong totalMemory)
+        private void GetMetrics(out double processorTime, out ulong memUsage, out ulong totalMemory)
         {
-            processorTime = (double)_cpuCounter.NextValue();
+            processorTime = _cpuCounter.NextValue();
             memUsage = (ulong)_memUsageCounter.NextValue();
             totalMemory = 0; // Get total memory from WMI 
 

@@ -16,12 +16,14 @@ namespace DataCentreWebServer.RequestHandlers
     {
         FileSystemHelper _fileSystemHelper;
         VoiceRecognitionHelper _voiceRecognitionHelper;
-        
+        CPUHelper _cpuHelper;
+
         //classes injected using dependancy injection
-        public VoiceRecognitionHandler(FileSystemHelper fileSystemHelper, VoiceRecognitionHelper voiceRecognitionHelper)
+        public VoiceRecognitionHandler(FileSystemHelper fileSystemHelper, VoiceRecognitionHelper voiceRecognitionHelper, CPUHelper cpuHelper)
         {
             _fileSystemHelper = fileSystemHelper;
             _voiceRecognitionHelper = voiceRecognitionHelper;
+            _cpuHelper = cpuHelper;
         }
 
         /// <summary>
@@ -85,13 +87,13 @@ namespace DataCentreWebServer.RequestHandlers
                 //execute the voice recognition
                 var output = _voiceRecognitionHelper.ProcessVoice(pocketsphinxexe, pocketsphinxargs);
 
-                var localMetrics = CPUHelper.measureCPU();
+                var localMetrics = _cpuHelper.measureCPU();
                 
                 dynamic jsonObject = new JObject();
                 jsonObject.ReceivedRequestLength = requestLength;
                 jsonObject.ProcessedString = output.Trim();
                 jsonObject.ProcessorPercentage = localMetrics.Processor.ToString();
-                jsonObject.GBMemoryUse = (localMetrics.MemUsage / 1000000).ToString();
+                jsonObject.GBMemoryUse = localMetrics.MemUsage;
                 var jsonString = JsonConvert.SerializeObject(jsonObject);
                 var stringContent = new StringContent(jsonString);
 
@@ -125,13 +127,13 @@ namespace DataCentreWebServer.RequestHandlers
             var response = new HttpResponseMessage();
             var preprocessedString = await request.Content.ReadAsStringAsync();
 
-            var localMetrics = CPUHelper.measureCPU();
+            var localMetrics = _cpuHelper.measureCPU();
 
             dynamic jsonObject = new JObject();
             jsonObject.ReceivedRequestLength = requestLength;
             jsonObject.ProcessedString = preprocessedString.Trim();
             jsonObject.ProcessorPercentage = localMetrics.Processor.ToString();
-            jsonObject.GBMemoryUse = (localMetrics.MemUsage / 1000000).ToString();
+            jsonObject.GBMemoryUse = localMetrics.MemUsage;
             var jsonString = JsonConvert.SerializeObject(jsonObject);
             var stringContent = new StringContent(jsonString);
 

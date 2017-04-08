@@ -47,7 +47,7 @@ function performExperiment()
 {
     //Execute Warmup
     document.getElementById("requestResult").innerHTML = "Warmup Time: ";
-    var totalNumberOfRequests = 10;
+    var totalNumberOfRequests = 1;
     var timeBetweenRequests = 20000;
     
     //Clear cache after X time and print to UI saying that's what is going to happen
@@ -81,7 +81,7 @@ function performExperimentWithoutCache()
 function executeExperiment() {
     document.getElementById("requestResult").innerHTML = "Requests: ";
     //10 cached and 10 new
-    var totalNumberOfRequests = 20;
+    var totalNumberOfRequests = 2;
     var timeBetweenRequests = 25000;
     var timeToClearCache = 5000;
     

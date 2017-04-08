@@ -33,10 +33,10 @@
             </tr>
             <tr>
                 <td>
-                    <button class="button" id="ScriptButton" onclick="ExecuteVoiceRecognitionScript()">Execute Local Recognition</button>     
+                    <button class="button" id="ScriptButton" onclick="ExecuteLocalExperiment()">Execute Local Recognition</button>     
                 </td>
                 <td>
-                    <button class="button" id="PostButton" onclick="ExecuteRemoteVoiceRecognition()">Execute Remote Recognition</button>
+                    <button class="button" id="PostButton" onclick="ExecuteRemoteExperiment()">Execute Remote Recognition</button>
                 </td>
             </tr>
             <tr>
@@ -119,6 +119,13 @@
                 </td>
                 <td>
                     <p class="InfoBox" id='remoteDataCentreMemoryUse'></p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    <p class="InfoBox" id='edgeNodeMemory'></p>
                 </td>
             </tr>
         </table>
