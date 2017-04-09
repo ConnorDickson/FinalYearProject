@@ -19,7 +19,9 @@
                 <input id="NumberOfVoiceRecognitionRequests" class="TextInputShort" type="text">
                 <br>
                 <input class="checkbox" type="checkbox" id="useEdgeNodeCheckbox" value="Yes">Preprocess on edge node</input>
-                <button class="button" onclick="ExecuteVoiceRecognitionLoadBalance()">Go</button>
+<!--                <button class="button" onclick="ExecuteVoiceRecognitionLoadBalance()">Go</button>-->
+                <button class="button" onclick="PerformExperiment()">Go</button>
+
             </p>
     
             <table class="tableContainer">
@@ -30,12 +32,37 @@
                 </tr>
                 <tr>
                     <td>
+                        <div class="InfoBox" id='averageRequestTimeResult'></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <div class="InfoBox" id='averageLocalCPUResult'></div>
                     </td>
                 </tr>
                 <tr>
                     <td>
                         <div class="InfoBox" id='averageRemoteCPUResult'></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="InfoBox" id='averageDataCentreCPUResult'></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="InfoBox" id='averageLocalRAMResult'></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="InfoBox" id='averageRemoteRAMResult'></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="InfoBox" id='averageDataCentreRAMResult'></div>
                     </td>
                 </tr>
                 <tr>

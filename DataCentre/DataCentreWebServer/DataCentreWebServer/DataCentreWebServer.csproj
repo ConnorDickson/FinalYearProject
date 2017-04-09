@@ -152,6 +152,8 @@
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Pocketsphinx\model\Dictionary.dic" />
+    <Content Include="Pocketsphinx\model\LanguageModel.lm" />
     <None Include="Properties\PublishProfiles\DataCentreDeploy-ConnorPC.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
