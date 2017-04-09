@@ -37,7 +37,7 @@ function PerformExperiment() {
     totalAverageEdgeRAM = [];
     totalAverageDataCentreRAM = [];
         
-    var timeBetweenRequests = 30000;
+    var timeBetweenRequests = 45000;
     
     //Clear cache after X time and print to UI saying that's what is going to happen
     for(var requestNumber = 0; requestNumber < remoteExecuionsRequired; requestNumber++) {        
