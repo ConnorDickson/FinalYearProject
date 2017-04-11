@@ -20,7 +20,7 @@ window.AudioContext = window.AudioContext || window.webkitAudioContext;
 navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
 var localExecutionCounter = 0;
-var localExecuionsRequired = 10;
+var localExecuionsRequired = 1;
 
 function ExecuteLocalExperiment() {
     localExecutionCounter = 0;
@@ -155,7 +155,7 @@ var dataCentreProcessorTotalResults = [];
 var dataCentreMemoryTotalResults = [];
 
 var remoteExecutionCounter = 0;
-var remoteExecuionsRequired = 10;
+var remoteExecuionsRequired = 1;
 
 function ExecuteRemoteExperiment() {
     remoteExecutionCounter = 0;

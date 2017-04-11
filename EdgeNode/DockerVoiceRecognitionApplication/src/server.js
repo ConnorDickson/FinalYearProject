@@ -80,7 +80,7 @@ var createdServer = http.createServer(function (req, res) {
             console.log("Wrote file to disk successfully");
             //Check if the user want's the request to be pre-processed and
             // if the system is capable of handling it
-            if(req.headers['preprocess-request'] == 'true' && !SystemUnderStress()) {
+            if(req.headers['preprocess-request'] == 'true') {// && !SystemUnderStress()) {
                 console.log('Preprocess request by performing voice recognition on edge node');
                 PreProcessVoiceRecognition(fileName, requestedUrl, res);
             } else {
@@ -190,6 +190,7 @@ function EndRequest(fileName, res, dataToReturn)
 {
     var load = cpu.cpuEnd();
     dataToReturn.CPUInfo = load.percent;
+    dataToReturn.RAMInfo = cpu.freeMemory();
     res.write(JSON.stringify(dataToReturn));
     res.end();
 

@@ -14,7 +14,8 @@ function createWindow ()
     win = new BrowserWindow(
     {
         frame: false,
-        fullscreen: true
+        fullscreen: true,
+        backgroundColor: '#C63D0F'
     })
 
 //    win.webContents.session.setProxy({
