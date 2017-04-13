@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using DataCentreWebServer.MachineLearning;
-using System.Linq;
 
 namespace DataCentreWebServer.Helpers
 {
@@ -9,17 +7,26 @@ namespace DataCentreWebServer.Helpers
     public class MachineLearningHelper
     {
         MovieParser _movieParser;
+        KMeansHelper _kmeansHelper;
+
         /// <summary>
-        /// utalises dependancy injection
+        /// Utalises dependancy injection
         /// </summary>
         /// <param name="movieParser"></param>
-        public MachineLearningHelper (MovieParser movieParser)
+        /// <param name="kmeansHelper"></param>
+        public MachineLearningHelper (MovieParser movieParser, KMeansHelper kmeansHelper)
         {
             _movieParser = movieParser;
+            _kmeansHelper = kmeansHelper;
         }
         
         public Movie[] ParseLines(string[] lines)
         {
+            if(lines == null)
+            {
+                return null;
+            }
+
             return _movieParser.ParseMovies(lines);
         }
 
@@ -29,23 +36,11 @@ namespace DataCentreWebServer.Helpers
         /// </summary>
         /// <param name="lines"></param>
         /// <returns></returns>
-        public Movie[] KMedoids(string[] lines)
+        public Movie[] KMeans(string[] lines)
         {
             var movies = _movieParser.ParseMovies(lines);
-
-            KMeans kmeans = new KMeans();
-
-            return kmeans.kmeans(movies, 10000);
-
-            //foreach (var movie in movies)
-            //{
-            //    //Process vectors and perform nearst neighbour
-            //    //k - evaluation to send a big variation of movies to Edge (maybe 1000?)
-            //}
-
-            //movies = movies.Take(10000).ToArray();
-
-            //return movies;
+            
+            return _kmeansHelper.kmeans(movies, 10000);
         }
 
         /// <summary>

@@ -6,37 +6,17 @@ using System.Linq;
 namespace DataCentreWebServer.MachineLearning
 {
     //this class will handle the kmean operation
-    public class KMeans
+    public class KMeansHelper
     {
         //https://visualstudiomagazine.com/Articles/2013/12/01/K-Means-Data-Clustering-Using-C.aspx?admgarea=features&Page=1
 
         public Movie[] kmeans(Movie[] movies, int numberOfMoviesToReturn)
         {
-            //1 QKMDVJDI 1961 37 37 24 31 3 64 False False True True
-
-            //var tmpMovies = movies.Take(100).ToArray();
-            
-            //LoggerHelper.Log("Raw unclustered data:\n");
-            //LoggerHelper.Log("    ID Name Year %H %C %Ac %Ad %F %R CV CS CD CF");
-            //LoggerHelper.Log("-------------------");
-            //ShowData(movies, 1, true, true);
-
             int numClusters = 10;
-            //LoggerHelper.Log("\nSetting numClusters to " + numClusters);
-
-            int[] clustering = Cluster(movies, numClusters); // this is it
+            
+            int[] clustering = Cluster(movies, numClusters);
 
             return GetMovieSubsetFromClusters(movies, clustering, numClusters, numberOfMoviesToReturn);
-
-            //LoggerHelper.Log("\nK-means clustering complete\n");
-
-            //LoggerHelper.Log("Final clustering in internal form:\n");
-            //ShowVector(clustering, true);
-
-            //LoggerHelper.Log("Raw data by cluster:\n");
-            //ShowClustered(movies, clustering, numClusters, 1);
-
-            //LoggerHelper.Log("\nEnd k-means clustering demo\n");
         }
 
         private int[] Cluster(Movie[] movies, int numClusters)
@@ -407,21 +387,18 @@ namespace DataCentreWebServer.MachineLearning
         {
             int numberOfMoviesPerCluster = numberOfMoviesToReturn / numClusters;
 
-            List<Movie[]> moviesFromEachCluster = new List<Movie[]>();
+            List<List<Movie>> moviesFromEachCluster = new List<List<Movie>>();
 
             for (int clusterName = 0; clusterName < numClusters; clusterName++)
             {
-                moviesFromEachCluster.Add(new Movie[numberOfMoviesPerCluster]);
+                moviesFromEachCluster.Add(new List<Movie>());
             }
 
             for (int k = 0; k < numClusters; ++k)
             {
                 LoggerHelper.Log("===================");
 
-                var arrayToPopulate = moviesFromEachCluster[k];
-
-                int totalCountOfElementsInCluster = 0;
-                int currentCountOfElementsInArray = 0;
+                var listToPopulate = moviesFromEachCluster[k];
 
                 for (int i = 0; i < movies.Length; ++i)
                 {
@@ -433,32 +410,32 @@ namespace DataCentreWebServer.MachineLearning
                         continue;
                     }
 
-                    totalCountOfElementsInCluster++;
+                    listToPopulate.Add(movies[i]);
+                }
+            }
 
-                    //Get fair quanity of movies from each cluster
-                    //Should I store each cluster locally? and then have a different method for spawing a thread just to execute the KMeans and a method that returns an amount from each stored cluster?
-                    //It is not feasable for the edge to wait for this request to finish each time
+            //Get a fair subset of all the movies in each cluster
+            var posToAdd = 0;
+            Movie[] masterCollection = new Movie[numberOfMoviesToReturn];
+            foreach (var clusterList in moviesFromEachCluster)
+            {
+                var numOfMoviesAddedFromThisCluster = 0;
+                while (numOfMoviesAddedFromThisCluster < numberOfMoviesPerCluster && numOfMoviesAddedFromThisCluster < clusterList.Count)
+                {
+                    numOfMoviesAddedFromThisCluster++;
 
-                    //This just returns the first set of elements from each cluster
-                    //As assumption that each cluster is at least numberOfMoviesPerCluster in size
-                    if (currentCountOfElementsInArray < arrayToPopulate.Length)
-                    {
-                        arrayToPopulate[currentCountOfElementsInArray] = movies[i];
-                        currentCountOfElementsInArray++;
-                    }
+                    //var fairNumber = standard increments between 0 and clusterList.count with enough values to satisy numberOfMoviesPerCluster
+                    var incrementValue = clusterList.Count / numberOfMoviesPerCluster;
+                    var fairNumber = (numOfMoviesAddedFromThisCluster * incrementValue);
+
+                    masterCollection[posToAdd] = clusterList[fairNumber];
+
+                    posToAdd++;
                 }
 
-                LoggerHelper.Log("Total Count of elements in cluster " + k + " = " + totalCountOfElementsInCluster);
+                LoggerHelper.Log("Added " + numOfMoviesAddedFromThisCluster + " to master collection");
             }
-
-            Movie[] masterCollection = new Movie[numberOfMoviesToReturn];
-            int previousIndex = 0;
-            foreach(var movieCollection in moviesFromEachCluster)
-            {
-                movieCollection.CopyTo(masterCollection, previousIndex);
-                previousIndex += movieCollection.Length;
-            }
-
+            
             return masterCollection;
         }
 

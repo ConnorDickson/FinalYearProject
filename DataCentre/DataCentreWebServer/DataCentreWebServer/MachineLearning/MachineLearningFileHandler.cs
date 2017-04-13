@@ -12,7 +12,8 @@ namespace DataCentreWebServer.MachineLearning
     {
         //This would ideally all be done with a database rather than storing it in a file on disk.
 
-        ReaderWriterLockSlim _readerWriterLock = new ReaderWriterLockSlim();
+        ReaderWriterLockSlim _readerWriterLockUserData = new ReaderWriterLockSlim();
+        ReaderWriterLockSlim _readerWriterLockClusterData = new ReaderWriterLockSlim();
 
         /// <summary>
         /// Returns raw movie lines from the file on disk
@@ -42,7 +43,7 @@ namespace DataCentreWebServer.MachineLearning
         /// <returns></returns>
         public string[] GetUserMovies(string userID)
         {
-            _readerWriterLock.EnterReadLock();
+            _readerWriterLockUserData.EnterReadLock();
 
             try
             {
@@ -102,7 +103,7 @@ namespace DataCentreWebServer.MachineLearning
             }
             finally
             {
-                _readerWriterLock.ExitReadLock();
+                _readerWriterLockUserData.ExitReadLock();
             }
 
             return null;
@@ -115,7 +116,7 @@ namespace DataCentreWebServer.MachineLearning
         /// <param name="userID"></param>
         public void StoreUserResult(Movie movie, string userID)
         {
-            _readerWriterLock.EnterWriteLock();
+            _readerWriterLockUserData.EnterWriteLock();
 
             try
             {
@@ -160,8 +161,87 @@ namespace DataCentreWebServer.MachineLearning
             }
             finally
             {
-                _readerWriterLock.ExitWriteLock();
+                _readerWriterLockUserData.ExitWriteLock();
             }
+        }
+
+        internal void WriteClusteredSubset(Movie[] movieClusterSubset)
+        {
+            _readerWriterLockClusterData.EnterWriteLock();
+
+            try
+            {
+                var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
+                //Store result into the users results (currentResults.txt)
+                var filePath = rootPath + Constants.MachineLearning.ClusterDataFile;
+
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+
+                using (File.Create(filePath)) { }
+
+                var lines = new List<string>();
+
+                foreach(var movie in movieClusterSubset)
+                {
+                    string movieInfo = movie.ID + " " +
+                                movie.Title + " " +
+                                movie.Year.ToString() + " " +
+                                movie.PercentageHorror + " " +
+                                movie.PercentageComedy + " " +
+                                movie.PercentageAction + " " +
+                                movie.PercentageAdventure + " " +
+                                movie.PercentageFantasy + " " +
+                                movie.PercentageRomance + " " +
+                                movie.ContainsViolence + " " +
+                                movie.ContainsSexualScenes + " " +
+                                movie.ContainsDrugUse + " " +
+                                movie.ContainsFlashingImages;
+
+                    lines.Add(movieInfo);    
+                }
+
+                File.AppendAllLines(filePath, lines);
+            }
+            catch (Exception ex)
+            {
+                LoggerHelper.Log("An exception occurred while storing cluster data: " + ex.Message + ex.Message);
+            }
+            finally
+            {
+                _readerWriterLockClusterData.ExitWriteLock();
+            }
+        }
+
+        internal string[] ReadMovieClusterSubset()
+        {
+            _readerWriterLockClusterData.EnterReadLock();
+
+            try
+            {
+                var rootPath = HttpRuntime.AppDomainAppPath.TrimEnd('\\');
+                var filePath = rootPath + Constants.MachineLearning.ClusterDataFile;
+
+                if(!File.Exists(filePath))
+                {
+                    return null;
+                }
+
+                var lines = File.ReadAllLines(filePath);
+                return lines;
+            }
+            catch (Exception ex)
+            {
+                LoggerHelper.Log("An exception occurred while getting user movies: " + ex.Message + ex.Message);
+            }
+            finally
+            {
+                _readerWriterLockClusterData.ExitReadLock();
+            }
+
+            return null;
         }
     }
 }

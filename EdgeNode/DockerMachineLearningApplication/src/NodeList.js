@@ -20,12 +20,8 @@ NodeList.prototype.determineUnknown = function() {
     */
     for (var i in this.nodes)
     {
-       if (this.nodes[i].evaluate)
+        if (this.nodes[i].evaluate)
         {
-            /*
-            * If the node is an unknown type, clone the nodes list and then measure distances.
-            */
-
             /* Clone nodes */
             this.nodes[i].neighbors = [];
 
@@ -45,7 +41,7 @@ NodeList.prototype.determineUnknown = function() {
             this.nodes[i].sortByDistance();
 
             /* Guess type */
-            console.log("Guess Type: " + this.nodes[i].guessType(this.k));
+            this.nodes[i].guessType(this.k);
         }
     }
 };
@@ -141,38 +137,15 @@ NodeList.prototype.calculateRanges = function() {
 };
 
 NodeList.prototype.getNN = function() {
-  //From the example I need to know what elements are within the radius
-  
-  for(var i in this.nodes) {
-    if(this.nodes[i].evaluate) {
-        console.log("Neighbour count: " + this.nodes[i].neighbors.length);
-        console.log("getNN k - 1: " + JSON.stringify(this.nodes[i].neighbors[this.k - 1]));
-        console.log("getNN k: " + JSON.stringify(this.nodes[i].neighbors[this.k]));
-        console.log("getNN k + 1: " + JSON.stringify(this.nodes[i].neighbors[this.k + 1]));
-        return this.nodes[i].neighbors[this.k - 1];
+    for(var i in this.nodes) {
+        if(this.nodes[i].evaluate) {
+            var nearestNeighbours = [];
+            nearestNeighbours.push(this.nodes[i].neighbors[this.k - 1]);
+            nearestNeighbours.push(this.nodes[i].neighbors[this.k]);
+            nearestNeighbours.push(this.nodes[i].neighbors[this.k + 1]);
+            return nearestNeighbours;
+        }
     }
-  }
-  
-  //  var nearestNeighbours = [];
-  // 
-  //  for (var i in this.nodes)
-  //  {
-  //      if (this.nodes[i].evaluate)
-  //      {
-  //          for(var j = 0; j < 100; j++) {     
-  //              console.log("Neighbour " + j + " ID: " + this.nodes[i].neighbors[j].ID);
-  //          }
-
-  //          for(var j = 0; j < this.k; j ++) {
-  //              console.log("Neighbour length: " + this.nodes[i].neighbors.length);
-  //              var nearestNode = this.nodes[i].neighbors[j];
-  //              
-  //              nearestNeighbours.push(nearestNode);
-  //          }
-  //      }
-  //  }
-
-  //  return nearestNeighbours;
 };
 
 module.exports = {

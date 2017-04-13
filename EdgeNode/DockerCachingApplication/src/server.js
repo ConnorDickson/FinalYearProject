@@ -13,7 +13,7 @@ var crypto = require('crypto');
 var externalPort = process.env.port || 3001;
 var internalPort = 3500;
 var redisport = '6379';
-var redisHosts = ['192.168.1.185', '192.168.1.196', 'EdgePi03'];
+var redisHosts = ['192.168.1.185', '192.168.1.186', '192.168.1.187'];
 var redisClients = [];
 
 console.log("Starting...");

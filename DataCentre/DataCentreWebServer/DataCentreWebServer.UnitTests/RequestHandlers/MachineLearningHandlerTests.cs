@@ -1,6 +1,4 @@
-﻿using DataCentreWebServer.Helpers;
-using DataCentreWebServer.MachineLearning;
-using DataCentreWebServer.RequestHandlers;
+﻿using DataCentreWebServer.MachineLearning;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DataCentreWebServer.UnitTests.RequestHandlers
@@ -11,12 +9,15 @@ namespace DataCentreWebServer.UnitTests.RequestHandlers
         [TestMethod]
         public void MachineLearningHandler_CanInit()
         {
-            var movieParser = new MovieParser();
-            var machineLearningHelper = new MachineLearningHelper(movieParser);
             var machineLearningFileHandler = new MachineLearningFileHandler();
-            var machineLearningHandler = new MachineLearningHandler(machineLearningHelper, machineLearningFileHandler);
+            //This doesn't work
+            var lines = machineLearningFileHandler.GetMovieLinesFromDisk();
 
-            machineLearningHandler.ReturnMovies(null);
+            var movieParser = new MovieParser();
+            var movies = movieParser.ParseMovies(lines);
+
+            KMeansHelper kmeansHelper = new KMeansHelper();
+            var clusteredMoviesResults = kmeansHelper.kmeans(movies, 10000);
         }
     }
 }

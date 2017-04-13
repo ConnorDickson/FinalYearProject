@@ -169,16 +169,27 @@ namespace DataCentreWebServer.RequestHandlers
         {
             try
             {
-                // read movies from disk
-                var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
-                
-                // create subset of movies
-                var linesToReturn = _machineLearningHelper.KMedoids(lines);
-                
+                var movieClusterLines = _machineLearningFileHandler.ReadMovieClusterSubset();
+                var movieClusterSubset = _machineLearningHelper.ParseLines(movieClusterLines);
+                if(movieClusterSubset == null)
+                {
+                    LoggerHelper.Log("Existing movie cluster data was null");
+
+                    // read movies from disk
+                    var lines = _machineLearningFileHandler.GetMovieLinesFromDisk();
+
+                    // create subset of movies
+                    movieClusterSubset = _machineLearningHelper.KMeans(lines);
+
+                    _machineLearningFileHandler.WriteClusteredSubset(movieClusterSubset);
+                }
+
+                LoggerHelper.Log("Got movie cluster data");
+
                 // return subset to Edge
                 var machineLearningMessage = new MachineLearningMessage()
                 {
-                    Results = linesToReturn
+                    Results = movieClusterSubset
                 };
 
                 var jsonString = JsonConvert.SerializeObject(machineLearningMessage);
