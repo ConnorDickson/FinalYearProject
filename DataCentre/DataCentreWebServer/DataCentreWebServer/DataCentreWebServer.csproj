@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
+    <Content Include="MachineLearning\ClusterData.txt" />
     <Content Include="MachineLearning\UserData.txt" />
     <Content Include="MachineLearning\MovieData.txt" />
     <Content Include="Pocketsphinx\pocketsphinx.dll" />

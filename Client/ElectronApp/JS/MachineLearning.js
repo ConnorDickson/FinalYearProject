@@ -1,11 +1,10 @@
 const http = require('http');
 
 var userID = "";
-var edgeNode = "192.168.1.185";
-//var edgeNode = "edgepi01";
+var edgeNode = "EdgePi01";
 var dataCentre = "connor-pc";
 var previousResults = {};
-var recommendedMovie = {};
+var recommendedMovie = null;
 
 //called when the user clicks login
 function Login() {
@@ -82,13 +81,24 @@ function GetPreviousMovies() {
 
 //Get a recommendation from the edge nodes
 function GetRecommendation() {
+    if(previousResults == 'undefined' || previousResults == null || previousResults == "null" || previousResults.Results.length == 0) {
+        //If the user has not watched any movies yet
+        document.getElementById('recommendations').innerHTML = "Recommendation: <br>Not enough data to get a recommendation";
+        document.getElementById('prevResults').innerHTML = "Your Average of 0 Results: <br>Please watch a movie to get an evaluation";
+        return;
+    }
+    
     var jsonObject = {};
     
     //Post to the edge node and execute code as part of a callback to update the UI
     PostToEdgeNode('/GetRecommendations', jsonObject, function(responseData) {
+        console.log("Received recommendation data back: " + responseData);
+        
         var receivedJSONData = JSON.parse(responseData);
         
         recommendedMovie = receivedJSONData.Recommendation;
+        
+        console.log(recommendedMovie);
         
         if(recommendedMovie != null && typeof(recommendedMovie) != 'undefined') {
             document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(recommendedMovie);
@@ -117,6 +127,11 @@ function WatchRandomMovie() {
 
 //watch the movie that is currently being shown in the UI
 function WatchRecommendedMovie() {
+    if(recommendedMovie == null || typeof(recommendedMovie) == 'undefined') {
+        document.getElementById('recommendations').innerHTML = "Recommendation: <br>Please watch a movie to get a recommendation";
+        return;
+    }
+    
     document.getElementById('movieWatched').innerHTML = GetProcessingString();
     document.getElementById('recommendations').innerHTML = GetProcessingString();
     document.getElementById('prevResults').innerHTML = GetProcessingString();

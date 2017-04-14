@@ -39,7 +39,7 @@ var createdServer = http.createServer(function (req, res) {
 
     var requestedUrl = req.url;
 
-    //console.log("Requested URL: " + requestedUrl);
+    console.log("Requested URL: " + requestedUrl);
  
     if(typeof requestedUrl == 'undefined') 
     {
@@ -62,6 +62,8 @@ var createdServer = http.createServer(function (req, res) {
     });
 
     req.on('end', function() {
+        console.log("Req body: " + reqBody);
+
         var jsonObject = JSON.parse(reqBody);
 
         if(requestedUrl == 'GetRecommendations') { 
@@ -133,7 +135,11 @@ function ProduceRecommendationAndEndRequest(jsonObject, res)
 
         //Go through all lines and see what the user requested
         console.log("Working out a recommendation for: " + jsonObject.UserID);
-        
+
+        if(typeof(jsonObject.Results) != 'undefined' && jsonObject.Results.length > 0) {
+            AddNewMovieToAverageResults(jsonObject);
+        }
+
         if(jsonObject.AverageResults == null || typeof(jsonObject.AverageResults) == 'undefined' || jsonObject.AverageResults == "null") {
             console.log("Average Results was undefined");
         } else {
@@ -144,6 +150,24 @@ function ProduceRecommendationAndEndRequest(jsonObject, res)
         var jsonString = JSON.stringify(jsonObject);
         res.end(jsonString);
     });
+}
+
+function AddNewMovieToAverageResults(jsonObject) {    
+    if(jsonObject.AverageResults == null || typeof(jsonObject.AverageResults) == 'undefined' || jsonObject.AverageResults == "null") {
+        if(typeof(jsonObject.Results) == 'undefined' || jsonObject.Results.length == 0) {
+            return;
+        }
+
+        jsonObject.AverageResults = jsonObject.Results[0];
+    } else {
+        jsonObject.AverageResults.Year = (jsonObject.AverageResults.Year + jsonObject.Results[0].Year)/2;
+        jsonObject.AverageResults.PercentageHorror = (jsonObject.AverageResults.PercentageHorror + jsonObject.Results[0].PercentageHorror)/2;
+        jsonObject.AverageResults.PercentageComedy = (jsonObject.AverageResults.PercentageComedy + jsonObject.Results[0].PercentageComedy)/2;
+        jsonObject.AverageResults.PercentageAction = (jsonObject.AverageResults.PercentageAction + jsonObject.Results[0].PercentageAction)/2;
+        jsonObject.AverageResults.PercentageAdventure = (jsonObject.AverageResults.PercentageAdventure + jsonObject.Results[0].PercentageAdventure)/2;
+        jsonObject.AverageResults.PercentageFantasy = (jsonObject.AverageResults.PercentageFantasy + jsonObject.Results[0].PercentageFantasy)/2;
+        jsonObject.AverageResults.PercentageRomance = (jsonObject.AverageResults.PercentageRomance + jsonObject.Results[0].PercentageRomance)/2;
+    }
 }
 
 function KNearestNeighbour(allMovieTextLines, movie) 
