@@ -187,6 +187,21 @@ function executeRemoteExperiment() {
     cpu.cpuStart();
     SetRemoteResultsAsProcessing();
     
+    if(!fs.existsSync(filePath)) {
+        document.getElementById('remoteSysProcessor').innerHTML = "File does not exist";
+        document.getElementById('edgeNodeProcessor').innerHTML = "";
+        document.getElementById('edgeNodeMemory').innerHTML = "";
+        document.getElementById('remoteSysMemory').innerHTML = "";
+        document.getElementById('remoteResultsParagraph').innerHTML = "";
+        document.getElementById('remoteRecordingFileSize').innerHTML = "";
+        document.getElementById('remoteDataCentreReceivedDataLength').innerHTML = "";
+        document.getElementById('remoteDataCentreSentDataLength').innerHTML = "";
+        document.getElementById('remoteDataCentreCPUUse').innerHTML = "";
+        document.getElementById('remoteDataCentreMemoryUse').innerHTML = "";
+        document.getElementById('remoteStopwatchResults').innerHTML = "";
+        return;
+    }
+    
     var data = fs.readFileSync(filePath);
     
     var urlToPostTo = 'http://connor-pc:3000/api/voicerecognition/PostVoiceRequest';
@@ -282,6 +297,21 @@ function ExecuteRemoteVoiceRecognition() {
     remoteStopwatch.start();
     cpu.cpuStart();
     SetRemoteResultsAsProcessing();
+    
+    if(!fs.existsSync(filePath)) {
+        document.getElementById('remoteSysProcessor').innerHTML = "File does not exist";
+        document.getElementById('edgeNodeProcessor').innerHTML = "";
+        document.getElementById('edgeNodeMemory').innerHTML = "";
+        document.getElementById('remoteSysMemory').innerHTML = "";
+        document.getElementById('remoteResultsParagraph').innerHTML = "";
+        document.getElementById('remoteRecordingFileSize').innerHTML = "";
+        document.getElementById('remoteDataCentreReceivedDataLength').innerHTML = "";
+        document.getElementById('remoteDataCentreSentDataLength').innerHTML = "";
+        document.getElementById('remoteDataCentreCPUUse').innerHTML = "";
+        document.getElementById('remoteDataCentreMemoryUse').innerHTML = "";
+        document.getElementById('remoteStopwatchResults').innerHTML = "";
+        return;
+    }
     
     var data = fs.readFileSync(filePath);
     

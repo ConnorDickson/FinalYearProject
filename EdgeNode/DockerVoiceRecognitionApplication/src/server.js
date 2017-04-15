@@ -46,6 +46,10 @@ var createdServer = http.createServer(function (req, res) {
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
 
+    if(req.method != "POST") {
+        res.end("Please make a POST request");
+    }
+
     var requestedUrl = req.url;
  
     if(typeof requestedUrl == 'undefined') 

@@ -37,6 +37,13 @@ var createdServer = http.createServer(function (req, res) {
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
 
+    console.log("Method: req.method: " + req.method);
+
+    if(req.method != 'POST') {
+        res.end("Please make a POST request");
+        return;
+    }
+
     var requestedUrl = req.url;
 
     console.log("Requested URL: " + requestedUrl);
@@ -64,7 +71,14 @@ var createdServer = http.createServer(function (req, res) {
     req.on('end', function() {
         console.log("Req body: " + reqBody);
 
-        var jsonObject = JSON.parse(reqBody);
+        try {
+            var jsonObject = JSON.parse(reqBody);
+        }
+        catch(err) {
+            console.log("Did not receive valid JSON: " + err.message);
+            res.end(err.message);
+            return;
+        }
 
         if(requestedUrl == 'GetRecommendations') { 
             console.log("Recommendation Request");

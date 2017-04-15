@@ -1,7 +1,6 @@
 FROM edgepi01:5000/cachingbase:latest 
 
-RUN npm install python-shell && \
-    npm install redis && \
+RUN npm install redis && \
     npm install request && \
     npm install http-proxy --save
 

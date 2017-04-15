@@ -85,10 +85,32 @@ function ExecuteVoiceRecognitionLoadBalance(callback) {
     
     var numberOfRequests = parseInt(document.getElementById('NumberOfVoiceRecognitionRequests').value);
 
-    if(numberOfRequests > 100) {
-        document.getElementById('VoiceRecognitionResults').innerHTML = "Please make less than 100 requests";
+    var failure = false;
+    
+    if(numberOfRequests > 50) {
+        document.getElementById('VoiceRecognitionResults').innerHTML = "Please make less than 50 requests";
+        failure = true;
+    } else if (isNaN(numberOfRequests)) {
+        document.getElementById('VoiceRecognitionResults').innerHTML = "Please enter a number of requests";
+        failure = true;
+    } else if (numberOfRequests == 0 || numberOfRequests == 1) {
+        document.getElementById('VoiceRecognitionResults').innerHTML = "Please enter more than 1 requests";
+        failure = true;
+    }
+    
+    if(failure) {
+        document.getElementById('localStopwatchResults').innerHTML = "";
+        document.getElementById('averageRequestTimeResult').innerHTML = "";
+        document.getElementById('averageLocalCPUResult').innerHTML = "";
+        document.getElementById('averageRemoteCPUResult').innerHTML = "";
+        document.getElementById('averageDataCentreCPUResult').innerHTML = "";
+        document.getElementById('averageLocalRAMResult').innerHTML = "";
+        document.getElementById('averageRemoteRAMResult').innerHTML = "";
+        document.getElementById('averageDataCentreRAMResult').innerHTML = "";
+        document.getElementById('requestsLeft').innerHTML = "";
         return;
     }
+    
     
     document.getElementById('localStopwatchResults').innerHTML = "Processing...";
     document.getElementById('averageRequestTimeResult').innerHTML = "Processing...";

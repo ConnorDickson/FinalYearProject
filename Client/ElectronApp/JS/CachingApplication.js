@@ -45,6 +45,10 @@ onload = () =>
 
 function performExperiment() 
 {
+    if(document.getElementById("urlAddress").value == "") {
+        return;
+    }
+    
     //Execute Warmup
     document.getElementById("requestResult").innerHTML = "Warmup Time: ";
     var totalNumberOfRequests = 1;

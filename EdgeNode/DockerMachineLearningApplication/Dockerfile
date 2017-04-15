@@ -1,8 +1,7 @@
 FROM hypriot/rpi-node:boron
 
 RUN npm install request && \
-    npm install http-proxy --save && \
-    npm install big-integer
+    npm install http-proxy --save
 
 ADD . .
 

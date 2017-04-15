@@ -1,8 +1,6 @@
 //https://www.burakkanber.com/blog/machine-learning-in-js-k-nearest-neighbor-part-1/
 //http://jsfiddle.net/bkanber/hevFK/?utm_source=website&utm_medium=embed&utm_campaign=hevFK
 //This code is based on the website above, it had to be adapted for my system
-var bigInt = require('big-integer');
-
 var Node = function(object) {
     for (var key in object)
     {
