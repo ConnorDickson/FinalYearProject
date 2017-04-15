@@ -1,6 +1,8 @@
 //https://www.burakkanber.com/blog/machine-learning-in-js-k-nearest-neighbor-part-1/
 //http://jsfiddle.net/bkanber/hevFK/?utm_source=website&utm_medium=embed&utm_campaign=hevFK
 //This code is based on the website above, it had to be adapted for my system
+
+//Constructor
 var Node = function(object) {
     for (var key in object)
     {
@@ -8,7 +10,10 @@ var Node = function(object) {
     }
 };
 
+//Method on the node object to measure distance between this node and all of it's neighbours
 Node.prototype.measureDistances = function(title_range_obj, year_range_obj, percent_horror_range_obj, percent_comedy_range_obj, percent_action_range_obj, percent_adventure_range_obj, percent_fantasy_range_obj, percent_romance_range_obj, contains_violence_range_obj, contains_sexual_scenes_range_obj, contains_drug_use_range_obj, contains_flashing_images_range_obj) {
+
+    //Find out the range of the metric passed in
     var year_range = year_range_obj.max - year_range_obj.min;
     var percent_horror_range = percent_horror_range_obj.max - percent_horror_range_obj.min;
     var percent_comedy_range = percent_comedy_range_obj.max - percent_comedy_range_obj.min;
@@ -16,8 +21,8 @@ Node.prototype.measureDistances = function(title_range_obj, year_range_obj, perc
     var percent_adventure_range = percent_adventure_range_obj.max - percent_adventure_range_obj.min;
     var percent_fantasy_range = percent_fantasy_range_obj.max - percent_fantasy_range_obj.min;
     var percent_romance_range = percent_romance_range_obj.max - percent_romance_range_obj.min;
-    //Have not added booleans yet
-
+    
+    //For each of the neighbours calculate the distance between that node and this node
     for (var i in this.neighbors)
     {
         /* Just shortcut syntax */
@@ -56,42 +61,14 @@ Node.prototype.measureDistances = function(title_range_obj, year_range_obj, perc
     }
 };
 
+//Sort the neighbours by distance as to find the closest one
 Node.prototype.sortByDistance = function() {
     this.neighbors.sort(function (a, b) {
         return a.distance - b.distance;
     });
 };
 
-Node.prototype.guessType = function(k) {
-    var types = {};
-
-    for (var i in this.neighbors.slice(0, k))
-    {
-        var neighbor = this.neighbors[i];
-
-        if (!types[neighbor.Year])
-        {
-            types[neighbor.Year] = 0;
-        }
-
-        types[neighbor.Year] += 1;
-    }
-
-    var guess = {Year: false, count: 0};
-    for (var type in types)
-    {
-        if (types[type] > guess.count)
-        {
-            guess.Year = type;
-            guess.count = types[type];
-        }
-    }
-
-    this.guess = guess;
-
-    return types;
-};
-
+//Setup the return methods of the module
 module.exports = {
     Node
 };

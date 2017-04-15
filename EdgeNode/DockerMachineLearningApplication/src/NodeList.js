@@ -3,15 +3,18 @@
 //This code is based on the website above, it had to be adapted for my system
 var Node = require('./Node.js').Node;
 
+//Constructor
 var NodeList = function(k) {
     this.nodes = [];
     this.k = k;
 };
 
+//Add method to add a node to the current list
 NodeList.prototype.add = function(node) {
     this.nodes.push(node);
 };
 
+//Method used to calculate and sort distance for nearest neighbours
 NodeList.prototype.determineUnknown = function() {
     this.calculateRanges();
 
@@ -38,14 +41,12 @@ NodeList.prototype.determineUnknown = function() {
            this.nodes[i].measureDistances(null, this.Year, this.PercentageHorror, this.PercentageComedy, this.PercentageAction, this.PercentageAdventure, this.PercentageFantasy, this.PercentageRomance, null, null, null, null);
 
             /* Sort by distance */
-            this.nodes[i].sortByDistance();
-
-            /* Guess type */
-            this.nodes[i].guessType(this.k);
+            this.nodes[i].sortByDistance();            
         }
     }
 };
 
+//Evaluate the range of values for each metric in the collection of movies
 NodeList.prototype.calculateRanges = function() {
     this.Year = {min: 1000000, max: 0};
     this.PercentageHorror = {min: 1000000, max: 0};
@@ -136,6 +137,7 @@ NodeList.prototype.calculateRanges = function() {
     }
 };
 
+//Return K-NN movies
 NodeList.prototype.getNN = function() {
     for(var i in this.nodes) {
         if(this.nodes[i].evaluate) {
@@ -148,6 +150,7 @@ NodeList.prototype.getNN = function() {
     }
 };
 
+//return methods for module
 module.exports = {
     NodeList
 };

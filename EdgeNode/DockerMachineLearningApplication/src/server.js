@@ -1,3 +1,4 @@
+//Import required modules
 var util = require('util');
 var os = require('os');
 var http = require('http');
@@ -7,6 +8,7 @@ var fs = require('fs');
 var Node = require('./Node.js').Node;
 var NodeList = require('./NodeList.js').NodeList;
 
+//Global variables
 var externalPort = process.env.port || 3005;
 var internalPort = 3502;
 var movieDataFilePath = "../MLResults/MovieVectors.txt";
@@ -16,17 +18,21 @@ var dataCentreWatchMovieURL = "http://connor-pc:3000/api/MachineLearning/WatchMo
 
 console.log("Starting...");
 
+//Send requests to internal server
 var proxyServer = httpProxy.createProxyServer({
     target: 'http://localhost:' + internalPort,
     toProxy: true
 });
 
+//Handled errors with the proxy
 proxyServer.on('error', function(err) {
     console.error("ERROR WITH PROXY SERVER:\n" + err.stack);
 });
 
+//Listen on the port that wil be made available with the deployment script
 proxyServer.listen(externalPort);
 
+//Create the internal server
 var createdServer = http.createServer(function (req, res) {
     //Set error handlers
     req.on('error', function(err) {
@@ -39,6 +45,7 @@ var createdServer = http.createServer(function (req, res) {
 
     console.log("Method: req.method: " + req.method);
 
+    //verify it's the type of request wanted
     if(req.method != 'POST') {
         res.end("Please make a POST request");
         return;
@@ -62,6 +69,7 @@ var createdServer = http.createServer(function (req, res) {
         }
     }
 
+    //Receive POST JSON data
     var reqBody = "";
 
     req.on('data', function(chunk) {
@@ -71,6 +79,7 @@ var createdServer = http.createServer(function (req, res) {
     req.on('end', function() {
         console.log("Req body: " + reqBody);
 
+        //Validate the server receieved valid JSON
         try {
             var jsonObject = JSON.parse(reqBody);
         }
@@ -80,6 +89,7 @@ var createdServer = http.createServer(function (req, res) {
             return;
         }
 
+        //Route requests
         if(requestedUrl == 'GetRecommendations') { 
             console.log("Recommendation Request");
             ProduceRecommendationAndEndRequest(jsonObject, res);
@@ -101,6 +111,8 @@ createdServer.listen(internalPort);
  
 console.log("Started Node.js server");
 
+//This is a generic method that makes a post request to the URL provided with the JSON data provided 
+// and produces a recommendation based on the information returned
 function SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCentreURL) {
     var jsonData = JSON.stringify(jsonObject);
 
@@ -121,10 +133,12 @@ function SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCe
     });   
 }
 
+//Use K-NN to produce a recommendation and then send the result back as part of the message to the client
 function ProduceRecommendationAndEndRequest(jsonObject, res) 
 {
     console.log("Handling recommendation");
-
+    
+    //Read the file on disk async as to now block other operations
     fs.readFile(movieDataFilePath, (localErr, movieData) => {
         if(localErr) {
             console.log("Local Error: " + localErr);
@@ -150,23 +164,29 @@ function ProduceRecommendationAndEndRequest(jsonObject, res)
         //Go through all lines and see what the user requested
         console.log("Working out a recommendation for: " + jsonObject.UserID);
 
+        //If the user has watched a movie during this request add it to 
+        // the average results before producing a recommendation
         if(typeof(jsonObject.Results) != 'undefined' && jsonObject.Results.length > 0) {
             AddNewMovieToAverageResults(jsonObject);
         }
 
+        
         if(jsonObject.AverageResults == null || typeof(jsonObject.AverageResults) == 'undefined' || jsonObject.AverageResults == "null") {
             console.log("Average Results was undefined");
         } else {
+            //Perform KNN
             var nearestNeighbour = KNearestNeighbour(allMovieTextLines, jsonObject.AverageResults);
             jsonObject.Recommendation = nearestNeighbour;
         }
         
+        //End the request with the required data
         var jsonString = JSON.stringify(jsonObject);
         res.end(jsonString);
     });
 }
 
 function AddNewMovieToAverageResults(jsonObject) {    
+    //If the user did not have a previous average (this is their first movie) the average is just the movie
     if(jsonObject.AverageResults == null || typeof(jsonObject.AverageResults) == 'undefined' || jsonObject.AverageResults == "null") {
         if(typeof(jsonObject.Results) == 'undefined' || jsonObject.Results.length == 0) {
             return;
@@ -174,6 +194,7 @@ function AddNewMovieToAverageResults(jsonObject) {
 
         jsonObject.AverageResults = jsonObject.Results[0];
     } else {
+        //If the user has watched movies before add the new movie to the average
         jsonObject.AverageResults.Year = (jsonObject.AverageResults.Year + jsonObject.Results[0].Year)/2;
         jsonObject.AverageResults.PercentageHorror = (jsonObject.AverageResults.PercentageHorror + jsonObject.Results[0].PercentageHorror)/2;
         jsonObject.AverageResults.PercentageComedy = (jsonObject.AverageResults.PercentageComedy + jsonObject.Results[0].PercentageComedy)/2;
@@ -189,6 +210,7 @@ function KNearestNeighbour(allMovieTextLines, movie)
     //This 3 determins k nn
     nodes = new NodeList(3);
 
+    //add all the movies to the nodelist
     for (var i = 0; i < allMovieTextLines.length; i++)
     {
         var stringToParse = allMovieTextLines[i];
@@ -200,11 +222,15 @@ function KNearestNeighbour(allMovieTextLines, movie)
         nodes.add( new Node(movieToAdd));
     }
 
+    //Add the value that we want to find the closest movie to (the average of the movies)
     movie.evaluate = true;
     nodes.add(new Node(movie));
+    //Perform KNN
     nodes.determineUnknown();
+    //Return KNN
     var nearestNeighbours = nodes.getNN();
-   
+
+    //Ensure the recommendation isn't the movie they just watched
     if(nearestNeighbours[0].ID == movie.ID) {
         return nearestNeighbours[1];
     } else {
@@ -212,6 +238,7 @@ function KNearestNeighbour(allMovieTextLines, movie)
     }
 }
 
+//Send the user's movie watched to the data centre to be stored
 function SendUserViewToDataCentre(jsonObject) 
 {
     var requestOptions = {
@@ -242,6 +269,7 @@ function SendUserViewToDataCentre(jsonObject)
     });   
 }
 
+//Retreive K-Means clustered movies from the data centre upon deployment
 function GetMoviesFromDataCentre() 
 {
     request.get(dataCentreGetMoviesURL, function(error,response,body) {
@@ -253,11 +281,12 @@ function GetMoviesFromDataCentre()
 
             var completedString = "";
 
+            //Get collection of movies for writing to disk
             returnedJson.Results.forEach(function(result) {
-                //completedString += result.Title + result.Year + result.PercentageHorror + result.ContainsViolence+ ";\r\n";
-                completedString += JSON.stringify(result) + "\r\n";
+                 completedString += JSON.stringify(result) + "\r\n";
             });
 
+            //Write movies to disk
             fs.writeFile(movieDataFilePath, completedString, (err) => {
                 if(err) {
                     console.log("Error with writing to remote file: " + err);
@@ -269,4 +298,5 @@ function GetMoviesFromDataCentre()
     });   
 }
 
+//Make call upon deployment
 GetMoviesFromDataCentre();

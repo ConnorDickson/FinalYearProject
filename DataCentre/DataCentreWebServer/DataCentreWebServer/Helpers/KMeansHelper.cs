@@ -1,7 +1,6 @@
 ﻿using DataCentreWebServer.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace DataCentreWebServer.MachineLearning
 {
