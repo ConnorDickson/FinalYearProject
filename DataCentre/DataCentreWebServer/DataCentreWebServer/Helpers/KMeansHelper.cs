@@ -25,8 +25,7 @@ namespace DataCentreWebServer.MachineLearning
             // ex: [2 1 0 0 2 2] means tuple 0 is cluster 2, tuple 1 is cluster 1, tuple 2 is cluster 0, tuple 3 is cluster 0, etc.
             // an alternative clustering DS to save space is to use the .NET BitArray class
 
-            //Movie[] normalisedData = Normalized(movies); // so large values don't dominate
-            var normalisedData = movies;
+            var data = movies;
 
             bool changed = true; // was there a change in at least one cluster assignment?
             bool success = true; // were all means able to be computed? (no zero-count clusters)
@@ -39,19 +38,19 @@ namespace DataCentreWebServer.MachineLearning
             //    update means
             // end loop
 
-            int[] clustering = InitClustering(normalisedData.Length, numClusters, 0); // semi-random initialization
+            int[] clustering = InitClustering(data.Length, numClusters, 0); // semi-random initialization
             //12 is the number of vectors in the movie object
             Movie[] means = Allocate(numClusters); // small convenience
 
-            int maxCount = normalisedData.Length * 10; // sanity check
+            int maxCount = data.Length * 10; // sanity check
             int ct = 0;
             while (changed && success && ct < maxCount)
             {
                 LoggerHelper.Log("Did one loop of clustering");
 
                 ++ct; // k-means typically converges very quickly
-                success = UpdateMeans(normalisedData, clustering, means); // compute new cluster means if possible. no effect if fail
-                changed = UpdateClustering(normalisedData, clustering, means); // (re)assign tuples to clusters. no effect if fail
+                success = UpdateMeans(data, clustering, means); // compute new cluster means if possible. no effect if fail
+                changed = UpdateClustering(data, clustering, means); // (re)assign tuples to clusters. no effect if fail
             }
 
             // consider adding means[][] as an out parameter - the final means could be computed
@@ -63,88 +62,6 @@ namespace DataCentreWebServer.MachineLearning
             // such as the average distance between cluster means, or the average distance between tuples in 
             // a cluster, or a weighted combination of both
             return clustering;
-        }
-
-        private Movie[] Normalized(Movie[] movies)
-        {
-            // normalize raw data by computing (x - mean) / stddev
-            // primary alternative is min-max:
-            // v' = (v - min) / (max - min)
-
-            // make a copy of input data
-            Movie[] movieCopy = new Movie[movies.Length];
-            Array.Copy(movies, movieCopy, movies.Length);
-            
-            double yearTotal = 0.0;
-            double percentageHorrorTotal = 0.0;
-            double percentageComedyTotal = 0.0;
-            double percentageActionTotal = 0.0;
-            double percentageAdventureTotal = 0.0;
-            double percentageFantasyTotal = 0.0;
-            double percentageRomanceTotal = 0.0;
-            double containsViolenceTotal = 0.0;
-            double containsSexualScenesTotal = 0.0;
-            double containsDrugUseTotal = 0.0;
-            double containsFlashingImagesTotal = 0.0;
-
-            for(int j = 0; j < movieCopy.Length; j++)
-            {
-                yearTotal += movieCopy[j].Year;
-                percentageHorrorTotal += movieCopy[j].PercentageHorror;
-                percentageComedyTotal += movieCopy[j].PercentageComedy;
-                percentageActionTotal += movieCopy[j].PercentageAction;
-                percentageAdventureTotal += movieCopy[j].PercentageAdventure;
-                percentageFantasyTotal += movieCopy[j].PercentageFantasy;
-                percentageRomanceTotal += movieCopy[j].PercentageRomance;
-            }
-
-            double yearMean = yearTotal / movieCopy.Length;
-            double percentageHorrorMean = percentageHorrorTotal / movieCopy.Length;
-            double percentageComedyMean = percentageComedyTotal / movieCopy.Length;
-            double percentageActionMean = percentageActionTotal / movieCopy.Length;
-            double percentageAdventureMean = percentageAdventureTotal / movieCopy.Length;
-            double percentageFantasyMean = percentageFantasyTotal / movieCopy.Length;
-            double percentageRomanceMean = percentageRomanceTotal / movieCopy.Length;
-
-            double yearSum = 0.0;
-            double percentageHorrorSum = 0.0;
-            double percentageComedySum = 0.0;
-            double percentageActionSum = 0.0;
-            double percentageAdventureSum = 0.0;
-            double percentageFantasySum = 0.0;
-            double percentageRomanceSum = 0.0;
-
-            for (int j = 0; j < movieCopy.Length; j++)
-            {
-                yearSum += (movieCopy[j].Year - yearMean) * (movieCopy[j].Year - yearMean);
-                percentageHorrorSum += (movieCopy[j].PercentageHorror - percentageHorrorMean) * (movieCopy[j].PercentageHorror - percentageHorrorMean);
-                percentageComedySum += (movieCopy[j].PercentageComedy - percentageComedyMean) * (movieCopy[j].PercentageComedy - percentageComedyMean);
-                percentageActionSum += (movieCopy[j].PercentageAction - percentageActionMean) * (movieCopy[j].PercentageAction - percentageActionMean);
-                percentageAdventureSum += (movieCopy[j].PercentageAdventure - percentageAdventureMean) * (movieCopy[j].PercentageAdventure - percentageAdventureMean);
-                percentageFantasySum += (movieCopy[j].PercentageFantasy - percentageFantasyMean) * (movieCopy[j].PercentageFantasy - percentageFantasyMean);
-                percentageRomanceSum += (movieCopy[j].PercentageRomance - percentageRomanceMean) * (movieCopy[j].PercentageRomance - percentageRomanceMean);
-            }
-
-            double yearSd = yearSum/ movieCopy.Length;
-            double percentageHorrorSd = percentageHorrorSum / movieCopy.Length;
-            double percentageComedySd = percentageComedySum / movieCopy.Length;
-            double percentageActionSd = percentageActionSum / movieCopy.Length;
-            double percentageAdventureSd = percentageAdventureSum / movieCopy.Length;
-            double percentageFantasySd = percentageFantasySum / movieCopy.Length;
-            double percentageRomanceSd = percentageRomanceSum / movieCopy.Length;
-
-            for (int j = 0; j < movieCopy.Length; j++)
-            {
-                movieCopy[j].Year = Convert.ToInt32((movieCopy[j].Year - yearMean) / yearSd);
-                movieCopy[j].PercentageHorror = (movieCopy[j].PercentageHorror - percentageHorrorMean) / percentageHorrorSd;
-                movieCopy[j].PercentageComedy = (movieCopy[j].PercentageComedy - percentageComedyMean) / percentageComedySd;
-                movieCopy[j].PercentageAction = (movieCopy[j].PercentageAction - percentageActionMean) / percentageActionSd;
-                movieCopy[j].PercentageAdventure = (movieCopy[j].PercentageAdventure - percentageAdventureMean) / percentageAdventureSd;
-                movieCopy[j].PercentageFantasy = (movieCopy[j].PercentageFantasy - percentageFantasyMean) / percentageFantasySd;
-                movieCopy[j].PercentageRomance = (movieCopy[j].PercentageRomance - percentageRomanceMean) / percentageRomanceSd;
-            }
-
-            return movieCopy;
         }
 
         private int[] InitClustering(int numTuples, int numClusters, int randomSeed)
