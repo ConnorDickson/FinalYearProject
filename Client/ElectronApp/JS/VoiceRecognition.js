@@ -22,7 +22,8 @@ navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia
 var localExecutionCounter = 0;
 var localExecuionsRequired = 1;
 
-function ExecuteLocalExperiment() {
+function ExecuteLocalExperiment() 
+{
     localExecutionCounter = 0;
     localTimeTakenTotalResults = [];
     localMemoryTotalResults = [];
@@ -36,12 +37,14 @@ function ExecuteLocalExperiment() {
     var timeBetweenRequests = 10000;
     
     //Clear cache after X time and print to UI saying that's what is going to happen
-    for(var requestNumber = 0; requestNumber < localExecuionsRequired; requestNumber++) {        
+    for(var requestNumber = 0; requestNumber < localExecuionsRequired; requestNumber++) 
+    {        
         setTimeout(executeLocalExperiment, (timeBetweenRequests * requestNumber));
     }
 }
 
-function executeLocalExperiment() {
+function executeLocalExperiment() 
+{
     localStopwatch.reset();
     localStopwatch.start();
     SetLocalResultsAsProcessing();
@@ -61,13 +64,15 @@ ipc.on('receive-voice-translation-experiment', function(event,response) {
     
     localExecutionCounter++;
     
-    if(localExecutionCounter == localExecuionsRequired) {
+    if(localExecutionCounter == localExecuionsRequired) 
+    {
         document.getElementById('localResultsParagraph').innerHTML = "You said: \"" + response.trim() + "\"";
         document.getElementById('localStopwatchResults').innerHTML = "";
         document.getElementById('localSysMemory').innerHTML = "";
         document.getElementById('localSysProcessor').innerHTML = "";
         
-        for(var i = 0; i < localTimeTakenTotalResults.length; i++) {
+        for(var i = 0; i < localTimeTakenTotalResults.length; i++) 
+        {
             document.getElementById('localStopwatchResults').innerHTML = document.getElementById('localStopwatchResults').innerHTML + localTimeTakenTotalResults[i] + " "; 
             document.getElementById('localSysMemory').innerHTML = document.getElementById('localSysMemory').innerHTML + localMemoryTotalResults[i] + " ";
             document.getElementById('localSysProcessor').innerHTML = document.getElementById('localSysProcessor').innerHTML +  localProcessorTotalResults[i] + " ";
@@ -98,11 +103,14 @@ var onSuccess = function(s) {
 //start or stop recording
 function ToggleRecording() 
 {
-    if(!currentlyRecording) {
+    if(!currentlyRecording) 
+    {
         document.getElementById("RecordingButton").innerHTML = "Stop Recording";
         currentlyRecording = true;
         StartRecording();
-    } else {
+    } 
+    else 
+    {
         document.getElementById("RecordingButton").innerHTML = "Start Recording";
         currentlyRecording = false;
         StopRecording();
@@ -112,9 +120,12 @@ function ToggleRecording()
 //start the recording
 function StartRecording() 
 {
-    if (navigator.getUserMedia) {
+    if (navigator.getUserMedia) 
+    {
         navigator.getUserMedia({audio: true}, onSuccess, onFail);
-    } else {
+    } 
+    else 
+    {
         console.log('navigator.getUserMedia not present');
     }
 }
@@ -136,7 +147,8 @@ ipc.on('receive-voice-translation', function(event,response) {
 });
 
 //make a call to the Node.js main thread that can spawn a new process and execute voice recognition
-function ExecuteVoiceRecognitionScript() {
+function ExecuteVoiceRecognitionScript() 
+{
     localStopwatch.reset();
     localStopwatch.start();
     SetLocalResultsAsProcessing();
@@ -157,7 +169,8 @@ var dataCentreMemoryTotalResults = [];
 var remoteExecutionCounter = 0;
 var remoteExecuionsRequired = 1;
 
-function ExecuteRemoteExperiment() {
+function ExecuteRemoteExperiment() 
+{
     remoteExecutionCounter = 0;
     remoteTimeTakenTotalResults = [];
     remoteMemoryTotalResults = [];
@@ -176,18 +189,21 @@ function ExecuteRemoteExperiment() {
     var timeBetweenRequests = 10000;
     
     //Clear cache after X time and print to UI saying that's what is going to happen
-    for(var requestNumber = 0; requestNumber < remoteExecuionsRequired; requestNumber++) {        
+    for(var requestNumber = 0; requestNumber < remoteExecuionsRequired; requestNumber++) 
+    {        
         setTimeout(executeRemoteExperiment, (timeBetweenRequests * requestNumber));
     }
 }
 
-function executeRemoteExperiment() {
+function executeRemoteExperiment() 
+{
     remoteStopwatch.reset();
     remoteStopwatch.start();
     cpu.cpuStart();
     SetRemoteResultsAsProcessing();
     
-    if(!fs.existsSync(filePath)) {
+    if(!fs.existsSync(filePath)) 
+    {
         document.getElementById('remoteSysProcessor').innerHTML = "File does not exist";
         document.getElementById('edgeNodeProcessor').innerHTML = "";
         document.getElementById('edgeNodeMemory').innerHTML = "";
@@ -251,7 +267,8 @@ function executeRemoteExperiment() {
             
             remoteExecutionCounter++;
             
-            if(remoteExecutionCounter == remoteExecuionsRequired) {
+            if(remoteExecutionCounter == remoteExecuionsRequired) 
+            {
                 document.getElementById('remoteSysMemory').innerHTML = "";
                 document.getElementById('remoteSysProcessor').innerHTML = "";
                 document.getElementById('edgeNodeProcessor').innerHTML = "";
@@ -263,7 +280,8 @@ function executeRemoteExperiment() {
                 document.getElementById('remoteResultsParagraph').innerHTML = "You said: \"" + jsonResult.VoiceRecognitionResponse.trim() + "\"";
                 document.getElementById('remoteStopwatchResults').innerHTML = "";
 
-                for(var i = 0; i < remoteTimeTakenTotalResults.length; i++) {
+                for(var i = 0; i < remoteTimeTakenTotalResults.length; i++) 
+                {
                     document.getElementById('remoteStopwatchResults').innerHTML = document.getElementById('remoteStopwatchResults').innerHTML + remoteTimeTakenTotalResults[i] + " "; 
                     document.getElementById('remoteSysMemory').innerHTML = document.getElementById('remoteSysMemory').innerHTML + remoteMemoryTotalResults[i] + " ";
                     document.getElementById('remoteSysProcessor').innerHTML = document.getElementById('remoteSysProcessor').innerHTML + remoteProcessorTotalResults[i] + " ";
@@ -292,13 +310,15 @@ function executeRemoteExperiment() {
 }
 
 //Make a post request to the DataCentre that is proxied through the Edge Node
-function ExecuteRemoteVoiceRecognition() {
+function ExecuteRemoteVoiceRecognition() 
+{
     remoteStopwatch.reset();
     remoteStopwatch.start();
     cpu.cpuStart();
     SetRemoteResultsAsProcessing();
     
-    if(!fs.existsSync(filePath)) {
+    if(!fs.existsSync(filePath))
+    {
         document.getElementById('remoteSysProcessor').innerHTML = "File does not exist";
         document.getElementById('edgeNodeProcessor').innerHTML = "";
         document.getElementById('edgeNodeMemory').innerHTML = "";
@@ -351,7 +371,8 @@ function ExecuteRemoteVoiceRecognition() {
 }
 
 //update the left hand side of the table as processing
-function SetLocalResultsAsProcessing() {
+function SetLocalResultsAsProcessing() 
+{
     document.getElementById('localSysProcessor').innerHTML = "Processing...";
     document.getElementById('localSysMemory').innerHTML = "Processing...";
     document.getElementById('localResultsParagraph').innerHTML = "Processing...";
@@ -359,7 +380,8 @@ function SetLocalResultsAsProcessing() {
 }
 
 //update the right hand side of the table as processing
-function SetRemoteResultsAsProcessing() {
+function SetRemoteResultsAsProcessing() 
+{
     document.getElementById('remoteSysProcessor').innerHTML = "Processing...";
     document.getElementById('edgeNodeProcessor').innerHTML =  "Processing...";
     document.getElementById('edgeNodeMemory').innerHTML =  "Processing...";
@@ -373,7 +395,8 @@ function SetRemoteResultsAsProcessing() {
 }
 
 //update the left hand side of the table as finished by recording metrics and displaying them in the UI
-function SetLocalResultsAsFinished(response) {
+function SetLocalResultsAsFinished(response) 
+{
     var load = cpu.cpuEnd();
     localStopwatch.stop();
     var freeMemory = cpu.freeMemory();
@@ -387,7 +410,8 @@ function SetLocalResultsAsFinished(response) {
 }
 
 //set the right hand side of the table as finished by recording metrics and displaying them in the UI
-function SetRemoteResultsAsFinished(responseData) {
+function SetRemoteResultsAsFinished(responseData) 
+{
     var load = cpu.cpuEnd();
     remoteStopwatch.stop();
     var freeMemory = cpu.freeMemory();

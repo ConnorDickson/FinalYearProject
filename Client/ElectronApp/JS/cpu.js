@@ -5,22 +5,24 @@ const os = require('os');
 var start;
 
 // I used some logic from here for these methods: https://gist.github.com/bag-man/5570809
-function cpuAverage() {
+function cpuAverage() 
+{
 
   //Initialise sum of idle and time of cores and fetch CPU info
   var totalIdle = 0, totalTick = 0;
   var cpus = os.cpus();
 
   //Loop through CPU cores
-  for(var i = 0, len = cpus.length; i < len; i++) {
-
+  for(var i = 0, len = cpus.length; i < len; i++) 
+  {
     //Select CPU core
     var cpu = cpus[i];
 
     //Total up the time in the cores tick
-    for(type in cpu.times) {
+    for(type in cpu.times) 
+    {
       totalTick += cpu.times[type];
-   }     
+    }     
 
     //Total up the idle time of the core
     totalIdle += cpu.times.idle;
@@ -31,7 +33,8 @@ function cpuAverage() {
 }
 
 //works out the average CPU use since recording started
-var cpuEnd = function() {
+var cpuEnd = function() 
+{
     var end = cpuAverage();
     
     var dif = {};
@@ -45,7 +48,8 @@ var cpuEnd = function() {
 }
 
 //records the starting measurement
-var cpuStart = function() {
+var cpuStart = function() 
+{
     start = cpuAverage();    
 }
 

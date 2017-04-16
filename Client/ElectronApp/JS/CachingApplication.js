@@ -45,7 +45,8 @@ onload = () =>
 
 function performExperiment() 
 {
-    if(document.getElementById("urlAddress").value == "") {
+    if(document.getElementById("urlAddress").value == "") 
+    {
         return;
     }
     
@@ -55,7 +56,8 @@ function performExperiment()
     var timeBetweenRequests = 20000;
     
     //Clear cache after X time and print to UI saying that's what is going to happen
-    for(var requestNumber = 0; requestNumber < totalNumberOfRequests; requestNumber++) {        
+    for(var requestNumber = 0; requestNumber < totalNumberOfRequests; requestNumber++) 
+    {        
         setTimeout(NavigateBrowser, (timeBetweenRequests * requestNumber));
     }
     
@@ -74,7 +76,8 @@ function performExperimentWithoutCache()
     var timeBetweenRequests = 10000;
     
     //Clear cache after X time and print to UI saying that's what is going to happen
-    for(var requestNumber = 0; requestNumber < totalNumberOfRequests; requestNumber++) {        
+    for(var requestNumber = 0; requestNumber < totalNumberOfRequests; requestNumber++) 
+    {        
         setTimeout(NavigateBrowser, (timeBetweenRequests * requestNumber));
     }
     
@@ -82,7 +85,8 @@ function performExperimentWithoutCache()
     setTimeout(executeExperimentWithoutCache, (timeBetweenRequests * totalNumberOfRequests));
 }
 
-function executeExperiment() {
+function executeExperiment() 
+{
     document.getElementById("requestResult").innerHTML = "Requests: ";
     //10 cached and 10 new
     var totalNumberOfRequests = 2;
@@ -90,8 +94,10 @@ function executeExperiment() {
     var timeToClearCache = 5000;
     
     //Clear cache after X time and print to UI saying that's what is going to happen
-    for(var requestNumber = 0; requestNumber < totalNumberOfRequests; requestNumber++) {
-        if((requestNumber % 2) == 0 && requestNumber != 0) {
+    for(var requestNumber = 0; requestNumber < totalNumberOfRequests; requestNumber++) 
+    {
+        if((requestNumber % 2) == 0 && requestNumber != 0) 
+        {
             setTimeout(ClearCache, ((timeBetweenRequests * requestNumber) - timeToClearCache));
         }
         
@@ -102,14 +108,16 @@ function executeExperiment() {
     setTimeout(ClearAndPrintResults, (timeBetweenRequests * totalNumberOfRequests) + timeBetweenRequests);
 }
 
-function executeExperimentWithoutCache() {
+function executeExperimentWithoutCache() 
+{
     document.getElementById("requestResult").innerHTML = "Requests (Without Cache): ";
     //10 cached and 10 new
     var totalNumberOfRequests = 10;
     var timeBetweenRequests = 10000;
         
     //Clear cache after X time and print to UI saying that's what is going to happen
-    for(var requestNumber = 1; requestNumber < totalNumberOfRequests; requestNumber++) {
+    for(var requestNumber = 1; requestNumber < totalNumberOfRequests; requestNumber++) 
+    {
         setTimeout(NavigateBrowser, (timeBetweenRequests * requestNumber));
     }
     
@@ -127,18 +135,19 @@ function add(a,b)
 function ClearAndPrintResults() 
 {
     //If there are previous results (not the first execution);
-    if(previousResults.length > 0 && !clearCacheRequest) {
+    if(previousResults.length > 0 && !clearCacheRequest) 
+    {
         var totalTime = previousResults.reduce(add,0);
         document.getElementById("requestResult").innerHTML = document.getElementById("requestResult").innerHTML + totalTime.toFixed(2) + " ";
     }
 
     //if ClearCache result don't print
     //We know the timings of this 
-    if(clearCacheRequest) {
+    if(clearCacheRequest) 
+    {
         document.getElementById("requestResult").innerHTML = document.getElementById("requestResult").innerHTML + "(C) ";
         clearCacheRequest = false;
     }
-    
     
     previousResults = [];
     failedLoad = false;

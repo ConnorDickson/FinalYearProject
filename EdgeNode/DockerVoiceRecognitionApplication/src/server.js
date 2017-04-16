@@ -46,7 +46,8 @@ var createdServer = http.createServer(function (req, res) {
         console.error("RESPONSE ERROR:\n" + err.stack);
     });
 
-    if(req.method != "POST") {
+    if(req.method != "POST") 
+    {
         res.end("Please make a POST request");
     }
 
@@ -84,10 +85,13 @@ var createdServer = http.createServer(function (req, res) {
             console.log("Wrote file to disk successfully");
             //Check if the user want's the request to be pre-processed and
             // if the system is capable of handling it
-            if(req.headers['preprocess-request'] == 'true') {// && !SystemUnderStress()) {
+            if(req.headers['preprocess-request'] == 'true') 
+            {// && !SystemUnderStress()) {
                 console.log('Preprocess request by performing voice recognition on edge node');
                 PreProcessVoiceRecognition(fileName, requestedUrl, res);
-            } else {
+            } 
+            else 
+            {
                 console.log('Forward request to data centre for processing');
                 ExecuteRemoteVoiceRecognition(fileName, requestedUrl, res);
             }
@@ -142,9 +146,12 @@ function PreProcessVoiceRecognition(fileName, requestedUrl, res)
         };
 
         request.post(requestOptions, function(error, response, body) {
-            if(error) {
+            if(error) 
+            {
                 console.log("Error with remote request: " + error);
-            } else {
+            } 
+            else 
+            {
                 //console.log("Remote PC Body: " + body);
                 var dataFromDataCentre = JSON.parse(body);
                 var dataToReturn = {};
@@ -173,9 +180,12 @@ function ExecuteRemoteVoiceRecognition(fileName, requestedUrl, ogResponse)
     };
 
     request.post(requestOptions, function(error, response, body) {
-        if(error) {
+        if(error) 
+        {
             console.log("Error with remote request: " + error);
-        } else {
+        } 
+        else 
+        {
             //console.log("Remote PC Body: " + body);
             var dataFromDataCentre = JSON.parse(body);
             var dataToReturn = {};

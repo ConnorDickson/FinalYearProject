@@ -7,25 +7,30 @@ var previousResults = {};
 var recommendedMovie = null;
 
 //called when the user clicks login
-function Login() {
+function Login() 
+{
     previousResults = null;
     
     userID = document.getElementById('UserID').value;
 
     //Make the logged in user GUI visable
-    if(userID != "") {
+    if(userID != "") 
+    {
         event.srcElement.parentElement.parentElement.className = "hidden";
         
         document.getElementById('GUIForLoggedInUsers').className = "";
         
         GetPreviousMovies();
-    } else {
+    } 
+    else 
+    {
         document.getElementById('recommendations').innerHTML = "Please enter a username."
     }
 }
 
 //makes a call directly to the data center to obtain the previous movies watched for the logged in user
-function GetPreviousMovies() {
+function GetPreviousMovies() 
+{
     document.getElementById('recommendations').innerHTML = GetProcessingString();
     document.getElementById('prevResults').innerHTML = GetProcessingString();
     
@@ -63,12 +68,16 @@ function GetPreviousMovies() {
 
         //store the previous movies watched
         response.on('end', function () {
-            if(responseData != "") {
+            if(responseData != "") 
+            {
                 var jsonData = JSON.parse(responseData);
 
-                if(jsonData == null || jsonData == 'undefined' || jsonData.Results == 'undefined' || jsonData.Results == null || jsonData.Results == "null" || jsonData.Results.length == 0) {
+                if(jsonData == null || jsonData == 'undefined' || jsonData.Results == 'undefined' || jsonData.Results == null || jsonData.Results == "null" || jsonData.Results.length == 0) 
+                {
                     previousResults = null;
-                } else {
+                } 
+                else 
+                {
                     previousResults = jsonData;
                 }
             }
@@ -80,8 +89,10 @@ function GetPreviousMovies() {
 }
 
 //Get a recommendation from the edge nodes
-function GetRecommendation() {
-    if(previousResults == 'undefined' || previousResults == null || previousResults == "null" || previousResults.Results.length == 0) {
+function GetRecommendation() 
+{
+    if(previousResults == 'undefined' || previousResults == null || previousResults == "null" || previousResults.Results.length == 0) 
+    {
         //If the user has not watched any movies yet
         document.getElementById('recommendations').innerHTML = "Recommendation: <br>Not enough data to get a recommendation";
         document.getElementById('prevResults').innerHTML = "Your Average of 0 Results: <br>Please watch a movie to get an evaluation";
@@ -100,9 +111,12 @@ function GetRecommendation() {
         
         console.log(recommendedMovie);
         
-        if(recommendedMovie != null && typeof(recommendedMovie) != 'undefined') {
+        if(recommendedMovie != null && typeof(recommendedMovie) != 'undefined') 
+        {
             document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(recommendedMovie);
-        } else {
+        } 
+        else 
+        {
             document.getElementById('recommendations').innerHTML = "Recommendation: <br>Could not get a recommendation";
         }
 
@@ -112,7 +126,8 @@ function GetRecommendation() {
 }
 
 //make a call to the edge node to watch a random movie and receive a recommendation
-function WatchRandomMovie() {
+function WatchRandomMovie() 
+{
     document.getElementById('movieWatched').innerHTML = GetProcessingString();
     document.getElementById('recommendations').innerHTML = GetProcessingString();
     document.getElementById('prevResults').innerHTML = GetProcessingString();
@@ -126,8 +141,10 @@ function WatchRandomMovie() {
 }
 
 //watch the movie that is currently being shown in the UI
-function WatchRecommendedMovie() {
-    if(recommendedMovie == null || typeof(recommendedMovie) == 'undefined') {
+function WatchRecommendedMovie() 
+{
+    if(recommendedMovie == null || typeof(recommendedMovie) == 'undefined') 
+    {
         document.getElementById('recommendations').innerHTML = "Recommendation: <br>Please watch a movie to get a recommendation";
         return;
     }
@@ -147,7 +164,8 @@ function WatchRecommendedMovie() {
 }
 
 //post the data passed into the method to the URL passed in to the method and execute the callback with the response data
-function PostToEdgeNode(url, jsonObject, callback) {
+function PostToEdgeNode(url, jsonObject, callback) 
+{
     jsonObject.UserID = userID;
     jsonObject.AverageResults = AveragePreviousResults();
         
@@ -191,14 +209,18 @@ function PostToEdgeNode(url, jsonObject, callback) {
 }
 
 //parse the response data and update the UI with the information it contains
-function StoreResultsAndUpdateUI(responseData) {
+function StoreResultsAndUpdateUI(responseData) 
+{
     var receivedJSONData = JSON.parse(responseData);
 
     //add the watched movie to the current results
     //this will later be used to display the new average
-    if(previousResults == 'undefined' || previousResults == null || previousResults == "null") {
+    if(previousResults == 'undefined' || previousResults == null || previousResults == "null") 
+    {
         previousResults = receivedJSONData;
-    } else {
+    } 
+    else 
+    {
         previousResults.Results.push(receivedJSONData.Results[0]);
     }
 
@@ -206,9 +228,12 @@ function StoreResultsAndUpdateUI(responseData) {
     
     recommendedMovie = receivedJSONData.Recommendation;
     
-    if(recommendedMovie != null && typeof(recommendedMovie) != 'undefined') {
+    if(recommendedMovie != null && typeof(recommendedMovie) != 'undefined') 
+    {
         document.getElementById('recommendations').innerHTML = "Recommendation: <br>" + FormatMovieString(recommendedMovie);
-    } else {
+    } 
+    else 
+    {
         document.getElementById('recommendations').innerHTML = "Recommendation: <br>Could not get a recommendation";
     }
         
@@ -218,7 +243,8 @@ function StoreResultsAndUpdateUI(responseData) {
 //take the recorded movies and average them, then display this in the UI
 function AveragePreviousResults() 
 {    
-    if(previousResults == 'undefined' || previousResults == null || previousResults == "null" || previousResults.Results.length == 0) {
+    if(previousResults == 'undefined' || previousResults == null || previousResults == "null" || previousResults.Results.length == 0) 
+    {
         document.getElementById('prevResults').innerHTML = "Your Average of 0 Results: <br>Please watch a movie to get an evaluation";
         return null;
     }
@@ -264,7 +290,8 @@ function AveragePreviousResults()
     var totalContainsDrugUseTrueCount = 0;
     var totalContainsFlashingImagesTrueCount = 0;    
     
-    for(var i = 0; i < prevResults.length; i++) {
+    for(var i = 0; i < prevResults.length; i++) 
+    {
         //This is not adding ints. Just concantinating strings
         totalYearCount += totalYear[i];
         totalPercentageHorrorCount += totalPercentageHorror[i];
@@ -273,16 +300,24 @@ function AveragePreviousResults()
         totalPercentageAdventureCount += totalPercentageAdventure[i];
         totalPercentageFantasyCount += totalPercentageFantasy[i];
         totalPercentageRomanceCount += totalPercentageRomance[i];
-        if(totalContainsViolence[i] == true) {
+        
+        if(totalContainsViolence[i] == true) 
+        {
             totalContainsViolenceTrueCount++;
         }
-        if(totalContainsSexualScenes[i] == true) {
+        
+        if(totalContainsSexualScenes[i] == true) 
+        {
             totalContainsSexualScenesTrueCount++;
         }
-        if(totalContainsDrugUse[i] == true) {
+        
+        if(totalContainsDrugUse[i] == true) 
+        {
             totalContainsDrugUseTrueCount++;
         }
-        if(totalContainsFlashingImages[i] == true) {
+        
+        if(totalContainsFlashingImages[i] == true) 
+        {
             totalContainsFlashingImagesTrueCount++;
         }
     }
@@ -295,19 +330,29 @@ function AveragePreviousResults()
     var averagePercentageFantasy = totalPercentageFantasyCount / totalPercentageFantasy.length;    
     var averagePercentageRomance = totalPercentageRomanceCount / totalPercentageRomance.length;    
     var averageContainsViolence = false;
-    if(totalContainsViolenceTrueCount > (totalContainsViolence.length/2)) {
+    
+    if(totalContainsViolenceTrueCount > (totalContainsViolence.length/2)) 
+    {
         averageContainsViolence = true;
     }
+    
     var averageContainsSexualScenes = false;
+    
     if(totalContainsSexualScenesTrueCount > (totalContainsSexualScenes.length/2)) {
         averageContainsSexualScenes = true;
     }
+    
     var averageContainsDrugUse = false;
-    if(totalContainsDrugUseTrueCount > (totalContainsDrugUse.length/2)) {
+    
+    if(totalContainsDrugUseTrueCount > (totalContainsDrugUse.length/2)) 
+    {
         averageContainsDrugUse = true;
     }
+    
     var averageContainsFlashingImages = false;
-    if(totalContainsFlashingImagesTrueCount > (totalContainsFlashingImages.length/2)) {
+    
+    if(totalContainsFlashingImagesTrueCount > (totalContainsFlashingImages.length/2)) 
+    {
         averageContainsFlashingImages = true;
     }
     
@@ -329,7 +374,8 @@ function AveragePreviousResults()
 }
 
 //Returned a nicely formatted string containing the movie data
-function FormatMovieString(movie) {
+function FormatMovieString(movie) 
+{
         return "Title: " + movie.Title + "<br>" +
         "Year: " + movie.Year + "<br>" + 
         "Horror: " + movie.PercentageHorror + "<br>" +
@@ -345,7 +391,8 @@ function FormatMovieString(movie) {
 }
 
 //returns a string to indicate processing
-function GetProcessingString() {
+function GetProcessingString() 
+{
         return "Title: Processing...<br>" +
         "Year: Processing...<br>" + 
         "Horror: Processing...<br>" +

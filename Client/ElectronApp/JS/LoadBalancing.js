@@ -25,7 +25,8 @@ var totalAverageDataCentreRAM = [];
 var remoteExecutionCounter = 0;
 var remoteExecuionsRequired = 10;
 
-function PerformExperiment() {
+function PerformExperiment() 
+{
     remoteExecutionCounter = 0;
     
     totalAverageTime = [];
@@ -40,15 +41,18 @@ function PerformExperiment() {
     var timeBetweenRequests = 45000;
     
     //Clear cache after X time and print to UI saying that's what is going to happen
-    for(var requestNumber = 0; requestNumber < remoteExecuionsRequired; requestNumber++) {        
+    for(var requestNumber = 0; requestNumber < remoteExecuionsRequired; requestNumber++) 
+    {        
         setTimeout(ExecuteVoiceRecognitionLoadBalance.bind(this, recordExperiment), (timeBetweenRequests * requestNumber));
     }
 }
 
-function recordExperiment() {
+function recordExperiment() 
+{
     remoteExecutionCounter++;
     
-    if(remoteExecutionCounter == remoteExecuionsRequired) {
+    if(remoteExecutionCounter == remoteExecuionsRequired) 
+    {
         document.getElementById('localStopwatchResults').innerHTML = "Time: ";
         document.getElementById('averageRequestTimeResult').innerHTML = "Average request time: ";
         document.getElementById('averageLocalCPUResult').innerHTML = "Average local CPU: ";
@@ -58,7 +62,8 @@ function recordExperiment() {
         document.getElementById('averageRemoteRAMResult').innerHTML = "Average edge RAM: ";
         document.getElementById('averageDataCentreRAMResult').innerHTML = "Average data centre RAM: ";
 
-        for(var i = 0; i < totalAverageTime.length; i++) {
+        for(var i = 0; i < totalAverageTime.length; i++) 
+        {
             document.getElementById('localStopwatchResults').innerHTML = document.getElementById('localStopwatchResults').innerHTML + totalAverageTime[i] + " ";
             document.getElementById('averageRequestTimeResult').innerHTML = document.getElementById('averageRequestTimeResult').innerHTML + totalAverageRequestTime[i].toFixed(3) + " ";
             document.getElementById('averageLocalCPUResult').innerHTML = document.getElementById('averageLocalCPUResult').innerHTML + totalAverageLocalCPU[i].toFixed(2) + " ";
@@ -74,7 +79,8 @@ function recordExperiment() {
 }
 
 //called from button to execute the load balance request
-function ExecuteVoiceRecognitionLoadBalance(callback) {
+function ExecuteVoiceRecognitionLoadBalance(callback) 
+{
     requestTimeRecords = [];
     localCPURecords = [];
     remoteCPURecords = [];
@@ -87,18 +93,24 @@ function ExecuteVoiceRecognitionLoadBalance(callback) {
 
     var failure = false;
     
-    if(numberOfRequests > 50) {
+    if(numberOfRequests > 50) 
+    {
         document.getElementById('VoiceRecognitionResults').innerHTML = "Please make less than 50 requests";
         failure = true;
-    } else if (isNaN(numberOfRequests)) {
+    } 
+    else if (isNaN(numberOfRequests)) 
+    {
         document.getElementById('VoiceRecognitionResults').innerHTML = "Please enter a number of requests";
         failure = true;
-    } else if (numberOfRequests == 0 || numberOfRequests == 1) {
+    } 
+    else if (numberOfRequests == 0 || numberOfRequests == 1) 
+    {
         document.getElementById('VoiceRecognitionResults').innerHTML = "Please enter more than 1 requests";
         failure = true;
     }
     
-    if(failure) {
+    if(failure) 
+    {
         document.getElementById('localStopwatchResults').innerHTML = "";
         document.getElementById('averageRequestTimeResult').innerHTML = "";
         document.getElementById('averageLocalCPUResult').innerHTML = "";
@@ -132,8 +144,10 @@ function ExecuteVoiceRecognitionLoadBalance(callback) {
     initialCountOfRequests = numberOfRequests;
 
     //used to spawn multiple concurrent requests
-    if(numberOfRequests > 0) {
-        while(numberOfRequests > 0) {
+    if(numberOfRequests > 0) 
+    {
+        while(numberOfRequests > 0) 
+        {
             setTimeout(ExecuteLoadBalanceRemoteVoiceRecognition.bind(this, callback, 0));            
             numberOfRequests--;
         }
@@ -141,7 +155,8 @@ function ExecuteVoiceRecognitionLoadBalance(callback) {
 }
 
 //executes a single request but called multiple times concurrently
-function ExecuteLoadBalanceRemoteVoiceRecognition(callback) {        
+function ExecuteLoadBalanceRemoteVoiceRecognition(callback) 
+{        
     var requestStartTime = Date.now();
     
     //read the file async so that other threads are not held up
@@ -182,7 +197,8 @@ function ExecuteLoadBalanceRemoteVoiceRecognition(callback) {
                 
                 document.getElementById('requestsLeft').innerHTML = "Requests left: " + requestsLeft + '/' + initialCountOfRequests;                
                 
-                if(requestsLeft == 0) {
+                if(requestsLeft == 0) 
+                {
                     var endTime = Date.now();
                     var totalTime = (endTime - startTime)/1000;
                     document.getElementById('localStopwatchResults').innerHTML = "Time: " + totalTime + " seconds.";
@@ -212,7 +228,8 @@ function ExecuteLoadBalanceRemoteVoiceRecognition(callback) {
                     document.getElementById('averageRemoteRAMResult').innerHTML = "Average edge RAM: " + averageEdgeRAMResult.toFixed(2);
                     document.getElementById('averageDataCentreRAMResult').innerHTML = "Average data centre RAM: " + averageDataCentreRAMResult.toFixed(2);
                     
-                    if(callback) {
+                    if(callback) 
+                    {
                         callback();
                     }
                 }
@@ -224,10 +241,12 @@ function ExecuteLoadBalanceRemoteVoiceRecognition(callback) {
 }
 
 //average the elements of an array
-function Average(elements) {
+function Average(elements) 
+{
     var sum = 0.0;
     
-    for(var i = 0; i < elements.length; i++) {
+    for(var i = 0; i < elements.length; i++) 
+    {
         sum += parseFloat(elements[i]);
     }
     
@@ -235,7 +254,8 @@ function Average(elements) {
 }
 
 //obtain and set the voice recognition results
-function SetVoiceRecognitionResults(responseData, requestStartTime) {
+function SetVoiceRecognitionResults(responseData, requestStartTime) 
+{
     var load = cpu.cpuEnd();
     var freeMemory = cpu.freeMemory();
     var jsonResult = JSON.parse(responseData);

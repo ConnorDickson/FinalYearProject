@@ -46,7 +46,8 @@ var createdServer = http.createServer(function (req, res) {
     console.log("Method: req.method: " + req.method);
 
     //verify it's the type of request wanted
-    if(req.method != 'POST') {
+    if(req.method != 'POST') 
+    {
         res.end("Please make a POST request");
         return;
     }
@@ -80,22 +81,29 @@ var createdServer = http.createServer(function (req, res) {
         console.log("Req body: " + reqBody);
 
         //Validate the server receieved valid JSON
-        try {
+        try 
+        {
             var jsonObject = JSON.parse(reqBody);
         }
-        catch(err) {
+        catch(err) 
+        {
             console.log("Did not receive valid JSON: " + err.message);
             res.end(err.message);
             return;
         }
 
         //Route requests
-        if(requestedUrl == 'GetRecommendations') { 
+        if(requestedUrl == 'GetRecommendations') 
+        { 
             console.log("Recommendation Request");
             ProduceRecommendationAndEndRequest(jsonObject, res);
-        } else if(requestedUrl == 'WatchRandomMovie') {
+        } 
+        else if(requestedUrl == 'WatchRandomMovie') 
+        {
             SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCentreWatchRandomMovieURL);
-        } else if (requestedUrl == 'WatchMovie') {
+        } 
+        else if (requestedUrl == 'WatchMovie') 
+        {
             console.log(reqBody);
             SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCentreWatchMovieURL);
         }
@@ -113,7 +121,8 @@ console.log("Started Node.js server");
 
 //This is a generic method that makes a post request to the URL provided with the JSON data provided 
 // and produces a recommendation based on the information returned
-function SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCentreURL) {
+function SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCentreURL) 
+{
     var jsonData = JSON.stringify(jsonObject);
 
     var requestOptions = {
@@ -124,9 +133,12 @@ function SendRequestToDataCentreAndProduceRecommendation(res, jsonObject, dataCe
 
     request.post(requestOptions, function(error, response, body) {
         console.log("Watch Movie Status Code: " + response.statusCode);
-        if(error) {
+        if(error) 
+        {
             console.error("There was an error requesting content from Data Center: " + error);
-        } else {
+        } 
+        else 
+        {
             var jsonObject = JSON.parse(body); 
             ProduceRecommendationAndEndRequest(jsonObject, res);
         }
@@ -140,7 +152,8 @@ function ProduceRecommendationAndEndRequest(jsonObject, res)
     
     //Read the file on disk async as to now block other operations
     fs.readFile(movieDataFilePath, (localErr, movieData) => {
-        if(localErr) {
+        if(localErr) 
+        {
             console.log("Local Error: " + localErr);
             throw localErr;
         }
@@ -166,14 +179,18 @@ function ProduceRecommendationAndEndRequest(jsonObject, res)
 
         //If the user has watched a movie during this request add it to 
         // the average results before producing a recommendation
-        if(typeof(jsonObject.Results) != 'undefined' && jsonObject.Results.length > 0) {
+        if(typeof(jsonObject.Results) != 'undefined' && jsonObject.Results.length > 0) 
+        {
             AddNewMovieToAverageResults(jsonObject);
         }
 
         
-        if(jsonObject.AverageResults == null || typeof(jsonObject.AverageResults) == 'undefined' || jsonObject.AverageResults == "null") {
+        if(jsonObject.AverageResults == null || typeof(jsonObject.AverageResults) == 'undefined' || jsonObject.AverageResults == "null") 
+        {
             console.log("Average Results was undefined");
-        } else {
+        } 
+        else 
+        {
             //Perform KNN
             var nearestNeighbour = KNearestNeighbour(allMovieTextLines, jsonObject.AverageResults);
             jsonObject.Recommendation = nearestNeighbour;
@@ -185,15 +202,20 @@ function ProduceRecommendationAndEndRequest(jsonObject, res)
     });
 }
 
-function AddNewMovieToAverageResults(jsonObject) {    
+function AddNewMovieToAverageResults(jsonObject) 
+{
     //If the user did not have a previous average (this is their first movie) the average is just the movie
-    if(jsonObject.AverageResults == null || typeof(jsonObject.AverageResults) == 'undefined' || jsonObject.AverageResults == "null") {
-        if(typeof(jsonObject.Results) == 'undefined' || jsonObject.Results.length == 0) {
+    if(jsonObject.AverageResults == null || typeof(jsonObject.AverageResults) == 'undefined' || jsonObject.AverageResults == "null") 
+    {
+        if(typeof(jsonObject.Results) == 'undefined' || jsonObject.Results.length == 0) 
+        {
             return;
         }
 
         jsonObject.AverageResults = jsonObject.Results[0];
-    } else {
+    } 
+    else 
+    {
         //If the user has watched movies before add the new movie to the average
         jsonObject.AverageResults.Year = (jsonObject.AverageResults.Year + jsonObject.Results[0].Year)/2;
         jsonObject.AverageResults.PercentageHorror = (jsonObject.AverageResults.PercentageHorror + jsonObject.Results[0].PercentageHorror)/2;
@@ -214,7 +236,8 @@ function KNearestNeighbour(allMovieTextLines, movie)
     for (var i = 0; i < allMovieTextLines.length; i++)
     {
         var stringToParse = allMovieTextLines[i];
-        if(stringToParse == "") { 
+        if(stringToParse == "") 
+        {
             continue;
         }
         
@@ -231,9 +254,12 @@ function KNearestNeighbour(allMovieTextLines, movie)
     var nearestNeighbours = nodes.getNN();
 
     //Ensure the recommendation isn't the movie they just watched
-    if(nearestNeighbours[0].ID == movie.ID) {
+    if(nearestNeighbours[0].ID == movie.ID) 
+    {
         return nearestNeighbours[1];
-    } else {
+    } 
+    else 
+    {
         return nearestNeighbours[0];
     }
 }
@@ -248,9 +274,12 @@ function SendUserViewToDataCentre(jsonObject)
     };
 
     request.post(requestOptions, function(error, response, body) {
-        if(error) {
+        if(error) 
+        {
             console.error("There was an error requesting content from Data Center: " + error);
-        } else {
+        } 
+        else 
+        {
             //Receive JSON body and write it to remote results
             var returnedJson = JSON.parse(body);
             
@@ -261,7 +290,8 @@ function SendUserViewToDataCentre(jsonObject)
             });
 
             fs.writeFile(machineLearningRemoteResultsFilePath, completedString, (err) => {
-                if(err) {
+                if(err) 
+                {
                     console.log("Error with writing to remote file: " + err);
                 } 
             });
@@ -273,9 +303,12 @@ function SendUserViewToDataCentre(jsonObject)
 function GetMoviesFromDataCentre() 
 {
     request.get(dataCentreGetMoviesURL, function(error,response,body) {
-        if(error) {
+        if(error) 
+        {
             console.error("There was an error requesting content from Data Center: " + error);
-        } else {
+        } 
+        else 
+        {
            //Receive JSON body and write it to remote results
             var returnedJson = JSON.parse(body);
 
@@ -288,9 +321,12 @@ function GetMoviesFromDataCentre()
 
             //Write movies to disk
             fs.writeFile(movieDataFilePath, completedString, (err) => {
-                if(err) {
+                if(err) 
+                {
                     console.log("Error with writing to remote file: " + err);
-                } else {
+                } 
+                else 
+                {
                     console.log("Finished writing subset of movies to disk");
                 }
             });
