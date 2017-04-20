@@ -1,6 +1,15 @@
-var previousResults = [];
-var failedLoad = false;
-var clearCacheRequest = false;
+let completeResults = null;
+let previousResults = [];
+let failedLoad = false;
+let clearCacheRequest = false;
+
+window.onload = function() {
+    completeResults = null;
+    previousResults = [];
+    failedLoad = false;
+    clearCacheRequest = false; 
+};
+
 //setting up event handlers for when the webview element makes a request.
 //code executes when the page is first opened 
 onload = () => 
@@ -27,6 +36,28 @@ onload = () =>
             var resultTime = ((receiveTime - sendTime)/1000);
             previousResults.push(resultTime);
             console.log("End Request and pushed " + resultTime);
+
+            if(previousResults.length > 0 && !clearCacheRequest)  {
+                var totalTime = previousResults.reduce(add,0);
+                var resultingString = "Results: ";
+                
+                if(completeResults != null) {
+                    completeResults.forEach(function (completedResult) {
+                            resultingString += completedResult.toFixed(2) + " ";
+                    });   
+                }                
+                
+                resultingString += totalTime.toFixed(2);
+                document.getElementById("requestResult").innerHTML = resultingString;
+            }
+            
+            //if ClearCache result don't print
+            //We know the timings of this 
+            if(clearCacheRequest) 
+            {
+                document.getElementById("requestResult").innerHTML = "Cleared Cache";
+                clearCacheRequest = false;
+            }
         }
     }
     
@@ -52,9 +83,12 @@ function performExperiment()
     
     //Execute Warmup
     document.getElementById("requestResult").innerHTML = "Warmup Time: ";
-    var totalNumberOfRequests = 1;
-    var timeBetweenRequests = 20000;
-    
+    var totalNumberOfRequests = 10;
+    var timeBetweenRequests = 30000;
+        
+    completeResults = [];
+    previousResults = [];
+
     //Clear cache after X time and print to UI saying that's what is going to happen
     for(var requestNumber = 0; requestNumber < totalNumberOfRequests; requestNumber++) 
     {        
@@ -89,9 +123,12 @@ function executeExperiment()
 {
     document.getElementById("requestResult").innerHTML = "Requests: ";
     //10 cached and 10 new
-    var totalNumberOfRequests = 2;
-    var timeBetweenRequests = 25000;
+    var totalNumberOfRequests = 10;
+    var timeBetweenRequests = 30000;
     var timeToClearCache = 5000;
+    
+    completeResults = [];
+    previousResults = [];
     
     //Clear cache after X time and print to UI saying that's what is going to happen
     for(var requestNumber = 0; requestNumber < totalNumberOfRequests; requestNumber++) 
@@ -103,9 +140,6 @@ function executeExperiment()
         
         setTimeout(NavigateBrowser, (timeBetweenRequests * requestNumber));
     }
-    
-    //Print the last result to the UI
-    setTimeout(ClearAndPrintResults, (timeBetweenRequests * totalNumberOfRequests) + timeBetweenRequests);
 }
 
 function executeExperimentWithoutCache() 
@@ -120,37 +154,12 @@ function executeExperimentWithoutCache()
     {
         setTimeout(NavigateBrowser, (timeBetweenRequests * requestNumber));
     }
-    
-    //Print the last result to the UI
-    setTimeout(ClearAndPrintResults, (timeBetweenRequests * totalNumberOfRequests) + timeBetweenRequests);
 }
 
 //used to help reduce the data in the previous results array
 function add(a,b) 
 {
     return parseFloat(a) + parseFloat(b);
-}
-
-//Called when the go button is pressed so a new request can be recorded
-function ClearAndPrintResults() 
-{
-    //If there are previous results (not the first execution);
-    if(previousResults.length > 0 && !clearCacheRequest) 
-    {
-        var totalTime = previousResults.reduce(add,0);
-        document.getElementById("requestResult").innerHTML = document.getElementById("requestResult").innerHTML + totalTime.toFixed(2) + " ";
-    }
-
-    //if ClearCache result don't print
-    //We know the timings of this 
-    if(clearCacheRequest) 
-    {
-        document.getElementById("requestResult").innerHTML = document.getElementById("requestResult").innerHTML + "(C) ";
-        clearCacheRequest = false;
-    }
-    
-    previousResults = [];
-    failedLoad = false;
 }
 
 //return home
@@ -164,7 +173,13 @@ function NavigateBrowser()
 {
     console.log("New Request");
     
-    ClearAndPrintResults();
+    if(!clearCacheRequest && completeResults != null && previousResults.length > 0) {
+        var totalTime = previousResults.reduce(add,0);
+        completeResults.push(totalTime);
+    }
+    
+    previousResults = [];
+    failedLoad = false;
 
     var url = "";
     
@@ -178,7 +193,6 @@ function NavigateBrowser()
 function ClearCache() 
 {
     console.log("Clearing Cache");
-    ClearAndPrintResults();
     clearCacheRequest = true;
     var url = "http://edgepi01:3000/ClearCache";
     

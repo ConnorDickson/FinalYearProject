@@ -11,7 +11,7 @@ var Node = function(object) {
 };
 
 //Method on the node object to measure distance between this node and all of it's neighbours
-Node.prototype.measureDistances = function(title_range_obj, year_range_obj, percent_horror_range_obj, percent_comedy_range_obj, percent_action_range_obj, percent_adventure_range_obj, percent_fantasy_range_obj, percent_romance_range_obj, contains_violence_range_obj, contains_sexual_scenes_range_obj, contains_drug_use_range_obj, contains_flashing_images_range_obj) {
+Node.prototype.measureDistances = function(title_range_obj, year_range_obj, percent_horror_range_obj, percent_comedy_range_obj, percent_action_range_obj, percent_adventure_range_obj, percent_fantasy_range_obj, percent_romance_range_obj) {
 
     //Find out the range of the metric passed in
     var year_range = year_range_obj.max - year_range_obj.min;
@@ -49,13 +49,46 @@ Node.prototype.measureDistances = function(title_range_obj, year_range_obj, perc
         var delta_percent_romance = neighbor.PercentageRomance - this.PercentageRomance;
         delta_percent_romance = (delta_percent_romance) / percent_romance_range;
 
+        //boolean values
+        var delta_contains_violence;
+        if(neighbor.ContainsViolence == this.ContainsViolence) {
+            delta_contains_violence = 0;
+        } else {
+            delta_contains_violence = 1/2; //boolean
+        }
+        
+        var delta_contains_sexualscenes;
+        if(neighbor.ContainsSexualScenes == this.ContainsSexualScenes) {
+            delta_contains_sexualscenes = 0;
+        } else {
+            delta_contains_sexualscenes = 1/2; //boolean
+        }
+        
+        var delta_contains_druguse;
+        if(neighbor.ContainsDrugUse == this.ContainsDrugUse) {
+            delta_contains_druguse = 0;
+        } else {
+            delta_contains_druguse = 1/2; //boolean
+        }
+        
+        var delta_contains_flashingimages;
+        if(neighbor.ContainsFlashingImages == this.ContainsFlashingImages) {
+            delta_contains_flashingimages = 0;
+        } else {
+            delta_contains_flashingimages = 1/2; //boolean
+        }
+
         var sqrtResult = Math.sqrt(delta_year*delta_year + 
                                       delta_percent_horror*delta_percent_horror + 
                                       delta_percent_comedy*delta_percent_comedy + 
                                       delta_percent_action*delta_percent_action + 
                                       delta_percent_adventure*delta_percent_adventure + 
                                       delta_percent_fantasy*delta_percent_fantasy + 
-                                      delta_percent_romance*delta_percent_romance);
+                                      delta_percent_romance*delta_percent_romance + 
+                                      delta_contains_violence*delta_contains_violence +
+                                      delta_contains_sexualscenes*delta_contains_sexualscenes + 
+                                      delta_contains_druguse*delta_contains_druguse +
+                                      delta_contains_flashingimages*delta_contains_flashingimages);
 
         neighbor.distance = sqrtResult;
     }

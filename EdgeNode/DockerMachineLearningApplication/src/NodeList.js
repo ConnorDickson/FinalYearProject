@@ -38,7 +38,7 @@ NodeList.prototype.determineUnknown = function() {
             }
 
             /* Measure distances */
-           this.nodes[i].measureDistances(null, this.Year, this.PercentageHorror, this.PercentageComedy, this.PercentageAction, this.PercentageAdventure, this.PercentageFantasy, this.PercentageRomance, null, null, null, null);
+           this.nodes[i].measureDistances(null, this.Year, this.PercentageHorror, this.PercentageComedy, this.PercentageAction, this.PercentageAdventure, this.PercentageFantasy, this.PercentageRomance);
 
             /* Sort by distance */
             this.nodes[i].sortByDistance();            
@@ -55,7 +55,7 @@ NodeList.prototype.calculateRanges = function() {
     this.PercentageAdventure = {min: 1000000, max: 0};
     this.PercentageFantasy = {min: 1000000, max: 0};
     this.PercentageRomance = {min: 1000000, max: 0};
-
+        
     for (var i in this.nodes)
     {
         //Year
