@@ -5,6 +5,7 @@ var edgeNode = "EdgePi01";
 var dataCentre = "connor-pc";
 var previousResults = {};
 var recommendedMovie = null;
+var requestStartTime = null;
 
 //called when the user clicks login
 function Login() 
@@ -103,6 +104,8 @@ function GetRecommendation()
     
     //Post to the edge node and execute code as part of a callback to update the UI
     PostToEdgeNode('/GetRecommendations', jsonObject, function(responseData) {
+        var endTime = Date.now();
+
         console.log("Received recommendation data back: " + responseData);
         
         var receivedJSONData = JSON.parse(responseData);
@@ -119,9 +122,17 @@ function GetRecommendation()
         {
             document.getElementById('recommendations').innerHTML = "Recommendation: <br>Could not get a recommendation";
         }
+        
+        var totalRequestTime = endTime - requestStartTime;
+        document.getElementById('timeResults').innerHTML = "Total request time: " + totalRequestTime/1000  + " seconds";
+        document.getElementById('edgeCPUResults').innerHTML = "Edge CPU: " + receivedJSONData.EdgeCPUInfo + "%";
 
         //Average the users previously stored results
-        AveragePreviousResults();
+        var averageMovie = AveragePreviousResults();
+        if(recommendedMovie != null && typeof(recommendedMovie) != 'undefined') {
+            var euclidDistance = EuclidDistance(recommendedMovie, averageMovie);
+            document.getElementById('euclidDistResults').innerHTML = "Euclidean distance: " + euclidDistance;   
+        }
     });
 }
 
@@ -166,6 +177,8 @@ function WatchRecommendedMovie()
 //post the data passed into the method to the URL passed in to the method and execute the callback with the response data
 function PostToEdgeNode(url, jsonObject, callback) 
 {
+    requestStartTime = Date.now();
+    
     jsonObject.UserID = userID;
     jsonObject.AverageResults = AveragePreviousResults();
         
@@ -211,6 +224,8 @@ function PostToEdgeNode(url, jsonObject, callback)
 //parse the response data and update the UI with the information it contains
 function StoreResultsAndUpdateUI(responseData) 
 {
+    var endTime = Date.now();
+    
     var receivedJSONData = JSON.parse(responseData);
 
     //add the watched movie to the current results
@@ -237,7 +252,15 @@ function StoreResultsAndUpdateUI(responseData)
         document.getElementById('recommendations').innerHTML = "Recommendation: <br>Could not get a recommendation";
     }
         
-    AveragePreviousResults();
+    var totalRequestTime = endTime - requestStartTime;
+    document.getElementById('timeResults').innerHTML = "Total request time: " + totalRequestTime/1000;
+    document.getElementById('edgeCPUResults').innerHTML = "Edge CPU: " + receivedJSONData.EdgeCPUInfo;
+    
+    var averageMovie = AveragePreviousResults();
+    if(recommendedMovie != null && typeof(recommendedMovie) != 'undefined') {
+        var euclidDistance = EuclidDistance(recommendedMovie, averageMovie);
+        document.getElementById('euclidDistResults').innerHTML = "Euclidean distance: " + euclidDistance;   
+    }
 }
 
 //take the recorded movies and average them, then display this in the UI
@@ -405,4 +428,70 @@ function GetProcessingString()
         "Contains Sexual Scenes: Processing...<br>" +
         "Contains Drug Use: Processing...<br>" +
         "Contains Flashing Images: Processing...";
+}
+
+function EuclidDistance(movie, average) {
+	var delta_year = movie.Year - average.Year;
+	delta_year = (delta_year) / 57;
+
+	var delta_percent_horror = movie.PercentageHorror - average.PercentageHorror;
+	delta_percent_horror = (delta_percent_horror) / 99;
+
+	var delta_percent_comedy = movie.PercentageComedy - average.PercentageComedy;
+	delta_percent_comedy = (delta_percent_comedy) / 99;
+
+	var delta_percent_action = movie.PercentageAction - average.PercentageAction;
+	delta_percent_action = (delta_percent_action) / 99;
+
+	var delta_percent_adventure = movie.PercentageAdventure - average.PercentageAdventure;
+	delta_percent_adventure = (delta_percent_adventure) / 99;
+
+	var delta_percent_fantasy = movie.PercentageFantasy - average.PercentageFantasy;
+	delta_percent_fantasy = (delta_percent_fantasy) / 99;
+
+	var delta_percent_romance = movie.PercentageRomance - average.PercentageRomance;
+	delta_percent_romance = (delta_percent_romance) / 99;
+
+	//boolean values
+	var delta_contains_violence;
+	if(movie.ContainsViolence == average.ContainsViolence) {
+		delta_contains_violence = 0;
+	} else {
+		delta_contains_violence = 1/2; //boolean
+	}
+
+	var delta_contains_sexualscenes;
+	if(movie.ContainsSexualScenes == average.ContainsSexualScenes) {
+		delta_contains_sexualscenes = 0;
+	} else {
+		delta_contains_sexualscenes = 1/2; //boolean
+	}
+
+	var delta_contains_druguse;
+	if(movie.ContainsDrugUse == average.ContainsDrugUse) {
+		delta_contains_druguse = 0;
+	} else {
+		delta_contains_druguse = 1/2; //boolean
+	}
+
+	var delta_contains_flashingimages;
+	if(movie.ContainsFlashingImages == average.ContainsFlashingImages) {
+		delta_contains_flashingimages = 0;
+	} else {
+		delta_contains_flashingimages = 1/2; //boolean
+	}
+
+	var sqrtResult = Math.sqrt(delta_year*delta_year +
+								  delta_percent_horror*delta_percent_horror +
+								  delta_percent_comedy*delta_percent_comedy +
+								  delta_percent_action*delta_percent_action +
+								  delta_percent_adventure*delta_percent_adventure +
+								  delta_percent_fantasy*delta_percent_fantasy +
+								  delta_percent_romance*delta_percent_romance +
+								  delta_contains_violence*delta_contains_violence +
+								  delta_contains_sexualscenes*delta_contains_sexualscenes +
+								  delta_contains_druguse*delta_contains_druguse +
+								  delta_contains_flashingimages*delta_contains_flashingimages);
+								  
+	return sqrtResult;
 }
