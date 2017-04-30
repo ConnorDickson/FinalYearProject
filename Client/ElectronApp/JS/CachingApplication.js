@@ -34,7 +34,11 @@ onload = () =>
         { 
             receiveTime = (new Date()).getTime();
             var resultTime = ((receiveTime - sendTime)/1000);
-            previousResults.push(resultTime);
+            
+            if(!clearCacheRequest) {
+                previousResults.push(resultTime);
+            }
+            
             console.log("End Request and pushed " + resultTime);
 
             if(previousResults.length > 0 && !clearCacheRequest)  {
@@ -123,7 +127,7 @@ function executeExperiment()
 {
     document.getElementById("requestResult").innerHTML = "Requests: ";
     //10 cached and 10 new
-    var totalNumberOfRequests = 10;
+    var totalNumberOfRequests = 20;
     var timeBetweenRequests = 30000;
     var timeToClearCache = 5000;
     

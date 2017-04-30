@@ -35,3 +35,7 @@ to learn how to access my web server as a proxied service
 I used this;
 https://blog.tompawlak.org/calculate-checksum-hash-nodejs-javascript
 to learn how to use the Crypto module
+
+I used this;
+https://github.com/ServiceStack/redis-windows
+for the windows Redis CLI port so I could run experiments on windows

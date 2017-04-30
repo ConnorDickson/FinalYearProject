@@ -1,5 +1,6 @@
 //Import required modules
 var util = require('util');
+var cpu = require('./cpu');
 var os = require('os');
 var http = require('http');
 var request = require('request');
@@ -15,6 +16,9 @@ var movieDataFilePath = "../MLResults/MovieVectors.txt";
 var dataCentreGetMoviesURL = "http://connor-pc:3000/api/MachineLearning/GetMovies";
 var dataCentreWatchRandomMovieURL = "http://connor-pc:3000/api/MachineLearning/WatchRandomMovie";
 var dataCentreWatchMovieURL = "http://connor-pc:3000/api/MachineLearning/WatchMovie";
+//var dataCentreGetMoviesURL = "http://connor-laptop:3000/api/MachineLearning/GetMovies";
+//var dataCentreWatchRandomMovieURL = "http://connor-laptop:3000/api/MachineLearning/WatchRandomMovie";
+//var dataCentreWatchMovieURL = "http://connor-laptop:3000/api/MachineLearning/WatchMovie";
 
 console.log("Starting...");
 
@@ -34,6 +38,8 @@ proxyServer.listen(externalPort);
 
 //Create the internal server
 var createdServer = http.createServer(function (req, res) {
+    cpu.cpuStart();
+
     //Set error handlers
     req.on('error', function(err) {
         console.error("REQUEST ERROR:\n" + err.stack);
@@ -196,6 +202,9 @@ function ProduceRecommendationAndEndRequest(jsonObject, res)
             jsonObject.Recommendation = nearestNeighbour;
         }
         
+        var load = cpu.cpuEnd();
+        jsonObject.EdgeCPUInfo = load.percent;
+
         //End the request with the required data
         var jsonString = JSON.stringify(jsonObject);
         res.end(jsonString);
@@ -240,7 +249,6 @@ function KNearestNeighbour(allMovieTextLines, movie)
         {
             continue;
         }
-        
         var movieToAdd = JSON.parse(stringToParse);
         nodes.add( new Node(movieToAdd));
     }
@@ -308,8 +316,8 @@ function GetMoviesFromDataCentre()
             console.error("There was an error requesting content from Data Center: " + error);
         } 
         else 
-        {
-           //Receive JSON body and write it to remote results
+        { 
+            //Receive JSON body and write it to remote results
             var returnedJson = JSON.parse(body);
 
             var completedString = "";
